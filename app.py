@@ -9,3 +9,7 @@ def index():
 @app.get('/forum')
 def forum():
     return render_template('forum.html')
+
+@app.get('/createAccount')
+def account():
+    return render_template('account.html')
