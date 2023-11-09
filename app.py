@@ -57,3 +57,10 @@ def submit_forum_post():
 def submit_forum_comment():
     # after post, redirect back to get_single_form.html
     return
+
+    return render_template("forum.html")
+
+
+@app.get("/createAccount")
+def account():
+    return render_template("account.html")
