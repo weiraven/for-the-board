@@ -1,0 +1,17 @@
+{% extends "_template.html" %} {%block content %}
+<section></section>
+<main>
+	{% for post in posts %}
+	<hr />
+	<article>
+		<h2>{{ post.title }}</h2>
+		<p>{{ post.content }}</p>
+		<img src="{{ post.avatar }}" alt="{{ post.title }}" style="width: 100px; height: 100px" />
+		<h3>{{ post.author }}</h3>
+		<p>{{ post.date_posted}}</p>
+	</article>
+	<hr />
+	{% endfor %}
+</main>
+<section></section>
+{% endblock %}
