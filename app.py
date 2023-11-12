@@ -20,6 +20,6 @@ def index():
 def forum():
     return render_template('forum.html')
 
-@app.get('/createAccount')
-def account():
-    return render_template('account.html')
+@app.get('/signup')
+def signup():
+    return render_template('signup.html')
