@@ -3,14 +3,31 @@ from flask import Flask, render_template, request, redirect, url_for
 from models import db
 from dotenv import load_dotenv
 from flask_socketio import SocketIO
+from flask_socketio import SocketIO
 
+# load_dotenv()
 # load_dotenv()
 app = Flask(__name__)
 
 # # DB connection
 # app.config['SQLALCHEMY_DATABASE_URI'] = \
 #     f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
+# # DB connection
+# app.config['SQLALCHEMY_DATABASE_URI'] = \
+#     f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
 
+# db.init_app(app)
+socketio = SocketIO(app)
+
+users = {
+    1: "Damon Nitsavong",
+    2: "Phillip Chang",
+    3: "Raven Wei",
+    4: "Rachel ?",
+    5: "Thomas ?",
+    6: "Brandon Hach"
+}
+active_user_id = 1
 # db.init_app(app)
 socketio = SocketIO(app)
 
