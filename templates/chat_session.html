@@ -1,0 +1,136 @@
+{% extends "_template.html" %}
+
+{% block title %}Chat{% endblock %}
+
+{% block head %}
+<style>
+    .chatbox {
+        position: fixed;
+        bottom: 20vh; 
+        right: 10px;
+        width: 30%;
+        background: #262D34;
+        box-shadow: #000000;
+        height: calc(100% - (20vh + 70px));
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        border-radius: 25px;
+    }
+
+    .card {
+        background-color: #262D34;
+        color: #fff;
+    }
+
+    .message-box {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: flex-end;
+    }
+
+    .message-container {
+        background-color: #262D34;
+        padding: 10px;
+        border-radius: 10px;
+        margin-top: 10px;
+    }
+
+    .list-group-item, .form-select, .btn-primary, .form-control,.form-control:focus,
+    .form-select:focus {
+        background-color: #2E3142;
+        color: #ffffff;
+        border-color: #2E3142;
+    }
+
+    .bottom-controls {
+        position: fixed;
+        bottom: 20px; 
+        right: 10px;
+        width: 30%;
+        background: #262D34;
+        box-shadow: #000000;
+        padding: 20px;
+        border-radius: 25px;
+    }
+
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="chatbox">
+    <div class="card">
+        <div class="card-body message-box">
+            <div class="message-container">
+                <ul id="messages" class="list-group"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-controls">
+    <label for="username">Choose a User:</label>
+    <select id="userSelect" class="form-select">
+        {% for user_id, username in users.items() %}
+        <option value="{{ username }}">{{ username }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="message">Enter a Message:</label>
+    <input id="message" class="form-control"/>
+    <button id="send" class="btn btn-primary mt-2">Send</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+    function setActiveUser() {
+        var userSelect = document.getElementById('userSelect');
+        var selectedUsername = userSelect.options[userSelect.selectedIndex].value;
+        console.log('Selected Username:', selectedUsername);
+        socket.emit('connected', { username: selectedUsername });
+    }
+
+    function sendMessage() {
+        var messageInput = document.getElementById('message');
+        var message = messageInput.value;
+        if (message) {
+            socket.emit('message', { message: message });
+            messageInput.value = '';
+            scrollChatToBottom();
+        }
+    }
+
+    function scrollChatToBottom() {
+        var chatbox = document.querySelector('.chatbox');
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    socket.on('connect', function () {
+        setActiveUser();
+    });
+
+    socket.on('message', function (data) {
+        var messages = document.getElementById('messages');
+        var message = document.createElement('li');
+        message.className = 'list-group-item';
+        message.textContent = data.username + ": " + data.message;
+        messages.appendChild(message);
+        scrollChatToBottom();
+    });
+
+    document.getElementById('send').addEventListener('click', sendMessage);
+
+    document.getElementById('message').addEventListener('keypress', function (e) {
+        if (e.which === 13) {
+            sendMessage();
+        }
+    });
+
+    document.getElementById('userSelect').addEventListener('change', setActiveUser);
+</script>
+
+{% endblock %}
