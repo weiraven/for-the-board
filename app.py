@@ -4,14 +4,15 @@ from models import db
 from dotenv import load_dotenv
 from flask_socketio import SocketIO
 
-# load_dotenv()
+load_dotenv()
 app = Flask(__name__)
 
-# # DB connection
-# app.config['SQLALCHEMY_DATABASE_URI'] = \
-#     f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
+# DB connection
+app.config['SQLALCHEMY_DATABASE_URI'] = \
+    f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
 
-# db.init_app(app)
+db.init_app(app)
+
 socketio = SocketIO(app)
 
 users = {
@@ -22,23 +23,7 @@ users = {
     5: "Thomas ?",
     6: "Brandon Hach"
 }
-active_user_id = 1
 
-# # DB connection
-# app.config['SQLALCHEMY_DATABASE_URI'] = \
-#     f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
-
-# db.init_app(app)
-socketio = SocketIO(app)
-
-users = {
-    1: "Damon Nitsavong",
-    2: "Phillip Chang",
-    3: "Raven Wei",
-    4: "Rachel ?",
-    5: "Thomas ?",
-    6: "Brandon Hach"
-}
 active_user_id = 1
 
 dummy_data = [
@@ -60,17 +45,14 @@ dummy_data = [
     },
 ]
 
-
-@app.route("/", methods=("GET", "POST"))
+@app.route('/', methods=('GET', 'POST'))
 def index():
-    return render_template("index.html")
+    return render_template('index.html')
 
-
-@app.get("/forum")
+@app.get('/forum')
 def forum():
     # Needs to display forum components from db
-    return render_template("forum.html", posts=dummy_data)
-
+    return render_template('forum.html', posts=dummy_data)
 
 @app.get('/signup')
 def signup():
@@ -103,16 +85,13 @@ def handle_message(json):
     if username:
         socketio.emit('message', {'username': username, 'message': json['message']})
 
-
-
-@app.get("/forum/<int:forum_id>")
+@app.get('/forum/<int:forum_id>')
 def get_single_forum(forum_id: int):
     # brings a new page that display specific forum post
     forum_post = dummy_data[forum_id]
-    return render_template("get_single_forum.html", forum=forum_post)
+    return render_template('get_single_forum.html', forum=forum_post)
 
-
-@app.post("/submit_post")
+@app.post('/submit_post')
 def submit_forum_post():
     # after post, redirect back to forum.html. maybe redirect to this post new page (get_single_forum)
     title = request.form["title"]
@@ -124,18 +103,14 @@ def submit_forum_post():
     dummy_data.append({id, title, content, author, date_posted, avatar})
     return redirect("/forum")
 
-
-@app.post("/submit_comment")
+@app.post('/submit_comment')
 def submit_forum_comment():
     # after post, redirect back to get_single_form.html
-    return
+    return render_template('forum.html')
 
-    return render_template("forum.html")
-
-
-@app.get("/createAccount")
+@app.get('/createAccount')
 def account():
-    return render_template("account.html")
+    return render_template('account.html')
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
