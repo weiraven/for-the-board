@@ -73,14 +73,44 @@
                     <p class="card-text">
                         Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos aspernatur omnis, perferendis fuga quaerat ex, id sed dolores minus dolorum veritatis dolor commodi voluptates, praesentium beatae error consectetur hic. Fuga consequuntur illo odit sit eveniet laudantium? Impedit laboriosam mollitia ut iusto harum voluptates, nostrum nam esse tempora facilis cupiditate.    
                     </p>
-                    <a href="/" class="btn btn-primary btn-block">Create Post</a>
+                    <a href="/create_post" class="btn btn-primary btn-block">Create Post</a>
                 </div>
             </div>
         </div>
     </div>
+    {% for post in posts %}
+    <div class="row">
+        <div class="col-sm-8">
+            <div class="card">
+                <div class="card-header">
+                    <strong>
+                        <button class="btn btn-light btn-sm">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        8.81k
+                        <button class="btn btn-light btn-sm">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
+                    </strong> ftb/Main • <span class="text" style="font-size: 10pt; color: #FFFFFF;"> Posted by {{ post.author }} {{ post.hours_posted}} hours ago</span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ post.title }}</h5>
+                    <p class="card-text">
+                        <p>{{ post.content }}</p>
+                </div>
+                <div class="card-footer text-muted">
+                    <a href="" class="btn btn-light btn-sm"><i class="fas fa-comment"></i> 0 Comments</a>
+                    <a href="" class="btn btn-light btn-sm"><i class="fas fa-comment"></i> Share</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 
-{% endblock %}{% extends "_template.html" %} {%block content %}
+{% endblock %}
+
+{%block content %}
 <section></section>
 <main>
 	{% for post in posts %}
