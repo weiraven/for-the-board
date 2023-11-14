@@ -30,15 +30,15 @@ active_user_id = 1
 dummy_data = [
     {
         'id': 1,
-        'title': 'Dwarves are gey, lemme explain',
-        'content': 'I rest my case.',
+        'title': "Dwarves are gey, lemme explain",
+        'content': "I rest my case.",
         'author': 'John Doe',
         'hours_posted': '167',
         'avatar': 'https://i.kym-cdn.com/entries/icons/facebook/000/014/711/neckbeard.jpg',
     },
     {
         'id': 2,
-        'title': 'Dwarves are not gey, don't lemme explain',
+        'title': "Dwarves are not gey, don't lemme explain",
         'content': 'I rest.',
         'author': 'Doe John',
         'hours_posted': '167',
