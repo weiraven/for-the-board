@@ -86,8 +86,8 @@
 <div class="bottom-controls">
     <label for="username">Choose a User:</label>
     <select id="userSelect" class="form-select">
-        {% for user_id, username in users.items() %}
-        <option value="{{ username }}">{{ username }}</option>
+        {% for User in users %}
+            <option value="{{ User.username }}">{{ User.username }}</option>
         {% endfor %}
     </select>
 
