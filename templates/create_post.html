@@ -1,14 +1,84 @@
-{% extends "_template.html" %} {%block body %}
-<div class="mb-3 row">
-	<label for="staticEmail" class="col-sm-2 col-form-label">Email</label>
-	<div class="col-sm-10">
-		<input type="text" readonly class="form-control-plaintext" id="staticEmail" value="email@example.com" />
-	</div>
-</div>
-<div class="mb-3 row">
-	<label for="inputPassword" class="col-sm-2 col-form-label">Password</label>
-	<div class="col-sm-10">
-		<input type="password" class="form-control" id="inputPassword" />
-	</div>
-</div>
+{% extends '_template.html' %}
+
+{% block head %}
+<title>ForTheBoard - Post to the GuildBoard</title>
+{% endblock %}
+
+{% block body %}
+<style>
+    .card-header{
+        background-color: #000419;
+        color: #FFFFFF;
+    }
+    .card {
+        margin-top: 20px;
+        background-color: #202428;
+        color: #FFFFFF;
+    }
+    .card-footer{
+        background-color: #000419;
+        color: #FFFFFF;
+    }
+    .btn.btn-primary.btn-block {
+        background-color: #944394;
+        border-color: #944394;
+        color: #FFFFFF;
+    }
+    .btn.btn-light.btn-sm { 
+        background-color: #A2D0F7; 
+        border-color: #A2D0F7; 
+    }
+    .form-control {
+        margin-bottom: 20px;
+    }
+	.list-group-item {
+        background-color: #202428;
+        color: #FFFFFF;
+		padding-left: 0;	
+	}
+</style>
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-8">
+            <div class="card">
+                <div class="card-header">
+                    <strong>Create a New Post</strong>
+                </div>
+                <div class="card-body">
+                    <form action="/create_post" method="post">
+                        <div class="form-group">
+                            <label for="authorName">Petitioner</label>
+                            <input type="text" class="form-control" id="authorName" name="author_name" placeholder="What is your name?" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="postTitle">Heading</label>
+                            <input type="text" class="form-control" id="postTitle" name="title" placeholder="What do you seek?" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="postContent">Description of Course</label>
+                            <textarea class="form-control" id="postContent" name="content" rows="10" placeholder="What is your quest?"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Submit</button>
+                    </form>
+				</div>
+			</div>
+		</div>
+			<div class="col-sm-4">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Posting to the GuildBoard</h5>
+						<p class="card-text">
+							<ul class="list-group list-group-flush">
+							<li class="list-group-item">This is may be an escapist space</li>
+							<li class="list-group-item">But remember the human</li>
+							<li class="list-group-item">Behave as you would in the real world</li>
+							<li class="list-group-item">Fact check your non-fictional claims</li>
+							<li class="list-group-item">Look for duplicates before posting</li>
+							<li class="list-group-item">May your adventures be great and your rolls be blessed!</li>
+							</ul>
+						</p>
+					</div>
+				</div>
+			</div>
 {% endblock %}
