@@ -4,6 +4,7 @@ from datetime import datetime
 db = SQLAlchemy()
 
 class Player(db.Model):
+    __tablename__ = 'player'
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
     email = db.Column(db.String(255), nullable=False, unique=True)
@@ -38,6 +39,7 @@ class Player(db.Model):
         return f'Player({self.user_id}, {self.username}, {self.email})'
 
 class ForumPost(db.Model):
+    __tablename__ = 'forumpost'
     post_id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text)
@@ -72,7 +74,7 @@ class ForumPost(db.Model):
         return self.author_name
 
     def get_time_posted(self):
-        return self.time_posted.strftime('%B %d, %Y')
+        return self.time_posted.strftime('%m-%d-%Y %H:%M (UTC-5)')
 
     def get_upvotes(self) -> int:
         return self.upvotes
