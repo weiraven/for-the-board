@@ -56,6 +56,19 @@
         border-radius: 25px;
     }
 
+    .left-box {
+        position: fixed;
+        top: 70px; /* Adjust the top position based on your navigation bar height */
+        left: 0;
+        height: calc(100% - 70px); /* Adjust the height to fill the remaining space */
+        width: 68%; /* Adjust the width as needed */
+        background: black;
+        padding: 25px;
+        box-sizing: border-box;
+        z-index: 1; /* Ensure it appears above other elements */
+    }
+
+
 </style>
 {% endblock %}
 
@@ -73,14 +86,18 @@
 <div class="bottom-controls">
     <label for="username">Choose a User:</label>
     <select id="userSelect" class="form-select">
-        {% for user_id, username in users.items() %}
-        <option value="{{ username }}">{{ username }}</option>
+        {% for User in users %}
+            <option value="{{ User.username }}">{{ User.username }}</option>
         {% endfor %}
     </select>
 
     <label for="message">Enter a Message:</label>
     <input id="message" class="form-control"/>
     <button id="send" class="btn btn-primary mt-2">Send</button>
+</div>
+
+<div class="left-box">
+
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
