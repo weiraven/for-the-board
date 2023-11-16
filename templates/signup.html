@@ -1,5 +1,23 @@
 {% extends '_template.html' %}
 {% block body %}
-    <h1>Join Us!</h1>
-    
+    <div class="container">
+    <h1 style="margin: 30px 0;">Join Us!</h1>
+    <h3 class="mb-3">Create Your Account</h3>
+    <form action="'/profile" method="post">
+        <div class="mb-3">
+            <label for="email" class="form-label">Email address:</label>
+            <input type="email" class="form-control" name="email" id="email" placeholder="name@fortheboard.com">
+        </div>
+        <div class="mb-3">
+            <label for="username" class="form-label">Username:</label>
+            <input type="text" class="form-control" name="username" id="username">
+          </div>
+        <label for="password" class="form-label">Password:</label>
+        <input type="password" name="password" id="password" class="form-control" aria-describedby="passwordHelpBlock">
+        <div id="passwordHelpBlock" class="form-text">
+            Your password should be 8-20 characters long.
+        </div>
+        <button type="submit" class="btn btn-primary">Sign Up!</button>
+    </form>
+    </div>
 {% endblock %}
