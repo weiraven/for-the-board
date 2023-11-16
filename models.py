@@ -51,10 +51,11 @@ class ForumPost(db.Model):
     parent_post_id = db.Column(db.Integer, db.ForeignKey('forumpost.post_id'))
 
     # forumpost constructor
-    def __init__(self, title:str, content:str, author_id:int, parent_post_id=None):
+    def __init__(self, title:str, content:str, author_name:str, parent_post_id=None):
         self.title = title
         self.content = content
-        self.author_id = author_id
+        self.author_name = author_name # temporarily letting this be author_name until we have login auth setup
+        # should be replaced by author_id which would populate automatically from auth token
         self.parent_post_id = parent_post_id
 
     # forumpost getters
