@@ -6,6 +6,18 @@
 
 {% block body %}
 <style>
+    :root { 
+        --input-bg: #202428; 
+        --input-text: #FFFFFF; 
+        --input-placeholder: #A2D0F7; 
+    }
+    input, textarea { 
+        background-color: var(--input-bg) !important; 
+        color: var(--input-text) !important; 
+    }
+    input::placeholder, textarea::placeholder { 
+        color: var(--input-placeholder) !important; 
+    }
     .card-header{
         background-color: #000419;
         color: #FFFFFF;
