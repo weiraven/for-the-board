@@ -56,6 +56,14 @@ def create_post():
         return redirect(url_for('forum'))  # redirect back to GuildBoard main page
     return render_template('create_post.html')
 
+@app.get('/signup')
+def signup():
+    return render_template('signup.html')
+
+@app.post('/profile')
+def new_user():
+    return render_template('profile.html')
+
 @app.get('/chatsession')
 def chat():
     users = player_repository_singleton.get_all_users()
