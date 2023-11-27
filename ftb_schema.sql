@@ -45,4 +45,6 @@ VALUES
     ('How to pick up elves in a dungeon', 'Step 1: Just roll a nat 20 on your rizz check 4head lol', 3, 'breakpause')
 ;
 
+--- Search Functionality implemented. Add this column to your test database
+ALTER TABLE ForumPost ADD COLUMN flairs VARCHAR(255);
 
