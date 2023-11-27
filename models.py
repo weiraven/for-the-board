@@ -49,12 +49,14 @@ class ForumPost(db.Model):
     upvotes = db.Column(db.Integer)
     downvotes = db.Column(db.Integer)
     parent_post_id = db.Column(db.Integer, db.ForeignKey('forumpost.post_id'))
+    flairs = db.Column(db.String(255))
 
     # forumpost constructor
-    def __init__(self, title:str, content:str, author_name:str, parent_post_id=None):
+    def __init__(self, title:str, content:str, author_name:str, flairs='', parent_post_id=None):
         self.title = title
         self.content = content
         self.author_name = author_name # temporarily letting this be author_name until we have login auth setup
+        self.flairs = flairs
         # should be replaced by author_id which would populate automatically from auth token
         self.parent_post_id = parent_post_id
 
@@ -85,6 +87,9 @@ class ForumPost(db.Model):
 
     def get_parent_post_id(self):
         return self.parent_post_id
+    
+    def get_flairs(self):
+        return self.flairs
 
     # forumpost setters
     def set_title(self, title:str):

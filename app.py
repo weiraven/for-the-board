@@ -48,8 +48,10 @@ def create_post():
         title = request.form.get('title')
         content = request.form.get('content')
         author_name = request.form.get('author_name')
+        flairs = request.form.get('flairs', '')
+        print("Received flairs:", flairs)
         # Will eventually change author_name to author_id once we have login auth setup!
-        post = ForumPost(title=title, content=content, author_name=author_name, parent_post_id=None)
+        post = ForumPost(title=title, content=content, author_name=author_name,flairs=flairs, parent_post_id=None)
         db.session.add(post)
         db.session.commit()
 
@@ -87,6 +89,19 @@ def handle_message(json):
     user = player_repository_singleton.get_user_by_id(active_user_id)
     if user:
         socketio.emit('message', {'username': user.username, 'message': json['message']})
+        
+@app.get('/search_post')
+def search_posts():
+    query_flair = request.args.get('query-flair', '')
+    query_title = request.args.get('query-title', '')
+    
+    if query_flair:
+        query = ForumPost.query.filter(ForumPost.flairs.ilike(f'%{query_flair}%'))
+    if query_title:
+        query = ForumPost.query.filter(ForumPost.title.ilike(f'%{query_title}%'))
+    
+    filtered_posts = query.all()
+    return render_template('forum.html', posts=filtered_posts)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

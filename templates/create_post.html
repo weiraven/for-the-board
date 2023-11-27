@@ -48,6 +48,9 @@
         color: #FFFFFF;
 		padding-left: 0;	
 	}
+    .badge-close-icon {
+        cursor: pointer;
+    }
 </style>
 
 <div class="container">
@@ -66,6 +69,11 @@
                         <div class="form-group">
                             <label for="postTitle">Heading</label>
                             <input type="text" class="form-control" id="postTitle" name="title" placeholder="What do you seek?" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="flair-container">Flair</label>
+                            <button type="button" id="add-flair" class="">+</button><br>
+                            <div class="flair-container"></div>
                         </div>
                         <div class="form-group">
                             <label for="postContent">Description of Course</label>
@@ -93,4 +101,55 @@
 					</div>
 				</div>
 			</div>
+
+<script defer>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('add-flair').addEventListener('click', e => {
+            const flairContainer = document.querySelector('.flair-container')
+            const existingBadges = flairContainer.querySelectorAll('.badge').length
+            if (existingBadges >= 4) return ;
+
+            const newBadge = document.createElement('span')
+            newBadge.classList.add('badge', 'rounded-pill', 'text-bg-primary', 'fs-7','text-center')
+            newBadge.textContent = 'New Flair'
+            newBadge.setAttribute('contenteditable', 'true')
+
+            const closeIcon = document.createElement('span')
+            closeIcon.innerHTML = '&times;'
+            closeIcon.classList.add('badge-close-icon', 'fs-4')
+            closeIcon.onclick = function() {
+                flairContainer.removeChild(newBadge);
+            };
+            newBadge.append(closeIcon)
+
+            newBadge.addEventListener('blur', () => {
+                newBadge.setAttribute('contenteditable', 'true')
+                newBadge.append(closeIcon)
+            })
+
+            newBadge.addEventListener('keypress', () => {
+                if (newBadge.textContent.length > 15 || newBadge.textContent == 1 && event.keyCode !== 8 && event.keyCode !== 46) {
+                    event.preventDefault();                 
+                }
+            })
+
+            flairContainer.appendChild(newBadge)
+        })
+
+        document.querySelector('form').addEventListener('submit', e => {
+            const form = e.target;
+            const badgeElements = Array.from(document.querySelectorAll('.flair-container .badge'))
+            const joinedBadgeTexts = badgeElements.map(badge => badge.textContent.trim().replace('×', '')).join(', ');
+
+            console.log("Flairs to be submitted:", joinedBadgeTexts);
+
+            const hiddenInput = document.createElement('input')
+            hiddenInput.type = 'hidden'
+            hiddenInput.name = 'flairs'
+            hiddenInput.value = joinedBadgeTexts
+            form.appendChild(hiddenInput)
+        })
+    })
+
+</script>
 {% endblock %}

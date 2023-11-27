@@ -1,96 +1,123 @@
-{% extends '_template.html' %}
-
-{% block head %}
+{% extends '_template.html' %} {% block head %}
 
 <title>ForTheBoard - GuildBoard</title>
 
-{% endblock %}
-
-{% block body %}
+{% endblock %} {% block body %}
 <style>
-    .card-header{
-        background-color: #000419;
-        color: #FFFFFF;
-    }
-    .card {
-        margin-top: 20px;
-        background-color: #202428;
-        color: #FFFFFF;
-    }
-    .card-footer{
-        background-color: #000419;
-        color: #FFFFFF;
-    }
-    .btn.btn-primary.btn-block {
-        background-color: #944394;
-        border-color: #944394;
-        color: #FFFFFF;
-    }
-    .btn.btn-light.btn-sm { 
-        background-color: #A2D0F7; 
-        border-color: #A2D0F7; 
-    }
+	.card-header {
+		background-color: #000419;
+		color: #ffffff;
+	}
+	.card {
+		margin-top: 20px;
+		background-color: #202428;
+		color: #ffffff;
+	}
+	.card-footer {
+		background-color: #000419;
+		color: #ffffff;
+	}
+	.btn.btn-primary.btn-block {
+		background-color: #944394;
+		border-color: #944394;
+		color: #ffffff;
+	}
+	.btn.btn-light.btn-sm {
+		background-color: #a2d0f7;
+		border-color: #a2d0f7;
+	}
 </style>
 
 <div class="container">
-    <div class="row">
-        <div class="col-sm-8">
-            {% for post in posts %}
-            <div class="card">
-                <div class="card-header">
-                    <strong>
-                        <button class="btn btn-light btn-sm">
-                            <i class="fas fa-arrow-up"></i>
-                        </button>
-                        {{ post.get_upvotes() }}
-                        <button class="btn btn-light btn-sm">
-                            <i class="fas fa-arrow-down"></i>
-                        </button>
-                    </strong> ftb/MainBoard • <span class="text" style="font-size: 10pt; color: #FFFFFF;"> Posted by u/{{ post.get_author_name() }} at {{ post.get_time_posted() }}</span>
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ post.get_title() }}</h5>
-                    <p class="card-text">
-                        {{ post.get_content() | safe }}
-                    </p>
-                </div>
-                <div class="card-footer text-muted">
-                    <a href="" class="btn btn-light btn-sm"><i class="fas fa-comment"></i> 0 Comments</a>
-                    <a href="" class="btn btn-light btn-sm"><i class="fas fa-share"></i> Share</a>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        <div class="col-sm-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">ftb/MainBoard</h5>
-                    <p class="card-text">
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos aspernatur omnis, perferendis fuga quaerat ex, id sed dolores minus dolorum veritatis dolor commodi voluptates, praesentium beatae error consectetur hic. Fuga consequuntur illo odit sit eveniet laudantium? Impedit laboriosam mollitia ut iusto harum voluptates, nostrum nam esse tempora facilis cupiditate.    
-                    </p>
-                    <a href="/create_post" class="btn btn-primary btn-block">Create Post</a>
-                </div>
-            </div>
-        </div>
-    </div>
+	<div class="row">
+		<div class="col-sm-8">
+			{% for post in posts %}
+			<div class="card">
+				<div class="card-header">
+					<strong>
+						<button class="btn btn-light btn-sm">
+							<i class="fas fa-arrow-up"></i>
+						</button>
+						{{ post.get_upvotes() }}
+						<button class="btn btn-light btn-sm">
+							<i class="fas fa-arrow-down"></i>
+						</button>
+					</strong>
+					ftb/MainBoard •
+					<span class="text" style="font-size: 10pt; color: #ffffff">
+						Posted by u/{{ post.get_author_name() }} at {{ post.get_time_posted() }}</span
+					>
+				</div>
+				<div class="card-body">
+					<h5 class="card-title">{{ post.get_title() }}</h5>
+					<!-- Display flairs -->
+					{% if post.get_flairs() %}
+					<div class="post-flairs">
+						{% for flair in post.get_flairs().split(',') %}
+						<span class="badge rounded-pill text-bg-primary">{{ flair }}</span>
+						{% endfor %}
+					</div>
+					{% endif %}
+
+					<p class="card-text">{{ post.get_content() | safe }}</p>
+				</div>
+				<div class="card-footer text-muted">
+					<a href="" class="btn btn-light btn-sm"><i class="fas fa-comment"></i> 0 Comments</a>
+					<a href="" class="btn btn-light btn-sm"><i class="fas fa-share"></i> Share</a>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+		<div class="col-sm-4">
+			<div class="card">
+				<div class="card-body">
+					<h5 class="card-title">ftb/MainBoard</h5>
+					<p class="card-text">
+						Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos aspernatur omnis,
+						perferendis fuga quaerat ex, id sed dolores minus dolorum veritatis dolor commodi voluptates,
+						praesentium beatae error consectetur hic. Fuga consequuntur illo odit sit eveniet laudantium?
+						Impedit laboriosam mollitia ut iusto harum voluptates, nostrum nam esse tempora facilis
+						cupiditate.
+					</p>
+					<a href="/create_post" class="btn btn-primary btn-block">Create Post</a>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-body">
+					<form action="{{ url_for('search_posts' )}}" method="get">
+						<div class="mb-3">
+							<label for="search" name="query-flair" class="form-label"></label>
+							<input
+								type="text"
+								name="query-flair"
+								placeholder="Search by flair..."
+								class="form-control"
+							/>
+
+							<button type="submit" class="btn btn-primary">Search</button>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-body">
+					<form action="{{ url_for('search_posts' )}}" method="get">
+						<div class="mb-3">
+							<label for="search" name="query-title" class="form-label"></label>
+							<input
+								type="text"
+								name="query-title"
+								placeholder="Search by title..."
+								class="form-control"
+							/>
+
+							<button type="submit" class="btn btn-primary">Search</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 {% endblock %}
-
-<!-- {%block content %}
-<section></section>
-<main>
-	{% for post in posts %}
-	<hr />
-	<article>
-		<h2>{{ post.title }}</h2>
-		<p>{{ post.content }}</p>
-		<img src="{{ post.avatar }}" alt="{{ post.title }}" style="width: 100px; height: 100px" />
-		<h3>{{ post.author }}</h3>
-		<p>{{ post.date_posted}}</p>
-	</article>
-	<hr />
-	{% endfor %}
-</main>
-<section></section>
-{% endblock %} -->
