@@ -1,13 +1,14 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for
-from models import db
+from models import *
 from dotenv import load_dotenv
 from flask_socketio import SocketIO
+from repositories.src.user_repository import player_repository_singleton
 
 load_dotenv()
 app = Flask(__name__)
 
-# DB connection
+# DB Connection
 app.config[
     'SQLALCHEMY_DATABASE_URI'
 ] = f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
@@ -16,57 +17,57 @@ db.init_app(app)
 
 socketio = SocketIO(app)
 
-users = {
-    1: 'Damon Nitsavong',
-    2: 'Phillip Chang',
-    3: 'Raven Wei',
-    4: 'Rachel ?',
-    5: 'Thomas ?',
-    6: 'Brandon Hach',
-}
-
-active_user_id = 1
-
-dummy_data = [
-    {
-        'id': 1,
-        'title': "Dwarves are gey, lemme explain",
-        'content': "I rest my case.",
-        'author': 'John Doe',
-        'hours_posted': '167',
-        'avatar': 'https://i.kym-cdn.com/entries/icons/facebook/000/014/711/neckbeard.jpg',
-    },
-    {
-        'id': 2,
-        'title': "Dwarves are not gey, don't lemme explain",
-        'content': 'I rest.',
-        'author': 'Doe John',
-        'hours_posted': '167',
-        'avatar': 'https://i.kym-cdn.com/entries/icons/facebook/000/014/711/neckbeard.jpg',
-    },
-]
-
+active_user_id = None
 
 @app.route('/', methods=('GET', 'POST'))
 def index():
     return render_template('index.html')
 
+@app.get('/create_account')
+def create_account():
+    return render_template('create_account.html')
 
-@app.get('/forum')
+@app.route('/forum', methods=('GET', 'POST'))
 def forum():
-    # Needs to display forum components from db
-    return render_template('forum.html', posts=dummy_data)
+    posts = ForumPost.query.order_by(ForumPost.time_posted.desc()).all()
+    # display all posts in most-recent first order
+    return render_template('forum.html', posts=posts)
 
+@app.get('/forum/<int:post_id>')
+def get_single_post(post_id: int):
+    return render_template('get_single_post.html')
+
+@app.post('/submit_forum_reply')
+def submit_forum_reply():
+    # after post, redirect back to get_single_post.html
+    return render_template('forum.html')
+
+@app.route('/create_post', methods=['GET', 'POST'])
+def create_post():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        content = request.form.get('content')
+        author_name = request.form.get('author_name')
+        # Will eventually change author_name to author_id once we have login auth setup!
+        post = ForumPost(title=title, content=content, author_name=author_name, parent_post_id=None)
+        db.session.add(post)
+        db.session.commit()
+
+        return redirect(url_for('forum'))  # redirect back to GuildBoard main page
+    return render_template('create_post.html')
 
 @app.get('/signup')
 def signup():
     return render_template('signup.html')
 
+@app.post('/profile')
+def new_user():
+    return render_template('profile.html')
 
 @app.get('/chatsession')
 def chat():
+    users = player_repository_singleton.get_all_users()
     return render_template('chat_session.html', users=users)
-
 
 @socketio.on('set_active_user')
 def set_active_user(user_id):
@@ -74,61 +75,18 @@ def set_active_user(user_id):
     active_user_id = user_id
     socketio.emit('active_user_changed', user_id)
 
-
 @socketio.on('connected')
 def handle_connect(json):
     username = json.get('username')
-    user_id = None
-    for uid, uname in users.items():
-        if uname == username:
-            user_id = uid
-            break
-    if user_id:
-        set_active_user(user_id)
-
+    user = player_repository_singleton.get_user_by_username(username)
+    if user:
+        set_active_user(user.user_id)
 
 @socketio.on('message')
 def handle_message(json):
-    username = users.get(active_user_id)  # Get the username based on active_user_id
-    if username:
-        socketio.emit('message', {'username': username, 'message': json['message']})
-
-
-@app.get('/forum/<int:forum_id>')
-def get_single_forum(forum_id: int):
-    # brings a new page that display specific forum post
-    forum_post = dummy_data[forum_id]
-    return render_template('get_single_forum.html', forum=forum_post)
-
-
-@app.post('/submit_post')
-def submit_forum_post():
-    # after post, redirect back to forum.html. maybe redirect to this post new page (get_single_forum)
-    author = request.form['author']
-    title = request.form['title']
-    content = request.form['content']
-    hours_posted = '14 hours'
-    avatar = 'https://i.kym-cdn.com/entries/icons/facebook/000/014/711/neckbeard.jpg'
-    id = int(len(dummy_data) + 1)
-    dummy_data.append({id, title, content, author, hours_posted, avatar})
-    return redirect('/forum')
-
-
-@app.post('/submit_comment')
-def submit_forum_comment():
-    # after post, redirect back to get_single_form.html
-    return render_template('forum.html')
-
-
-@app.get('/createAccount')
-def account():
-    return render_template('account.html')
-
-
-@app.get('/create_post')
-def create_post():
-    return render_template('create_post.html')
-
+    user = player_repository_singleton.get_user_by_id(active_user_id)
+    if user:
+        socketio.emit('message', {'username': user.username, 'message': json['message']})
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
