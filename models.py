@@ -3,7 +3,7 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
-class Player(db.Model):
+class User(db.Model):
     __tablename__ = 'player'
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
