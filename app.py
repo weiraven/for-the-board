@@ -1,8 +1,9 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for
-from models import *
+from flask import Flask, render_template, abort, request, redirect, url_for, session
+from models import db, User, ForumPost
 from dotenv import load_dotenv
 from flask_socketio import SocketIO
+from flask_bcrypt import Bcrypt
 from repositories.src.user_repository import player_repository_singleton
 
 load_dotenv()
@@ -13,7 +14,11 @@ app.config[
     'SQLALCHEMY_DATABASE_URI'
 ] = f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
 
+app.secret_key = os.getenv('APP_SECRET_KEY', 'potato')
+
 db.init_app(app)
+bcrypt = Bcrypt()
+bcrypt.init_app(app)
 
 socketio = SocketIO(app)
 
@@ -23,9 +28,39 @@ active_user_id = None
 def index():
     return render_template('index.html')
 
-@app.get('/create_account')
-def create_account():
-    return render_template('create_account.html')
+@app.post('/signup')
+def signup():
+    username = request.form.get('username')
+    raw_password = request.form.get('password')
+    if not username or not raw_password:
+        abort(400)
+    existing_user = User.query.filter_by(username=username).first() # deal with duplicate username attempt
+    if existing_user: 
+        abort(400)
+    hashed_password = bcrypt.generate_password_hash(raw_password, 16).decode()
+    new_user = User(username, hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
+    return redirect('/')
+
+@app.post('/login')
+def login():
+    username = request.form.get('username')
+    raw_password = request.form.get('password')
+    if not username or not raw_password:
+        abort(400)
+    existing_user = User.query.filter_by(username=username).first()
+    if not existing_user:
+        abort(401)
+    if not bcrypt.check_password_hash(existing_user.password, raw_password):
+        abort(401)
+    session['username'] = username
+    return redirect('/')
+
+@app.post('/logout')
+def logout():
+    del session['username']
+    return redirect('/')
 
 @app.route('/forum', methods=('GET', 'POST'))
 def forum():
@@ -57,10 +92,6 @@ def create_post():
 
         return redirect(url_for('forum'))  # redirect back to GuildBoard main page
     return render_template('create_post.html')
-
-@app.get('/signup')
-def signup():
-    return render_template('signup.html')
 
 @app.post('/profile')
 def new_user():
