@@ -18,9 +18,9 @@ CREATE TABLE ForumPost (
     author_id INT,
     author_name VARCHAR(255),
     time_posted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    upvotes INT,
-    downvotes INT,
+    upvotes INT, -- removed downvotes since downvote button should just decrement upvotes
     parent_post_id INT,
+    flairs VARCHAR(255), -- added flairs directly to CREATE TABLE statement
     FOREIGN KEY (author_id) REFERENCES Player (user_id),
     FOREIGN KEY (parent_post_id) REFERENCES ForumPost(post_id)
 );
@@ -44,7 +44,4 @@ VALUES
     ('LF3M for fresh D&D 5e campaign', '<p>Calling All Adventurers!</p><p>Are you ready to embark on an epic journey? Do you have the courage to face the unknown, the wisdom to solve intricate puzzles, and the charisma to lead or negotiate your way out of tricky situations? If so, we want you to join our virtual Dungeons & Dragons 5e campaign!</p><p>Our campaign is set in a richly detailed world, teeming with diverse cultures, ancient mysteries, and untold dangers. Whether you''re a seasoned veteran or a newcomer to the game, you''ll find a place at our table!</p>', 4, 'weiward'),
     ('How to pick up elves in a dungeon', 'Step 1: Just roll a nat 20 on your rizz check 4head lol', 3, 'breakpause')
 ;
-
---- Search Functionality implemented. Add this column to your test database
-ALTER TABLE ForumPost ADD COLUMN flairs VARCHAR(255);
 
