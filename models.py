@@ -12,7 +12,7 @@ class User(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     # player constructor
-    def __init__(self, username:str, email:str, password:str):
+    def __init__(self, username:str, email:str, password:str) -> None:
         self.username = username
         self.email = email
         self.password = password
@@ -52,7 +52,7 @@ class ForumPost(db.Model):
     flairs = db.Column(db.String(255))
 
     # forumpost constructor
-    def __init__(self, title:str, content:str, author_name:str, flairs='', parent_post_id=None):
+    def __init__(self, title:str, content:str, author_name:str, flairs='', parent_post_id=None) -> None:
         self.title = title
         self.content = content
         self.author_name = author_name # temporarily letting this be author_name until we have login auth setup
