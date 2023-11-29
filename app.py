@@ -85,12 +85,15 @@ def login_auth():
     username = request.form.get('username')
     raw_password = request.form.get('password')
     if not username or not raw_password:
-        abort(400)
+        flash("* This is a required field.")
+        return render_template('login.html')
     existing_user = User.query.filter_by(username=username).first()
     if not existing_user:
-        abort(401)
+        flash("☒ Invalid username or password. Please try again.")
+        return render_template('login.html')
     if not bcrypt.check_password_hash(existing_user.password, raw_password):
-        abort(401)
+        flash("☒ Invalid username or password. Please try again.")
+        return render_template('login.html')
     session['username'] = username
     return redirect('/')
 
