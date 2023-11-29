@@ -6,20 +6,31 @@ db = SQLAlchemy()
 class User(db.Model):
     __tablename__ = 'player'
     user_id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), nullable=False, unique=True)
+    first_name = db.Column(db.String(255), nullable=False)
+    last_name = db.Column(db.String(255), nullable=False)
+    username = db.Column(db.String(255), nullable=False, unique=True)
     email = db.Column(db.String(255), nullable=False, unique=True)
-    password = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(255), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    posts = db.relationship('ForumPost', backref='author', lazy='dynamic')
 
-    # player constructor
-    def __init__(self, username:str, email:str, password:str) -> None:
-        self.username = username
+    # User constructor
+    def __init__(self, first_name:str, last_name:str, email:str, username:str, password:str) -> None:
+        self.first_name = first_name
+        self.last_name = last_name
         self.email = email
+        self.username = username
         self.password = password
         
-    # user getters
+    # User getters
     def get_id(self) -> int:
         return self.user_id
+
+    def get_first_name(self) -> str:
+        return self.first_name
+
+    def get_last_name(self) -> str:
+        return self.last_name
 
     def get_username(self) -> str:
         return self.username
@@ -29,10 +40,6 @@ class User(db.Model):
     
     def get_join_date(self):
         return self.date_created.strftime('%B %d, %Y')
-    
-    # check password
-    def check_password(self, password:str) -> bool:
-        return self.password == password
     
     # dunder method override for how user info prints
     def __repr__(self) -> str:
@@ -44,18 +51,16 @@ class ForumPost(db.Model):
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text)
     author_id = db.Column(db.Integer, db.ForeignKey('player.user_id'))
-    author_name = db.Column(db.String(255))
     time_posted = db.Column(db.DateTime, default=datetime.utcnow)
     upvotes = db.Column(db.Integer)
-    downvotes = db.Column(db.Integer)
     parent_post_id = db.Column(db.Integer, db.ForeignKey('forumpost.post_id'))
     flairs = db.Column(db.String(255))
 
     # forumpost constructor
-    def __init__(self, title:str, content:str, author_name:str, flairs='', parent_post_id=None) -> None:
+    def __init__(self, title:str, content:str, author_id:int, flairs='', parent_post_id=None) -> None:
         self.title = title
         self.content = content
-        self.author_name = author_name # temporarily letting this be author_name until we have login auth setup
+        self.author_id = author_id 
         self.flairs = flairs
         # should be replaced by author_id which would populate automatically from auth token
         self.parent_post_id = parent_post_id
@@ -73,17 +78,11 @@ class ForumPost(db.Model):
     def get_author_id(self) -> int:
         return self.author_id
 
-    def get_author_name(self) -> str:
-        return self.author_name
-
     def get_time_posted(self):
         return self.time_posted.strftime('%m-%d-%Y %H:%M (UTC-5)')
 
     def get_upvotes(self) -> int:
         return self.upvotes
-
-    def get_downvotes(self) -> int:
-        return self.downvotes
 
     def get_parent_post_id(self):
         return self.parent_post_id
@@ -101,14 +100,8 @@ class ForumPost(db.Model):
     def set_author_id(self, author_id:int):
         self.author_id = author_id
 
-    def set_author_name(self, author_name:str):
-        self.author_name = author_name
-
     def set_upvotes(self, upvotes:int):
         self.upvotes = upvotes
-
-    def set_downvotes(self, downvotes:int):
-        self.downvotes = downvotes
 
     def set_parent_post_id(self, parent_post_id:int):
         self.parent_post_id = parent_post_id
