@@ -1,0 +1,106 @@
+{% extends '_template.html' %}
+
+{% block body %} 
+<style>
+    .navbar {
+      background-color: #272733;
+    }
+
+    .navbar a {
+      color: #ffffff !important;
+    }
+
+    .navbar a:hover {
+      color: #800080 !important;
+    }
+
+    .navbar a.active {
+      color: #800080 !important; 
+    }
+
+    .container-title {
+      background-color: #262D34;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      position: relative;
+      text-align: center;
+    }
+
+    .title-line {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      height: 2px;
+      background-color: #ffffff;
+    }
+
+    .card-container {
+      display: flex;
+      justify-content: space-between;
+      padding: 50px; 
+    }
+
+    .card {
+      border: none;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      background-color: #343a40;
+      color: #ffffff;
+      text-decoration: none; 
+      transition: transform 0.2s ease; 
+    }
+
+    .card:hover {
+      transform: scale(1.15); 
+    }
+</style>
+
+
+  <!-- Container with Title -->
+  <div class="container-title">
+    <h1>Join A Game</h1>
+    <div class="title-line"></div>
+  </div>
+
+   <!-- Navbar -->
+   <nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container">
+      <ul class="nav" style = "background-color: #272733;">
+        <li class="nav-item">
+          <a class="nav-link" aria-current="page" href="active_game">My Game Sessions</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link " href="create_game">Create A Game</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="create_game">Join A Game</a>
+          </li>
+      </ul>
+
+      <!-- Search Box  -->
+      <form class="d-flex">
+        <input class="form-control me-2" type="search" placeholder="Search Games To Join" aria-label="Search">
+        <button class="btn btn-outline-light" type="submit">Search</button>
+      </form>
+    </div>
+  </nav>
+
+
+  <div class="container mt-3 card-container">
+  <div class="col-md-4">
+    <a href="active_game">
+    <div class="card mx-auto">
+      <img src="/static/images/DDM.jpg" class="card-img-top" alt="Dungeon Dice Monsters">
+      <div class="card-body">
+        <h5 class="card-title">Dungeon Dice Monsters</h5>
+        <p class="card-text">Yu-Gi-Oh! Dungeon Dice Monsters is a dice-driven tactics video game based on an original board game featured in the Yu-Gi-Oh! storyline. It was developed and published by Konami, and released on March</p>
+      </div>
+    </div>
+</div>
+</a>
+
+
+
+{% endblock %}
