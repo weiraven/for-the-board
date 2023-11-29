@@ -46,4 +46,20 @@
         <p>Don't have an account?</p>
         <a href="/signup" class="btn btn-secondary">Sign Up Here</a>
     </div>
+
+    <script>
+        function validate_required() { // Check if fields are filled
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                document.getElementById('create_account').disabled = true;
+                document.getElementById('create_account').style.opacity = (0.4);
+            } else {
+                document.getElementById('create_account').disabled = false;
+                document.getElementById('create_account').style.opacity = (1);
+            }
+        }
+    </script>
 {% endblock %}
