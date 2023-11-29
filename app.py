@@ -27,6 +27,18 @@ def index():
 def create_account():
     return render_template('create_account.html')
 
+@app.get('/active_game')
+def active_game():
+    return render_template('active_game.html')
+
+@app.get('/create_game')
+def create_game():
+    return render_template('create_game.html')
+
+@app.get('/join_game')
+def join_game():
+    return render_template('join_game.html')
+
 @app.route('/forum', methods=('GET', 'POST'))
 def forum():
     posts = ForumPost.query.order_by(ForumPost.time_posted.desc()).all()
