@@ -3,10 +3,22 @@
 {% block body %}
 <style>
     .mb-3 {
-        color: #944394; /* Make the text color white */
+        color: #944394;
+    }
+    .container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    .form-label {
+        display: block;
+        text-align: left;
     }
     .form-control, .btn {
         margin-bottom: 15px;
+    }
+    .flashes {
+        color: #FF668A;
+        display: inline;
     }
 	.btn.btn-primary.btn-block {
 		background-color: #944394;
@@ -22,53 +34,83 @@
 
     <div class="container">
     <h1 style="margin: 30px 0;">Create New Account</h1>
-    <h5 class="mb-3">Welcome to FTB! Fill out the form below to create your new free account.</h5>
+    <h5 class="mb-3">Welcome to FTB! Fill out this form to create your new free account.</h5>
     <form action="/signup" method="post">
         
         <label for="first_name" class="form-label">First Name</label>
-        <input type="first_name" class="form-control" name="first_name" id="first_name">
+        <input type="first_name" class="form-control" name="first_name" id="first_name" required onkeyup="validate_required()" value="{{ saved_input.first_name }}">
 
         <label for="last_name" class="form-label">Last Name</label>
-        <input type="last_name" class="form-control" name="last_name" id="last_name">
+        <input type="last_name" class="form-control" name="last_name" id="last_name" required onkeyup="validate_required()" value="{{ saved_input.last_name }}">
 
-        <label for="email" class="form-label">Email Address</label>
-        <input type="email" class="form-control" name="email" id="email">
+        <label for="email" class="form-label">Email Address
+        {% with messages = get_flashed_messages()|filter_by_keyword('email') %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %} 
+        </label>
+        <input type="email" class="form-control" name="email" id="email" required onkeyup="validate_required()" value="{{ saved_input.email }}">
 
-        <label for="username" class="form-label">Username</label>
-        <input type="text" class="form-control" name="username" id="username">
+        <label for="username" class="form-label">Username 
+        {% with messages = get_flashed_messages()|filter_by_keyword('Username') %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        </label>
+        <input type="text" class="form-control" name="username" id="username" required onkeyup="validate_required()" value="{{ saved_input.username }}">
    
         <label for="password" class="form-label">Password</label>
-        <input type="password" class="form-control" name="password" id="password">
+        <input type="password" class="form-control" name="password" id="password" required onkeyup="validate_required()">
 
         <label for="password_confirm" class="form-label">Password Confirmation <span id="wrong_pass_alert"></span></label>
-        <input type="password" class="form-control" name="password_confirm" id="password_confirm" required onkeyup="validate_password()">
+        <input type="password" class="form-control" name="password_confirm" id="password_confirm" required onkeyup="validate_required()">
 
-        <button type="submit" class="btn btn-primary btn-block" id="create_acount">Create New Account</button>
+        <button type="submit" class="btn btn-primary btn-block" id="create_account">Create New Account</button>
     </form>
 
     <p>Already have an account?</p>
-    <form action="/login" method="post">
-        <button type="submit" class="btn btn-secondary">Login</button>
-    </form>
+    <a href="/signup" class="btn btn-secondary">Login to Adventure</a>
     </div>
 
     <script>
-        function validate_password() {
- 
-            const pass = document.getElementById('password').value;
-            const confirm_pass = document.getElementById('password_confirm').value;
-            if (pass != confirm_pass) {
+        function validate_required() { // Check if all fields are filled
+            
+            const first_name = document.getElementById('first_name').value;
+            const last_name = document.getElementById('last_name').value;
+            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const confirm_password = document.getElementById('password_confirm').value;
+            const all_filled = first_name && last_name && email && username && password && confirm_password;
+
+            if (!all_filled && (password != confirm_password)) {
+                document.getElementById('create_account').disabled = true;
+                document.getElementById('create_account').style.opacity = (0.4);
+            } else if (all_filled && (password != confirm_password)) {
                 document.getElementById('wrong_pass_alert').style.color = '#FF668A';
                 document.getElementById('wrong_pass_alert').innerHTML
                     = '☒ Use the same password!';
-                document.getElementById('create_acount').disabled = true;
-                document.getElementById('create_acount').style.opacity = (0.4);
+                document.getElementById('create_account').disabled = true;
+                document.getElementById('create_account').style.opacity = (0.4);
+            } else if (!all_filled && (password == confirm_password)) {
+                document.getElementById('create_account').disabled = true;
+                document.getElementById('create_account').style.opacity = (0.4);
             } else {
                 document.getElementById('wrong_pass_alert').style.color = '#7BB6F2';
                 document.getElementById('wrong_pass_alert').innerHTML =
                     '🗹 Passwords matched';
-                document.getElementById('create_acount').disabled = false;
-                document.getElementById('create_acount').style.opacity = (1);
+                document.getElementById('create_account').disabled = false;
+                document.getElementById('create_account').style.opacity = (1);
             }
         }
     </script>
