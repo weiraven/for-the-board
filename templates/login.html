@@ -1,0 +1,76 @@
+{% extends '_template.html' %}
+
+{% block body %}
+<style>
+    .mb-3 {
+        color: #944394;
+    }
+    .container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    .form-label {
+        display: block;
+        text-align: left;
+    }
+    .form-control, .btn {
+        margin-bottom: 15px;
+    }
+    .flashes {
+        color: #FF668A;
+        display: inline;
+    }
+	.btn.btn-primary.btn-block {
+		background-color: #944394;
+		border-color: #944394;
+		color: #ffffff;
+	}
+    .btn.btn-secondary {
+        background-color: #6A84DA;
+		border-color: #6A84DA;
+		color: #ffffff;
+    }
+</style>
+
+    <div class="container">
+    <h1 style="margin: 30px 0;">Login to Adventure</h1>
+    <form action="/login" method="post">
+        <label for="username" class="form-label">Username
+        </label>
+        <input type="text" class="form-control" name="username" id="username" required onkeyup="validate_required()">
+
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" name="password" id="password" required onkeyup="validate_required()">
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flashes">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+            </ul>
+        {% endif %}
+        {% endwith %}
+        <p></p> 
+        <button type="submit" class="btn btn-primary btn-block" id="login_submit">Submit</button>
+    </form>
+        <p>Don't have an account?</p>
+        <a href="/signup" class="btn btn-secondary">Sign Up Here</a>
+    </div>
+
+    <script>
+        function validate_required() { // Check if fields are filled
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                document.getElementById('login_submit').disabled = true;
+                document.getElementById('login_submit').style.opacity = (0.4);
+            } else {
+                document.getElementById('login_submit').disabled = false;
+                document.getElementById('login_submit').style.opacity = (1);
+            }
+        }
+    </script>
+{% endblock %}

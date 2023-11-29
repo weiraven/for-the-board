@@ -1,8 +1,9 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for
-from models import *
+from flask import Flask, flash, render_template, abort, request, redirect, url_for, session
+from models import db, User, ForumPost
 from dotenv import load_dotenv
 from flask_socketio import SocketIO
+from flask_bcrypt import Bcrypt
 from repositories.src.user_repository import player_repository_singleton
 
 load_dotenv()
@@ -13,7 +14,11 @@ app.config[
     'SQLALCHEMY_DATABASE_URI'
 ] = f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
 
+app.secret_key = os.getenv('APP_SECRET_KEY', 'potato')
+
 db.init_app(app)
+bcrypt = Bcrypt()
+bcrypt.init_app(app)
 
 socketio = SocketIO(app)
 
@@ -23,9 +28,83 @@ active_user_id = None
 def index():
     return render_template('index.html')
 
-@app.get('/create_account')
+@app.get('/signup')
+def signup():
+    saved_input = {}
+    return render_template('signup.html', saved_input=saved_input)
+
+@app.template_filter('filter_by_keyword')
+def filter_by_keyword(messages, keyword):
+    filtered_messages = []
+    for message in messages:
+        if keyword in message:
+            filtered_messages.append(message)
+    return filtered_messages
+
+@app.post('/signup')
 def create_account():
-    return render_template('create_account.html')
+    saved_input = {}
+
+    first_name = request.form.get('first_name')
+    last_name = request.form.get('last_name')
+    email = request.form.get('email')
+    username = request.form.get('username')
+    raw_password = request.form.get('password')
+
+    saved_input['first_name'] = first_name
+    saved_input['last_name'] = last_name
+    saved_input['email'] = email
+    saved_input['username'] = username
+
+    if not first_name or not last_name or not email or not username or not raw_password:
+        flash("* This is a required field.")
+        return render_template('signup.html', saved_input=saved_input)
+
+    email_exists = User.query.filter_by(email=email).first()
+    if email_exists:
+        flash("☒ This email already exists. Please login.")
+        return render_template('signup.html', saved_input=saved_input)
+
+    username_exists = User.query.filter_by(username=username).first()
+    if username_exists:
+        flash("☒ Username is taken. Please choose another.")
+        return render_template('signup.html', saved_input=saved_input)
+    
+    hashed_password = bcrypt.generate_password_hash(raw_password, 16).decode()
+    new_user = User(first_name, last_name, email, username, hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
+    return redirect('/')
+
+@app.get('/login')
+def login():
+    return render_template('login.html')
+
+@app.post('/login')
+def login_auth():
+    username = request.form.get('username')
+    raw_password = request.form.get('password')
+    if not username or not raw_password:
+        flash("* This is a required field.")
+        return render_template('login.html')
+    existing_user = User.query.filter_by(username=username).first()
+    if not existing_user:
+        flash("☒ Invalid username or password. Please try again.")
+        return render_template('login.html')
+    if not bcrypt.check_password_hash(existing_user.password, raw_password):
+        flash("☒ Invalid username or password. Please try again.")
+        return render_template('login.html')
+    session['username'] = username
+    return redirect('/')
+
+@app.post('/logout')
+def logout():
+    del session['username']
+    return redirect('/')
+
+@app.get('/profile')
+def profile():
+    return render_template('profile.html')
 
 @app.get('/active_game')
 def active_game():
@@ -69,10 +148,6 @@ def create_post():
 
         return redirect(url_for('forum'))  # redirect back to GuildBoard main page
     return render_template('create_post.html')
-
-@app.get('/signup')
-def signup():
-    return render_template('signup.html')
 
 @app.post('/profile')
 def new_user():

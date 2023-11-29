@@ -17,6 +17,9 @@
 		background-color: #000419;
 		color: #ffffff;
 	}
+	.form-control {
+        margin-bottom: 15px;
+    }
 	.btn.btn-primary.btn-block {
 		background-color: #944394;
 		border-color: #944394;
@@ -26,6 +29,11 @@
 		background-color: #a2d0f7;
 		border-color: #a2d0f7;
 	}
+	.btn.btn-secondary {
+        background-color: #6A84DA;
+		border-color: #6A84DA;
+		color: #ffffff;
+    }
 </style>
 
 <div class="container">
@@ -45,7 +53,7 @@
 					</strong>
 					ftb/MainBoard •
 					<span class="text" style="font-size: 10pt; color: #ffffff">
-						Posted by u/{{ post.get_author_name() }} at {{ post.get_time_posted() }}</span
+						Posted by u/{{ post.author.username }} at {{ post.get_time_posted() }}</span
 					>
 				</div>
 				<div class="card-body">
@@ -94,7 +102,7 @@
 								class="form-control"
 							/>
 
-							<button type="submit" class="btn btn-primary">Search</button>
+							<button type="submit" class="btn btn-secondary">Search</button>
 						</div>
 					</form>
 				</div>
@@ -111,7 +119,7 @@
 								class="form-control"
 							/>
 
-							<button type="submit" class="btn btn-primary">Search</button>
+							<button type="submit" class="btn btn-secondary">Search</button>
 						</div>
 					</form>
 				</div>

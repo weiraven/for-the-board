@@ -1,8 +1,17 @@
 {% extends '_template.html' %}
 
 {% block body %}
+<style>
+	.btn.btn-primary.btn-block {
+		background-color: #944394;
+		border-color: #944394;
+		color: #ffffff;
+	}
+</style>
+
 <div class="container">
     <h1 style="margin: 30px 0;">A new adventure awaits...</h1>
     <p>Connect with like-minded people, schedule time for gatherings, plan and organize your loot, and initiate your gaming session all in one place.</p>
+    <a href="/signup" class="btn btn-primary btn-block">Your Journey Begins Here</a>
 </div>
 {% endblock %}
