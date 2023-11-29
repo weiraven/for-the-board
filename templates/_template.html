@@ -42,6 +42,19 @@
           align-items: center;
           font-size: 1.3em;
         }
+        .navbar-nav.ms-auto {
+          padding: 12px;
+        }
+        .dropdown-menu.dropdown-menu-end {
+          background-color:#202428;
+        }
+        .dropdown-item {
+          color: #FFFFFF;
+        }
+        .dropdown-item:hover {
+          background-color: #6A84DA;
+        }
+
     </style>
 </head>
 <body>
@@ -68,7 +81,26 @@
         <li class="nav-item">
           <a class="nav-link disabled" aria-disabled="true">Coming Soon</a>
         </li>
-      </ul>
+          <ul class="navbar-nav ms-auto">
+            {% if session.get('username') %}
+            <div class="dropdown">
+              <span class="nav-link dropdown-toggle" id="usernameDropdown" data-bs-toggle="dropdown" aria-expanded="false">{{ session['username'] }}</span>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <form action="/logout" method="post" aria-labelledby="usernameDropdown">
+                  <button class="dropdown-item" type="submit">Logout</button>
+                  </form>
+                </li>
+              </ul>
+              </div>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="/login">Login</a>
+            </li>
+            {% endif %}
+          </ul>
+        </ul>
         {% block head %} {% endblock %}
         {% block body %} {% endblock %}
 
