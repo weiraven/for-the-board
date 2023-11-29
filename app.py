@@ -28,17 +28,24 @@ active_user_id = None
 def index():
     return render_template('index.html')
 
-@app.post('/signup')
+@app.get('/signup')
 def signup():
+    return render_template('signup.html')
+
+@app.post('/signup')
+def create_account():
+    first_name = request.form.get('first_name')
+    last_name = request.form.get('last_name')
+    email = request.form.get('email')
     username = request.form.get('username')
     raw_password = request.form.get('password')
-    if not username or not raw_password:
+    if not first_name or not last_name or not email or not username or not raw_password:
         abort(400)
     existing_user = User.query.filter_by(username=username).first() # deal with duplicate username attempt
     if existing_user: 
         abort(400)
     hashed_password = bcrypt.generate_password_hash(raw_password, 16).decode()
-    new_user = User(username, hashed_password)
+    new_user = User(first_name, last_name, email, username, hashed_password)
     db.session.add(new_user)
     db.session.commit()
     return redirect('/')
@@ -61,6 +68,10 @@ def login():
 def logout():
     del session['username']
     return redirect('/')
+
+@app.get('/profile')
+def profile():
+    return render_template('profile.html')
 
 @app.route('/forum', methods=('GET', 'POST'))
 def forum():
