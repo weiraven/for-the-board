@@ -62,7 +62,6 @@ class ForumPost(db.Model):
         self.content = content
         self.author_id = author_id 
         self.flairs = flairs
-        # should be replaced by author_id which would populate automatically from auth token
         self.parent_post_id = parent_post_id
 
     # forumpost getters
