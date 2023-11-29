@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, abort, request, redirect, url_for, session
+from flask import Flask, flash, render_template, abort, request, redirect, url_for, session
 from models import db, User, ForumPost
 from dotenv import load_dotenv
 from flask_socketio import SocketIO
@@ -30,28 +30,58 @@ def index():
 
 @app.get('/signup')
 def signup():
-    return render_template('signup.html')
+    saved_input = {}
+    return render_template('signup.html', saved_input=saved_input)
+
+@app.template_filter('filter_by_keyword')
+def filter_by_keyword(messages, keyword):
+    filtered_messages = []
+    for message in messages:
+        if keyword in message:
+            filtered_messages.append(message)
+    return filtered_messages
 
 @app.post('/signup')
 def create_account():
+    saved_input = {}
+
     first_name = request.form.get('first_name')
     last_name = request.form.get('last_name')
     email = request.form.get('email')
     username = request.form.get('username')
     raw_password = request.form.get('password')
+
+    saved_input['first_name'] = first_name
+    saved_input['last_name'] = last_name
+    saved_input['email'] = email
+    saved_input['username'] = username
+
     if not first_name or not last_name or not email or not username or not raw_password:
-        abort(400)
-    existing_user = User.query.filter_by(username=username).first() # deal with duplicate username attempt
-    if existing_user: 
-        abort(400)
+        flash("* This is a required field.")
+        return render_template('signup.html', saved_input=saved_input)
+
+    email_exists = User.query.filter_by(email=email).first()
+    if email_exists:
+        flash("☒ This email already exists. Please login.")
+        return render_template('signup.html', saved_input=saved_input)
+
+    username_exists = User.query.filter_by(username=username).first()
+    if username_exists:
+        flash("☒ Username is taken. Please choose another.")
+        return render_template('signup.html', saved_input=saved_input)
+    
     hashed_password = bcrypt.generate_password_hash(raw_password, 16).decode()
     new_user = User(first_name, last_name, email, username, hashed_password)
     db.session.add(new_user)
     db.session.commit()
     return redirect('/')
 
-@app.post('/login')
+@app.get('/login')
 def login():
+    return render_template('login.html')
+
+@app.post('/login')
+def login_auth():
     username = request.form.get('username')
     raw_password = request.form.get('password')
     if not username or not raw_password:
