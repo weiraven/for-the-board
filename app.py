@@ -61,7 +61,7 @@ def signup():
     return render_template('signup.html')
 
 @app.post('/profile')
-def new_user():
+def new_player():
     return render_template('profile.html')
 
 @app.get('/chatsession')
