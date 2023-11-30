@@ -22,8 +22,6 @@ bcrypt.init_app(app)
 
 socketio = SocketIO(app)
 
-active_user_id = None
-
 @app.route('/', methods=('GET', 'POST'))
 def index():
     return render_template('index.html')
@@ -155,13 +153,11 @@ def new_user():
 
 @app.get('/chatsession')
 def chat():
-    users = player_repository_singleton.get_all_users()
-    return render_template('chat_session.html', users=users)
+    return render_template('chat_session.html', user=session['username'])
 
 @socketio.on('set_active_user')
 def set_active_user(user_id):
-    global active_user_id
-    active_user_id = user_id
+    session['active_user_id'] = user_id
     socketio.emit('active_user_changed', user_id)
 
 @socketio.on('connected')
@@ -173,7 +169,8 @@ def handle_connect(json):
 
 @socketio.on('message')
 def handle_message(json):
-    user = player_repository_singleton.get_user_by_id(active_user_id)
+    user_id = session.get('active_user_id')
+    user = player_repository_singleton.get_user_by_id(user_id)
     if user:
         socketio.emit('message', {'username': user.username, 'message': json['message']})
         
