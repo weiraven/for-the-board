@@ -1,6 +1,6 @@
-from models import User
+from models import Player
 
 # Resets the database for testing
 def reset_db():
-    User.query.delete()
+    Player.query.delete()
     # We can add sample users as well

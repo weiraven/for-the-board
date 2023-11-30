@@ -38,7 +38,7 @@
         margin-top: 10px;
     }
 
-    .list-group-item, .form-select, .btn-primary, .form-control,.form-control:focus,
+    .list-group-item, .form-select, .btn-primary, .form-control, .form-control:focus,
     .form-select:focus {
         background-color: #2E3142;
         color: #ffffff;
@@ -58,17 +58,15 @@
 
     .left-box {
         position: fixed;
-        top: 70px; /* Adjust the top position based on your navigation bar height */
+        top: 70px; 
         left: 0;
-        height: calc(100% - 70px); /* Adjust the height to fill the remaining space */
-        width: 68%; /* Adjust the width as needed */
+        height: calc(100% - 70px); 
+        width: 68%; 
         background: black;
         padding: 25px;
         box-sizing: border-box;
-        z-index: 1; /* Ensure it appears above other elements */
+        z-index: 1; 
     }
-
-
 </style>
 {% endblock %}
 
@@ -84,13 +82,6 @@
 </div>
 
 <div class="bottom-controls">
-    <label for="username">Choose a User:</label>
-    <select id="userSelect" class="form-select">
-        {% for User in users %}
-            <option value="{{ User.username }}">{{ User.username }}</option>
-        {% endfor %}
-    </select>
-
     <label for="message">Enter a Message:</label>
     <input id="message" class="form-control"/>
     <button id="send" class="btn btn-primary mt-2">Send</button>
@@ -105,8 +96,7 @@
     var socket = io.connect('http://' + document.domain + ':' + location.port);
 
     function setActiveUser() {
-        var userSelect = document.getElementById('userSelect');
-        var selectedUsername = userSelect.options[userSelect.selectedIndex].value;
+        var selectedUsername = '{{ session["username"] }}';
         console.log('Selected Username:', selectedUsername);
         socket.emit('connected', { username: selectedUsername });
     }
@@ -134,7 +124,7 @@
         var messages = document.getElementById('messages');
         var message = document.createElement('li');
         message.className = 'list-group-item';
-        message.textContent = data.username + ": " + data.message;
+        message.textContent = "["+ data.username + "]" + ": " + data.message;
         messages.appendChild(message);
         scrollChatToBottom();
     });
