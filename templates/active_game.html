@@ -3,146 +3,146 @@
 {% block body %} 
 
 <style>
-    .navbar {
-      background-color: #272733;
-    }
+  .navbar.active-game {
+    background-color: #272733;
+  }
 
-    .navbar a {
-      color: #ffffff !important;
-    }
+  .navbar.active-game a {
+    color: #ffffff !important;
+  }
 
-    .navbar a:hover {
-      color: #800080 !important;
-    }
+  .navbar.active-game a:hover {
+    color: #800080 !important;
+  }
 
-    .navbar a.active {
-      color: #800080 !important; 
-    }
+  .navbar.active-game a.active {
+    color: #800080 !important; 
+  }
 
-    .container-title {
-      background-color: #262D34;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      position: relative;
-      text-align: center;
-    }
+  .container-title {
+    background-color: #262D34;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    position: relative;
+    text-align: center;
+  }
 
-    .title-line {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      height: 2px;
-      background-color: #ffffff;
-    }
+  .title-line {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 2px;
+    background-color: #ffffff;
+  }
 
-    .card {
-      border: none;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      background-color: #343a40;
-      color: #ffffff;
-    }
+  .card {
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #343a40;
+    color: #ffffff;
+  }
 
-    .avatar-container {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-      margin-left: 13px; 
-    }
+  .avatar-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    margin-left: 13px; 
+  }
 
-    .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      overflow: hidden;
-      display: flex;
-      align-items: normal;
-      justify-content: center;
-      background-color: #007bff; 
-    }
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: normal;
+    justify-content: center;
+    background-color: #007bff; 
+  }
 
-    .avatar span {
-      font-size: 1.2rem;
-    }
+  .avatar span {
+    font-size: 1.2rem;
+  }
 
-    .submit-button {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-    }
+  .submit-button {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+  }
 </style>
 
 
-  <!-- Container with Title -->
-  <div class="container-title">
-    <h1>My Active Game Sessions</h1>
-    <div class="title-line"></div>
+<!-- Container with Title -->
+<div class="container-title">
+  <h1>My Active Game Sessions</h1>
+  <div class="title-line"></div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar active-game navbar-expand-lg navbar-light">
+  <div class="container">
+    <ul class="nav" style = "background-color: #272733;">
+      <li class="nav-item">
+        <a class="nav-link active" aria-current="page" href="active_game">My Game Sessions</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="create_game">Create A Game</a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link" href="join_game">Join A Game</a>
+        </li>
+    </ul>
+
+    <!-- Search Box on the Right -->
+    <form class="d-flex">
+      <input class="form-control me-2" type="search" placeholder="Search For Your Games" aria-label="Search">
+      <button class="btn btn-outline-light" type="submit">Search</button>
+    </form>
   </div>
+</nav>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container">
-      <ul class="nav" style = "background-color: #272733;">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="active_game">My Game Sessions</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="create_game">Create A Game</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="join_game">Join A Game</a>
-          </li>
-      </ul>
-
-      <!-- Search Box on the Right -->
-      <form class="d-flex">
-        <input class="form-control me-2" type="search" placeholder="Search For Your Games" aria-label="Search">
-        <button class="btn btn-outline-light" type="submit">Search</button>
-      </form>
-    </div>
-  </nav>
-
-  <!-- Horizontal Card with Padding -->
-  <div class="container mt-3">
-    <div class="card mx-auto">
-      <div class="row g-0">
-        <div class="col-md-4">
-          <img src="/static/images/DDM.jpg" class="img-fluid rounded-start" alt="Dungeon Dice Monsters">
+<!-- Horizontal Card with Padding -->
+<div class="container mt-3">
+  <div class="card mx-auto">
+    <div class="row g-0">
+      <div class="col-md-4">
+        <img src="/static/images/DDM.jpg" class="img-fluid rounded-start" alt="Dungeon Dice Monsters">
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title">Dungeon Dice Monster</h5>
+          <p class="card-text">Yu-Gi-Oh! Dungeon Dice Monsters is a dice-driven tactics video game based on an original board game featured in the Yu-Gi-Oh! storyline. It was developed and published by Konami, and released on March</p>
+          <p class="card-text"><small>Last updated 3 mins ago</small></p>
         </div>
-        <div class="col-md-8">
-          <div class="card-body">
-            <h5 class="card-title">Dungeon Dice Monster</h5>
-            <p class="card-text">Yu-Gi-Oh! Dungeon Dice Monsters is a dice-driven tactics video game based on an original board game featured in the Yu-Gi-Oh! storyline. It was developed and published by Konami, and released on March</p>
-            <p class="card-text"><small>Last updated 3 mins ago</small></p>
-          </div>
-          
-          <!-- Avatars Inside the Card -->
-          <div class="avatar-container" >
-            <div class="avatar bg-primary text-light d-flex align-items-center justify-content-center">
-              <span>PC</span>
-            </div>
-
-            <div class="avatar bg-secondary text-light d-flex align-items-center justify-content-center">
-              <span>BH</span>
-            </div>
-
-            <div class="avatar bg-info text-light d-flex align-items-center justify-content-center">
-              <span>DN</span>
-            </div>
-
-            <div class="avatar bg-danger text-light d-flex align-items-center justify-content-center"
-              <span>RW</span>
-            </div>
+        
+        <!-- Avatars Inside the Card -->
+        <div class="avatar-container" >
+          <div class="avatar bg-primary text-light d-flex align-items-center justify-content-center">
+            <span>PC</span>
           </div>
 
-          <!-- Submit Button -->
-          <button type="submit" class="btn btn-primary submit-button">Play Board</button>
+          <div class="avatar bg-secondary text-light d-flex align-items-center justify-content-center">
+            <span>BH</span>
+          </div>
+
+          <div class="avatar bg-info text-light d-flex align-items-center justify-content-center">
+            <span>DN</span>
+          </div>
+
+          <div class="avatar bg-danger text-light d-flex align-items-center justify-content-center">
+            <span>RW</span>
+          </div>
         </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary submit-button">Play Board</button>
       </div>
     </div>
   </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
