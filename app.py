@@ -154,7 +154,7 @@ def create_post():
     return render_template('create_post.html')
 
 @app.post('/profile')
-def new_user():
+def new_player():
     return render_template('profile.html')
 
 @app.get('/chatsession')

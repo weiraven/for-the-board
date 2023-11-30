@@ -1,4 +1,29 @@
 {% extends '_template.html' %}
 {% block body %}
-
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-4 mb-5 mb-lg-0">
+            <div class="card border-0 shadow">
+                <div class="card-body p-1-9 p-xl-5">
+                    <div class="mb-4">
+                        <h3 class="h4 mb-0">{{% username %}}</h3>
+                    </div>
+                    <ul class="mb-4">
+                        <h4 class="h5 mb-0">{{% avatar %}}</h4>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="ps-lg-1-6 ps-xl-5">
+                <div class="mb-5">
+                    <div class="text-start mb-1-6">
+                        <h2 class="h1 mb-0 text-primary">About Me</h2>
+                    </div>
+                    <p>Bio Text</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
