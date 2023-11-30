@@ -4,14 +4,13 @@
 /* Color Variables */
 :root{
     --primary-color: #944394;
+    --secondary-color: #A2D0F7;
     --background-color: #272733;
     --background-dark: #000419;
-
 }
 
 /* ===== ===== ===== ===== ===== */
 /* Navbar */
-
 body {
     background-color: var(--background-color);
     color: white;
@@ -29,13 +28,10 @@ body {
     color: var(--primary-color);
 }
 .nav-link.active {
-    color: var(--primary-color);
+    color: var(--primary-color)!important;
 }
 .nav-link.disabled {
     color: #A9A9A9;
-}
-.nav-item:not(:first-child) {
-    margin-left: 20px;
 }
 .nav-item {
     display: flex;
@@ -47,80 +43,51 @@ body {
     align-items: center;
     font-size: 1.3em;
 }
-
-/* ===== ===== ===== ===== ===== */
-/* Forum Page */
-
-.card-header{
-    background-color: var(--background-dark);
-    color: #FFFFFF;
+.navbar-brand{
+    color: white;
+    margin-left: 5px;
+    font-weight: bold;
 }
-.card {
-    margin-top: 20px;
-    background-color: var(--background-color);
-    color: #FFFFFF;
+.navbar-brand:hover{
+    color: var(--primary-color);
 }
-.card-footer{
-    background-color: var(--background-dark);
-    color: #FFFFFF;
+.navbar-toggle{
+    color: var(--primary-color);
 }
-.btn.btn-primary.btn-block {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    color: #FFFFFF;
-}
-
-/* ===== ===== ===== ===== ===== */
-/* Chat Session */
-
-.chatbox {
-    position: fixed;
-    bottom: 20vh; 
-    right: 10px;
-    width: 30%;
-    background: #262D34;
-    box-shadow: #000000;
-    height: calc(100% - (20vh + 70px));
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    border-radius: 25px;
-}
-
-.card {
-    background-color: #262D34;
-    color: #fff;
-}
-
-.message-box {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    justify-content: flex-end;
-}
-
-.message-container {
-    background-color: #262D34;
-    padding: 10px;
+.navbar-toggler-icon{
+    height: 35px;
+    width: 35px;
+    background-color: white;
+    border: 2px solid var(--primary-color);
     border-radius: 10px;
-    margin-top: 10px;
 }
 
-.list-group-item, .form-select, .btn-primary, .form-control,.form-control:focus,
-.form-select:focus {
-    background-color: #2E3142;
-    color: #ffffff;
-    border-color: #2E3142;
-}
-
-.bottom-controls {
+/* ===== ===== ===== ===== ===== */
+/* Header */
+.header{
+    background-color: var(--background-dark);
     position: fixed;
-    bottom: 20px; 
-    right: 10px;
-    width: 30%;
-    background: #262D34;
-    box-shadow: #000000;
-    padding: 20px;
-    border-radius: 25px;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+/* ===== ===== ===== ===== ===== */
+/* Main padding for Header */
+main{
+    padding-top: 70px;
+    padding-bottom: 50px;
+}
+
+/* ===== ===== ===== ===== ===== */
+/* Footer */
+.footer{
+    background-color: var(--background-dark);
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+.footer-text{
+    color: white;
+    font-size: small;
 }
