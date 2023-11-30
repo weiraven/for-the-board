@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>ForTheBoard: Initiate, recruit, and organize your next adventure all in one place!</title>
-    <style>
+    <!-- <style>
         body {
           background-color: #272733;
           color: white;
@@ -16,7 +16,7 @@
           color: #944394; 
         }
         .nav {
-          padding: 10px;
+          padding-bottom: 10px;
           background-color: #000419;
           color: #FFFFFF;
         }
@@ -56,7 +56,7 @@
           background-color: #6A84DA;
         }
 
-    </style>
+    </style> -->
 </head>
 
 <body>
@@ -66,7 +66,7 @@
         <img src="/static/images/ftb_icon_transparentbg.png" alt="Logo" style="height: 50px;">
         <a class="navbar-brand" href="/">ForTheBoard</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
+          <span class="navbar-toggler-icon"></span>
         </button>
         
         <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
@@ -90,13 +90,46 @@
               <a class="nav-link disabled" aria-disabled="true">Coming Soon</a>
             </li>
           </ul>
+
+          <!-- Login/Signup -->
+          <ul class="navbar-nav ms-auto">
+            <div class="navbar-username">
+              {% if session.get('username') %}
+            </div>
+            
+            <div class="dropdown">
+              <span class="nav-link dropdown-toggle" id="usernameDropdown" data-bs-toggle="dropdown" aria-expanded="false">{{ session['username'] }}</span>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <form action="/logout" method="post" aria-labelledby="usernameDropdown">
+                  <button class="dropdown-item" type="submit">Logout</button>
+                  </form>
+                </li>
+              </ul>
+              </div>
+            </li>
+            {% else %}
+            <div class="nav-signup-login">
+              <li class="nav-item">
+                <a class="nav-link" href="/signup">Sign Up&nbsp;&nbsp;</a>
+              </li>
+              <a class="nav-divider">|</a>
+              <li class="nav-item">
+                <a class="nav-link" href="/login">&nbsp;&nbsp;Login</a>
+              </li>
+            </div>
+            
+            {% endif %}
+          </ul>
         </div>
 
       </div>
     </nav>
+  
+  
 
-  <!-- 
-    <ul class="nav">
+
+    <!-- <ul class="nav">
         <li class="nav-item">
           <img src="/static/images/ftb_icon_transparentbg.png" alt="Logo" style="height: 50px;">
           <span style="color: #FFFFFF; margin-left: 5px;">ForTheBoard</span>
@@ -134,14 +167,20 @@
             </li>
             {% else %}
             <li class="nav-item">
-              <a class="nav-link" href="/signup">Sign Up&nbsp;&nbsp;</a> |
+              <a class="nav-link" href="/signup">Sign Up&nbsp;&nbsp;</a>
+            </li>
+            <p class="nav-divider">|</p>
+            <li class="nav-item">
               <a class="nav-link" href="/login">&nbsp;&nbsp;Login</a>
             </li>
             {% endif %}
           </ul>
-        </ul>
-        {% block head %} {% endblock %}
-        {% block body %} {% endblock %}
+        </ul> -->
+  </header>
+
+  <main>
+    {% block head %} {% endblock %}
+    {% block body %} {% endblock %}
 
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
