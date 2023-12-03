@@ -126,6 +126,10 @@ def join_game():
 def forum():
     posts = ForumPost.query.order_by(ForumPost.time_posted.desc()).all()
     # display all posts in most-recent first order
+    for post in posts:
+        if not post.category:
+            post.category = "None"
+        post.category = ''.join(word.capitalize() for word in post.category.split('-'))
     return render_template('forum.html', posts=posts)
 
 @app.get('/forum/<int:post_id>')
@@ -144,9 +148,9 @@ def create_post():
         content = request.form.get('content')
         author_name = request.form.get('author_name')
         flairs = request.form.get('flairs', '')
-        print("Received flairs:", flairs)
+        category = request.form.get('category')
         # Will eventually change author_name to author_id once we have login auth setup!
-        post = ForumPost(title=title, content=content, author_name=author_name,flairs=flairs, parent_post_id=None)
+        post = ForumPost(title=title, content=content, author_name=author_name,flairs=flairs, parent_post_id=None, category=category)
         db.session.add(post)
         db.session.commit()
 
@@ -192,6 +196,16 @@ def search_posts():
     
     filtered_posts = query.all()
     return render_template('forum.html', posts=filtered_posts)
+
+@app.get('/forum/<category>')
+def subforum(category):
+    posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%')).all()
+    category = ''.join(word.capitalize() for word in category.split('-'))
+    
+    for post in posts:
+        post.category = ''.join(word.capitalize() for word in post.category.split('-'))
+        
+    return render_template('subforum.html', category = category, posts=posts)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
