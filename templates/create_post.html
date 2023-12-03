@@ -46,7 +46,13 @@
 	.list-group-item {
         background-color: #202428;
         color: #FFFFFF;
-		padding-left: 0;	
+		padding-left: 0;
+        	
+	}
+	.selectform {
+        background-color: #202428;
+        color: #FFFFFF;
+        padding-left: 13px;
 	}
     .badge-close-icon {
         cursor: pointer;
@@ -69,6 +75,16 @@
                         <div class="form-group">
                             <label for="postTitle">Heading</label>
                             <input type="text" class="form-control" id="postTitle" name="title" placeholder="What do you seek?" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="forumCategory">Forum</label>
+                            <select name="category" class="selectform form-select" aria-label="Default select">
+                                <option selected value="community-square">Community Square</option>
+                                <option value="looking-for-group">Looking For Group</option>
+                                <option value="creative-content">Creative Content</option>
+                                <option value="bug-report-technical">Bug Report & Technical Issues</option>
+                                <option value="gamemaster-corner">Gamemaster Corner</option>
+                              </select>
                         </div>
                         <div class="form-group">
                             <label for="flair-container">Flair</label>
