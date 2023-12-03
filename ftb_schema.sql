@@ -47,3 +47,6 @@ VALUES
     ('How to pick up elves in a dungeon', 'Step 1: Just roll a nat 20 on your rizz check 4head lol', 4)
 ;
 
+--Added new col
+ALTER TABLE forumpost
+ADD COLUMN category VARCHAR(255);
