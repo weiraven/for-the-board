@@ -6,7 +6,6 @@ from flask_socketio import SocketIO
 from flask_bcrypt import Bcrypt
 from repositories.src.user_repository import player_repository_singleton
 
-
 load_dotenv()
 app = Flask(__name__)
 
@@ -187,28 +186,15 @@ def handle_message(json):
         
 @app.get('/search_post')
 def search_posts():
-    query_category = request.args.get('query-category', '')
     query_flair = request.args.get('query-flair', '')
     query_title = request.args.get('query-title', '')
-    subforum = False
-    
-    query = ForumPost.query
-    
-    if query_category:
-        query = query.filter(ForumPost.category == query_category)
-        subforum = True
     
     if query_flair:
-        query = query.filter((ForumPost.flairs.ilike(f'%{query_flair}%')))
-
+        query = ForumPost.query.filter(ForumPost.flairs.ilike(f'%{query_flair}%'))
     if query_title:
-        query = query.filter((ForumPost.title.ilike(f'%{query_title}%')))
-
-    filtered_posts = query.all()
+        query = ForumPost.query.filter(ForumPost.title.ilike(f'%{query_title}%'))
     
-    if subforum == True:
-       return render_template('subforum.html', category=query_category, posts=filtered_posts)
-
+    filtered_posts = query.all()
     return render_template('forum.html', posts=filtered_posts)
 
 @app.get('/forum/<category>')
