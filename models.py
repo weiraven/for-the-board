@@ -55,15 +55,17 @@ class ForumPost(db.Model):
     upvotes = db.Column(db.Integer, default=0)
     flairs = db.Column(db.String(255))
     parent_post_id = db.Column(db.Integer, db.ForeignKey('forumpost.post_id'))
+    category = db.Column(db.String(255))
 
     # forumpost constructor
-    def __init__(self, title:str, content:str, author_id:int, flairs='', parent_post_id=None) -> None:
+    def __init__(self, title:str, content:str, author_id:int, flairs='', parent_post_id=None,category='') -> None:
         self.title = title
         self.content = content
         self.author_id = author_id
         self.upvotes = 0
         self.flairs = flairs
         self.parent_post_id = parent_post_id
+        self.category = category
 
     # forumpost getters
     def get_post_id(self) -> int:
@@ -90,6 +92,8 @@ class ForumPost(db.Model):
     
     def get_flairs(self):
         return self.flairs
+    def get_category(self):
+        return self.category
 
     # forumpost setters
     def set_title(self, title:str):
@@ -116,3 +120,6 @@ class ForumPost(db.Model):
         if self.upvotes > 0:
             self.upvotes -= 1
             db.session.commit()
+        
+    def set_category(self, category:str):
+        self.category = category

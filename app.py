@@ -136,6 +136,10 @@ def join_game():
 def forum():
     posts = ForumPost.query.order_by(ForumPost.time_posted.desc()).all()
     # display all posts in most-recent first order
+    for post in posts:
+        if not post.category:
+            post.category = "None"
+        post.category = ''.join(word.capitalize() for word in post.category.split('-'))
     return render_template('forum.html', posts=posts)
 
 @app.get('/forum/<int:post_id>')
@@ -159,9 +163,9 @@ def create_post():
     title = request.form.get('title')
     content = request.form.get('content')
     flairs = request.form.get('flairs', '')
+    category = request.form.get('category')
     print('Received flairs:', flairs)
-    # Will eventually change author_name to author_id once we have login auth setup!
-    post = ForumPost(title=title, content=content, author_id=user.user_id, flairs=flairs, parent_post_id=None)
+    post = ForumPost(title=title, content=content, author_id=user.user_id, flairs=flairs, parent_post_id=None, category=category)
     db.session.add(post)
     db.session.commit()
 
@@ -232,16 +236,39 @@ def handle_message(json):
         
 @app.get('/search_post')
 def search_posts():
+    query_category = request.args.get('query-category', '')
     query_flair = request.args.get('query-flair', '')
     query_title = request.args.get('query-title', '')
+    subforum = False
+    
+    query = ForumPost.query
+    
+    if query_category:
+        query = query.filter(ForumPost.category == query_category)
+        subforum = True
     
     if query_flair:
-        query = ForumPost.query.filter(ForumPost.flairs.ilike(f'%{query_flair}%'))
+        query = query.filter((ForumPost.flairs.ilike(f'%{query_flair}%')))
+
     if query_title:
-        query = ForumPost.query.filter(ForumPost.title.ilike(f'%{query_title}%'))
-    
+        query = query.filter((ForumPost.title.ilike(f'%{query_title}%')))
+
     filtered_posts = query.all()
+    
+    if subforum == True:
+       return render_template('subforum.html', category=query_category, posts=filtered_posts)
+
     return render_template('forum.html', posts=filtered_posts)
+
+@app.get('/forum/<category>')
+def subforum(category):
+    posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%')).all()
+    category = ''.join(word.capitalize() for word in category.split('-'))
+    
+    for post in posts:
+        post.category = ''.join(word.capitalize() for word in post.category.split('-'))
+        
+    return render_template('subforum.html', category = category, posts=posts)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
