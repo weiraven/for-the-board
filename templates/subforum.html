@@ -61,6 +61,40 @@
 					</div>
 				</div>
 			</div>
+			<div class="card">
+				<div class="card-body">
+					<form class="search_post" action="{{ url_for('search_posts') }}" method="get">
+						<div class="mb-3">
+							<label for="search" name="query-flair" class="form-label"></label>
+							<input
+								type="text"
+								name="query-flair"
+								placeholder="Search by flair..."
+								class="form-control"
+							/>
+							<input type="hidden" name="query-category-flair" class="query-category" value="" />
+							<button type="submit" class="btn btn-secondary">Search</button>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-body">
+					<form class="search_post" action="{{ url_for('search_posts') }}" method="get">
+						<div class="mb-3">
+							<label for="search" name="query-title" class="form-label"></label>
+							<input
+								type="text"
+								name="query-title"
+								placeholder="Search by title..."
+								class="form-control"
+							/>
+							<input type="hidden" name="query-category-title" class="query-category" value="" />
+							<button type="submit" class="btn btn-secondary">Search</button>
+						</div>
+					</form>
+				</div>
+			</div>
 		</div>
 		<div class="col-6">
 			{% for post in posts %}
@@ -114,41 +148,15 @@
 					<a href="/create_post" class="btn btn-primary btn-block">Create Post</a>
 				</div>
 			</div>
-			<div class="card">
-				<div class="card-body">
-					<form action="{{ url_for('search_posts' )}}" method="get">
-						<div class="mb-3">
-							<label for="search" name="query-flair" class="form-label"></label>
-							<input
-								type="text"
-								name="query-flair"
-								placeholder="Search by flair..."
-								class="form-control"
-							/>
-
-							<button type="submit" class="btn btn-secondary">Search</button>
-						</div>
-					</form>
-				</div>
-			</div>
-			<div class="card">
-				<div class="card-body">
-					<form action="{{ url_for('search_posts' )}}" method="get">
-						<div class="mb-3">
-							<label for="search" name="query-title" class="form-label"></label>
-							<input
-								type="text"
-								name="query-title"
-								placeholder="Search by title..."
-								class="form-control"
-							/>
-
-							<button type="submit" class="btn btn-secondary">Search</button>
-						</div>
-					</form>
-				</div>
-			</div>
 		</div>
 	</div>
 </div>
+
+<script defer>
+	document.querySelectorAll('.search_post').forEach((form) => {
+		const category = window.location.pathname.split('/')[2];
+		document.querySelector('.query-category').value = category;
+		console.log(category);
+	});
+</script>
 {% endblock %}
