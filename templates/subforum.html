@@ -16,6 +16,7 @@
 	.card-footer {
 		background-color: #000419;
 		color: #ffffff;
+		display: flex;
 	}
 	.form-control {
 		margin-bottom: 15px;
@@ -28,6 +29,17 @@
 	.btn.btn-light.btn-sm {
 		background-color: #a2d0f7;
 		border-color: #a2d0f7;
+		margin-right: 5px;
+	}
+	.btn.btn-light.btn-sm.upvote-button {
+		background-color: #944394;
+		border-color: #944394;
+		margin-right: 5px;
+	}
+	.btn.btn-light.btn-sm.downvote-button {
+		background-color: #944394;
+		border-color: #944394;
+		margin-left: 5px;
 	}
 	.btn.btn-secondary {
 		background-color: #6a84da;
@@ -116,7 +128,6 @@
 				</div>
 				<div class="card-body">
 					<h5 class="card-title">{{ post.get_title() }}</h5>
-					<!-- Display flairs -->
 					{% if post.get_flairs() %}
 					<div class="post-flairs">
 						{% for flair in post.get_flairs().split(',') %}
