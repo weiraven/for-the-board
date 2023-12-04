@@ -1,10 +1,11 @@
 import os
-from flask import Flask, flash, render_template, abort, request, redirect, url_for, session
+from flask import Flask, flash, render_template, abort, request, redirect, url_for, session, jsonify
 from models import db, User, ForumPost
 from dotenv import load_dotenv
 from flask_socketio import SocketIO
 from flask_bcrypt import Bcrypt
 from repositories.src.user_repository import player_repository_singleton
+from urllib.parse import urlparse, urljoin
 
 load_dotenv()
 app = Flask(__name__)
@@ -97,8 +98,17 @@ def login_auth():
 
 @app.post('/logout')
 def logout():
-    del session['username']
-    return redirect('/')
+    referrer_url = request.referrer # Store the referrer URL in a variable
+    del session['username'] # Log out by removing the session username
+    if referrer_url and is_safe_url(referrer_url): # Check if the referrer URL is set and is safe
+        return redirect(referrer_url) # Redirect to the referrer URL
+    else:
+        return redirect(url_for('login')) # Redirect to the login page
+
+def is_safe_url(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
 
 @app.get('/profile')
 def profile():
@@ -137,21 +147,61 @@ def submit_forum_reply():
     # after post, redirect back to get_single_post.html
     return render_template('forum.html')
 
-@app.route('/create_post', methods=['GET', 'POST'])
-def create_post():
-    if request.method == 'POST':
-        title = request.form.get('title')
-        content = request.form.get('content')
-        author_name = request.form.get('author_name')
-        flairs = request.form.get('flairs', '')
-        print("Received flairs:", flairs)
-        # Will eventually change author_name to author_id once we have login auth setup!
-        post = ForumPost(title=title, content=content, author_name=author_name,flairs=flairs, parent_post_id=None)
-        db.session.add(post)
-        db.session.commit()
+@app.get('/create_post')
+def goto_create_post():
+    if 'username' in session:
+        return render_template('create_post.html')
+    return redirect(url_for('login'))
 
-        return redirect(url_for('forum'))  # redirect back to GuildBoard main page
-    return render_template('create_post.html')
+@app.post('/create_post')
+def create_post():
+    user = User.query.filter_by(username=session['username']).first()
+    title = request.form.get('title')
+    content = request.form.get('content')
+    flairs = request.form.get('flairs', '')
+    print('Received flairs:', flairs)
+    # Will eventually change author_name to author_id once we have login auth setup!
+    post = ForumPost(title=title, content=content, author_id=user.user_id, flairs=flairs, parent_post_id=None)
+    db.session.add(post)
+    db.session.commit()
+
+    return redirect(url_for('forum'))  # redirect back to GuildBoard main page
+
+@app.post('/upvote')
+def upvote_post():
+    post_id = request.json.get('post_id')
+    post = ForumPost.query.get(post_id)
+    if post:
+        post.upvote()
+        return jsonify(success=True)
+    else:
+        return jsonify(success=False, message="Post not found"), 404
+
+@app.post('/downvote')
+def downvote_post():
+    post_id = request.json.get('post_id')
+    post = ForumPost.query.get(post_id)
+    if post:
+        post.downvote()
+        return jsonify(success=True)
+    else:
+        return jsonify(success=False, message="Post not found"), 404
+
+@app.post('/delete_post/<int:post_id>')
+def delete_post(post_id):
+    # print("delete_post called with post_id:", post_id)  # check if delete posting is working correctly
+    post = ForumPost.query.get(post_id)
+    if post is None: # if the post does not exist, return a 404
+        # print("Post not found")  # error checking
+        abort(404)
+    if session['username'] != post.author.username: # double check if the current user is the author of the post
+        # print("Current user is not the author of the post")  # error checking
+        abort(403)
+
+    db.session.delete(post) # remove the post
+    db.session.commit()
+    # print("Post deleted successfully")  # error checking
+    return redirect(url_for('forum')) # redirect back to forum page
 
 @app.post('/profile')
 def new_player():
