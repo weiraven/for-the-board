@@ -52,15 +52,16 @@ class ForumPost(db.Model):
     content = db.Column(db.Text)
     author_id = db.Column(db.Integer, db.ForeignKey('player.user_id'))
     time_posted = db.Column(db.DateTime, default=datetime.utcnow)
-    upvotes = db.Column(db.Integer)
-    parent_post_id = db.Column(db.Integer, db.ForeignKey('forumpost.post_id'))
+    upvotes = db.Column(db.Integer, default=0)
     flairs = db.Column(db.String(255))
+    parent_post_id = db.Column(db.Integer, db.ForeignKey('forumpost.post_id'))
 
     # forumpost constructor
     def __init__(self, title:str, content:str, author_id:int, flairs='', parent_post_id=None) -> None:
         self.title = title
         self.content = content
-        self.author_id = author_id 
+        self.author_id = author_id
+        self.upvotes = 0
         self.flairs = flairs
         self.parent_post_id = parent_post_id
 
@@ -78,7 +79,8 @@ class ForumPost(db.Model):
         return self.author_id
 
     def get_time_posted(self):
-        return self.time_posted.strftime('%m-%d-%Y %H:%M (UTC-5)')
+        # return self.time_posted.strftime('%m-%d-%Y %H:%M')
+        return self.time_posted.isoformat()
 
     def get_upvotes(self) -> int:
         return self.upvotes
@@ -104,3 +106,13 @@ class ForumPost(db.Model):
 
     def set_parent_post_id(self, parent_post_id:int):
         self.parent_post_id = parent_post_id
+    
+    # other methods
+    def upvote(self):
+        self.upvotes += 1
+        db.session.commit()
+    
+    def downvote(self):
+        if self.upvotes > 0:
+            self.upvotes -= 1
+            db.session.commit()
