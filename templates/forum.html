@@ -2,7 +2,9 @@
 
 <title>ForTheBoard - GuildBoard</title>
 
-{% endblock %} {% block body %}
+{% endblock %} 
+
+{% block body %}
 <style>
 	.card-header {
 		background-color: #000419;
@@ -52,6 +54,43 @@
 	<div class="row">
 		<div class="col-3">
 			<div class="card">
+				<div class="card-body">
+					<h5 cdivlass="card-title">Boards by Topic</h5>
+					<div class="card-link d-flex flex-column">
+						<a href="{{ url_for('subforum', category='community-square') }}" class="subforum-link">Community Square</a>
+						<a href="{{ url_for('subforum', category='looking-for-group') }}" class="subforum-link">Looking For Group</a>
+						<a href="{{ url_for('subforum', category='creative-content') }}" class="subforum-link">Creative Content</a>
+						<a href="{{ url_for('subforum', category='gamemaster-corner') }}" class="subforum-link">Gamemasters Corner</a>
+						<a href="{{ url_for('subforum', category='bug-report-technical') }}" class="subforum-link">Bug Report & Technical Issues</a>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-body">
+					<form action="{{ url_for('search_posts' )}}" method="get">
+						<div class="mb-3">
+							<label for="search" name="query-flair" class="form-label"></label>
+							<input type="text" name="query-flair" placeholder="Search by flair" class="form-control">
+							<button type="submit" class="btn btn-secondary">Search</button>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-body">
+					<form action="{{ url_for('search_posts' )}}" method="get">
+						<div class="mb-3">
+							<label for="search" name="query-title" class="form-label"></label>
+							<input type="text" name="query-title" placeholder="Search by title..." class="form-control">
+							<button type="submit" class="btn btn-secondary">Search</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="col-6">
+			{% for post in posts %}
+			<div class="card">
 				<div class="card-header">
 					<strong>
 						<button class="btn btn-light btn-sm upvote-button" data-post-id="{{ post.get_post_id() }}">
@@ -62,7 +101,7 @@
 							<i class="fas fa-arrow-down"></i>
 						</button>
 					</strong>
-					ftb/MainBoard •
+					ftb/GuildBoard •
 					<span class="text" style="font-size: 10pt; color: #ffffff">
 						Posted by u/{{ post.author.username }} at <span class="time_posted">{{ post.get_time_posted() }}</span>
 					</span>
@@ -92,116 +131,10 @@
 			</div>
 			{% endfor %}
 		</div>
-		<div class="col-sm-4">
-			<div class="card">
-				<div class="card-body">
-					<h5 class="card-title">ftb/MainBoard</h5>
-					<p class="card-text">
-						Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos aspernatur omnis,
-						perferendis fuga quaerat ex, id sed dolores minus dolorum veritatis dolor commodi voluptates,
-						praesentium beatae error consectetur hic. Fuga consequuntur illo odit sit eveniet laudantium?
-						Impedit laboriosam mollitia ut iusto harum voluptates, nostrum nam esse tempora facilis
-						cupiditate.
-					</p>
-					<a href="/create_post" class="btn btn-primary btn-block">Create Post</a>
-				<div class="card-body">
-					<h5 cdivlass="card-title">Sub-forums</h5>
-					<div class="card-link d-flex flex-column">
-						<a href="{{ url_for('subforum', category='community-square') }}" class="subforum-link"
-							>Community Square</a
-						>
-						<a href="{{ url_for('subforum', category='looking-for-group') }}" class="subforum-link"
-							>Looking For Group</a
-						>
-						<a href="{{ url_for('subforum', category='creative-content') }}" class="subforum-link"
-							>Creative Content</a
-						>
-						<a href="{{ url_for('subforum', category='bug-report-technical') }}" class="subforum-link"
-							>Bug Report & Technical Issues</a
-						>
-						<a href="{{ url_for('subforum', category='gamemaster-corner') }}" class="subforum-link"
-							>Gamemaster Corner</a
-						>
-					</div>
-				</div>
-			</div>
-			<div class="card">
-				<div class="card-body">
-					<form action="{{ url_for('search_posts' )}}" method="get">
-						<div class="mb-3">
-							<label for="search" name="query-flair" class="form-label"></label>
-							<input
-								type="text"
-								name="query-flair"
-								placeholder="Search by flair..."
-								class="form-control"
-							/>
-
-							<button type="submit" class="btn btn-secondary">Search</button>
-						</div>
-					</form>
-				</div>
-			</div>
-			<div class="card">
-				<div class="card-body">
-					<form action="{{ url_for('search_posts' )}}" method="get">
-						<div class="mb-3">
-							<label for="search" name="query-title" class="form-label"></label>
-							<input
-								type="text"
-								name="query-title"
-								placeholder="Search by title..."
-								class="form-control"
-							/>
-
-							<button type="submit" class="btn btn-secondary">Search</button>
-						</div>
-					</form>
-				</div>
-			</div>
-		</div>
-		<div class="col-6">
-			{% for post in posts %}
-			<div class="card">
-				<div class="card-header">
-					<strong>
-						<button class="btn btn-light btn-sm">
-							<i class="fas fa-arrow-up"></i>
-						</button>
-						{{ post.get_upvotes() }}
-						<button class="btn btn-light btn-sm">
-							<i class="fas fa-arrow-down"></i>
-						</button>
-					</strong>
-					ftb/{{ post.category }} •
-					<span class="text" style="font-size: 10pt; color: #ffffff">
-						Posted by u/{{ post.author.username }} at {{ post.get_time_posted() }}</span
-					>
-				</div>
-				<div class="card-body">
-					<h5 class="card-title">{{ post.get_title() }}</h5>
-					<!-- Display flairs -->
-					{% if post.get_flairs() %}
-					<div class="post-flairs">
-						{% for flair in post.get_flairs().split(',') %}
-						<span class="badge rounded-pill text-bg-primary">{{ flair }}</span>
-						{% endfor %}
-					</div>
-					{% endif %}
-
-					<p class="card-text">{{ post.get_content() | safe }}</p>
-				</div>
-				<div class="card-footer text-muted">
-					<a href="" class="btn btn-light btn-sm"><i class="fas fa-comment"></i> 0 Comments</a>
-					<a href="" class="btn btn-light btn-sm"><i class="fas fa-share"></i> Share</a>
-				</div>
-			</div>
-			{% endfor %}
-		</div>
 		<div class="col-3">
 			<div class="card">
 				<div class="card-body">
-					<h5 class="card-title">ftb/MainBoard</h5>
+					<h5 class="card-title">ftb/GuildBoard</h5>
 					<p class="card-text">
 						Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos aspernatur omnis,
 						perferendis fuga quaerat ex, id sed dolores minus dolorum veritatis dolor commodi voluptates,
@@ -216,6 +149,7 @@
 	</div>
 </div>
 
+<!-- JavaScript elements-->
 <script>
 	const timePostedElements = document.getElementsByClassName('time_posted');
 
