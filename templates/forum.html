@@ -122,6 +122,7 @@
 					<a href="" class="btn btn-light btn-sm"><i class="fas fa-comment"></i> 0 Comments</a>
 					<a href="" class="btn btn-light btn-sm"><i class="fas fa-share"></i> Share</a>
 					{% if session['username'] == post.author.username %}
+					<a href="{{ url_for('edit_post', post_id=post.get_post_id()) }}" class="btn btn-light btn-sm edit-post"><i class="fas fa-edit"></i> Edit</a>
 					<form method="POST" action="{{ url_for('delete_post', post_id=post.get_post_id()) }}">
 						<input type="hidden" name="_method" value="DELETE">
 						<button type="button" data-post-id="{{ post.get_post_id() }}" class="btn btn-light btn-sm delete-post" onclick="deletePost(event)"><i class="fas fa-trash"></i> Delete</button>
