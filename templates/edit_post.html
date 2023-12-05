@@ -1,0 +1,173 @@
+{% extends '_template.html' %}
+
+{% block head %}
+<title>ForTheBoard - Post to the GuildBoard</title>
+{% endblock %}
+
+{% block body %}
+<style>
+    :root { 
+        --input-bg: #202428; 
+        --input-text: #FFFFFF; 
+        --input-placeholder: #A2D0F7; 
+    }
+    input, textarea { 
+        background-color: var(--input-bg) !important; 
+        color: var(--input-text) !important; 
+    }
+    input::placeholder, textarea::placeholder { 
+        color: var(--input-placeholder) !important; 
+    }
+    .card-header{
+        background-color: #000419;
+        color: #FFFFFF;
+    }
+    .card {
+        margin-top: 20px;
+        background-color: #202428;
+        color: #FFFFFF;
+    }
+    .card-footer{
+        background-color: #000419;
+        color: #FFFFFF;
+    }
+    .btn.btn-primary.btn-block {
+        background-color: #944394;
+        border-color: #944394;
+        color: #FFFFFF;
+    }
+    .btn.btn-light.btn-sm { 
+        background-color: #A2D0F7; 
+        border-color: #A2D0F7; 
+    }
+    .form-control {
+        margin-bottom: 20px;
+    }
+	.list-group-item {
+        background-color: #202428;
+        color: #FFFFFF;
+		padding-left: 0;
+        	
+	}
+	.selectform {
+        background-color: #202428;
+        color: #FFFFFF;
+        padding-left: 13px;
+	}
+    .badge-close-icon {
+        cursor: pointer;
+    }
+</style>
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-8">
+            <div class="card">
+                <div class="card-header">
+                    <strong>Edit Post</strong>
+                </div>
+                <div class="card-body">
+                    <form action="/update_post" method="post">
+                        <input type="hidden" name="post_id" value="{{ post.post_id }}">
+                        <div class="form-group">
+                            <label for="postTitle">Title</label>
+                            <input type="text" class="form-control" id="postTitle" name="title" value="{{ post.title }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="forumCategory">Topic</label>
+                            <select name="category" class="selectform form-select" aria-label="Default select">
+                                <option value="community-square" {% if post.category == 'community-square' %}selected{% endif %}>Community Square</option>
+                                <option value="looking-for-group" {% if post.category == 'looking-for-group' %}selected{% endif %}>Looking For Group</option>
+                                <option value="creative-content" {% if post.category == 'creative-content' %}selected{% endif %}>Creative Content</option>
+                                <option value="gamemaster-corner" {% if post.category == 'gamemaster-corner' %}selected{% endif %}>Gamemasters Corner</option>
+                                <option value="bug-report-technical" {% if post.category == 'bug-report-technical' %}selected{% endif %}>Bug Report & Technical Issues</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="flair-container">Flair</label>
+                            <button type="button" id="add-flair" class="">+</button><br>
+                            <div class="flair-container"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="postContent">Exposition</label>
+                            <textarea class="form-control" id="postContent" name="content" rows="10">{{ post.content }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Update Post</button>
+                    </form>
+				</div>
+			</div>
+		</div>
+			<div class="col-sm-4">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Posting to the GuildBoard</h5>
+						<p class="card-text">
+							<ul class="list-group list-group-flush">
+							<li class="list-group-item">This is may be an escapist space</li>
+							<li class="list-group-item">But remember the human</li>
+							<li class="list-group-item">Behave as you would in the real world</li>
+							<li class="list-group-item">Fact check your non-fictional claims</li>
+							<li class="list-group-item">Look for duplicates before posting</li>
+							<li class="list-group-item">May your adventures be great and your rolls be blessed!</li>
+							</ul>
+						</p>
+					</div>
+				</div>
+			</div>
+
+<script defer>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('add-flair').addEventListener('click', e => {
+            const flairContainer = document.querySelector('.flair-container')
+            const existingBadges = flairContainer.querySelectorAll('.badge').length
+            if (existingBadges >= 4) return ;
+
+            const newBadge = document.createElement('span')
+            newBadge.classList.add('badge', 'rounded-pill', 'text-bg-primary', 'fs-7','text-center')
+            newBadge.textContent = 'New Flair'
+            newBadge.setAttribute('contenteditable', 'true')
+
+            const closeIcon = document.createElement('span')
+            closeIcon.innerHTML = '&times;'
+            closeIcon.classList.add('badge-close-icon', 'fs-4')
+            closeIcon.onclick = function() {
+                flairContainer.removeChild(newBadge);
+            };
+            newBadge.append(closeIcon)
+
+            newBadge.addEventListener('blur', () => {
+                newBadge.setAttribute('contenteditable', 'true')
+                newBadge.append(closeIcon)
+            })
+
+            newBadge.addEventListener('keypress', () => {
+                if (newBadge.textContent.length > 15 || newBadge.textContent == 1 && event.keyCode !== 8 && event.keyCode !== 46) {
+                    event.preventDefault();                 
+                }
+            })
+
+            flairContainer.appendChild(newBadge)
+        })
+
+        document.querySelector('form').addEventListener('submit', e => {
+            const form = e.target;
+            const badgeElements = Array.from(document.querySelectorAll('.flair-container .badge'))
+            const joinedBadgeTexts = badgeElements.map(badge => badge.textContent.trim().replace('×', '')).join(', ');
+
+            console.log("Flairs to be submitted:", joinedBadgeTexts);
+
+            const hiddenInput = document.createElement('input')
+            hiddenInput.type = 'hidden'
+            hiddenInput.name = 'flairs'
+            hiddenInput.value = joinedBadgeTexts
+            form.appendChild(hiddenInput)
+        })
+
+        // Pre-populate existing flairs
+        const existingFlairs = "{{ post.flairs }}".split(",");
+        for (const flair of existingFlairs) {
+            createFlair(flair.trim())
+        }
+    })
+</script>
+{% endblock %}
