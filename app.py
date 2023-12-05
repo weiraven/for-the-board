@@ -77,7 +77,8 @@ def create_account():
 
 @app.get('/login')
 def login():
-    return render_template('login.html')
+    next_url = request.args.get('next')
+    return render_template('login.html', next_url=next_url)
 
 @app.post('/login')
 def login_auth():
@@ -85,23 +86,28 @@ def login_auth():
     raw_password = request.form.get('password')
     if not username or not raw_password:
         flash("* This is a required field.")
-        return render_template('login.html')
+        return redirect(url_for('login'))
     existing_user = User.query.filter_by(username=username).first()
     if not existing_user:
         flash("☒ Invalid username or password. Please try again.")
-        return render_template('login.html')
+        return redirect(url_for('login'))
     if not bcrypt.check_password_hash(existing_user.password, raw_password):
         flash("☒ Invalid username or password. Please try again.")
-        return render_template('login.html')
+        return redirect(url_for('login'))
     session['username'] = username
-    return redirect('/')
+    next_url = request.form.get('next')
+    if next_url and is_safe_url(next_url): # check if the next parameter is set and is safe
+        return redirect(next_url) # redirect to the next URL
+    else:
+        return redirect('/') # redirect to home
 
 @app.post('/logout')
 def logout():
-    referrer_url = request.referrer # Store the referrer URL in a variable
+    session['previous_page'] = request.referrer
     del session['username'] # Log out by removing the session username
-    if referrer_url and is_safe_url(referrer_url): # Check if the referrer URL is set and is safe
-        return redirect(referrer_url) # Redirect to the referrer URL
+    previous_page = session.get('previous_page')
+    if previous_page and is_safe_url(previous_page): # Check if the previous page URL is set and is safe
+        return redirect(previous_page) # Redirect to the previous page URL
     else:
         return redirect(url_for('login')) # Redirect to the login page
 
@@ -142,9 +148,12 @@ def forum():
         post.category = ''.join(word.capitalize() for word in post.category.split('-'))
     return render_template('forum.html', posts=posts)
 
-@app.get('/forum/<int:post_id>')
-def get_single_post(post_id: int):
-    return render_template('get_single_post.html')
+@app.get('/forum_post/<int:post_id>')
+def get_single_post(post_id):
+    post = ForumPost.query.get(post_id)
+    if post is None:
+        return "Error: Post does not exist" 
+    return render_template('get_single_post.html', post=post)
 
 @app.post('/submit_forum_reply')
 def submit_forum_reply():
@@ -155,7 +164,8 @@ def submit_forum_reply():
 def goto_create_post():
     if 'username' in session:
         return render_template('create_post.html')
-    return redirect(url_for('login'))
+    else: 
+        return redirect(url_for('login', next='/create_post'))
 
 @app.post('/create_post')
 def create_post():
@@ -164,12 +174,38 @@ def create_post():
     content = request.form.get('content')
     flairs = request.form.get('flairs', '')
     category = request.form.get('category')
-    print('Received flairs:', flairs)
     post = ForumPost(title=title, content=content, author_id=user.user_id, flairs=flairs, parent_post_id=None, category=category)
     db.session.add(post)
     db.session.commit()
 
     return redirect(url_for('forum'))  # redirect back to GuildBoard main page
+
+@app.get('/edit_post/<int:post_id>')
+def edit_post(post_id):
+    post = ForumPost.query.get(post_id)
+    # check if the session username exists and matches the author of the post
+    if 'username' not in session:
+        return redirect(url_for('login')) # Redirect to the login page
+    if session['username'] == post.author.username:
+        return render_template('edit_post.html', post=post)
+    else:
+        abort(403) # Forbidden
+
+@app.post('/update_post')
+def update_post():
+    post_id = request.form.get('post_id')
+    post = ForumPost.query.get(post_id)
+    title = request.form.get('title')
+    content = request.form.get('content')
+    flairs = request.form.get('flairs', '')
+    category = request.form.get('category')
+
+    post.title = title
+    post.content = content
+    post.flairs = flairs
+    post.category = category
+    db.session.commit() # commit changes to post
+    return redirect(url_for('get_single_post', post_id=post_id))
 
 @app.post('/upvote')
 def upvote_post():
