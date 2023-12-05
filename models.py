@@ -92,24 +92,9 @@ class ForumPost(db.Model):
     
     def get_flairs(self):
         return self.flairs
+    
     def get_category(self):
         return self.category
-
-    # forumpost setters
-    def set_title(self, title:str):
-        self.title = title
-
-    def set_content(self, content:str):
-        self.content = content
-
-    def set_author_id(self, author_id:int):
-        self.author_id = author_id
-
-    def set_upvotes(self, upvotes:int):
-        self.upvotes = upvotes
-
-    def set_parent_post_id(self, parent_post_id:int):
-        self.parent_post_id = parent_post_id
     
     # other methods
     def upvote(self):
@@ -120,6 +105,3 @@ class ForumPost(db.Model):
         if self.upvotes > 0:
             self.upvotes -= 1
             db.session.commit()
-        
-    def set_category(self, category:str):
-        self.category = category
