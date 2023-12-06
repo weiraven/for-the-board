@@ -91,6 +91,11 @@ body {
 .nav-divider{
     color: white;
 }
+.badge.rounded-pill {
+    background-color: #DD8B59 !important;
+    color: #ffffff !important;
+}
+
 
 /* ===== ===== ===== ===== ===== */
 /* Header */
