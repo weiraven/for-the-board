@@ -18,6 +18,12 @@
     input::placeholder, textarea::placeholder { 
         color: var(--input-placeholder) !important; 
     }
+    select.form-select, select.form-select option {
+        color: #A2D0F7 !important;
+    }
+    label {
+        margin-bottom: 2px;
+    }
     .card-header{
         background-color: #000419;
         color: #FFFFFF;
@@ -37,11 +43,14 @@
         color: #FFFFFF;
     }
     .btn.btn-light.btn-sm { 
-        background-color: #A2D0F7; 
-        border-color: #A2D0F7; 
+        background-color: #944394; 
+        border-color: #944394;
+        margin-top: 10px;
+        margin-bottom: 10px;
     }
-    .form-control {
-        margin-bottom: 20px;
+    .form-group {
+        margin-top: 10px;
+        margin-bottom: 10px;
     }
 	.list-group-item {
         background-color: #202428;
@@ -80,11 +89,11 @@
                                 <option value="creative-content">Creative Content</option>
                                 <option value="gamemaster-corner">Gamemasters Corner</option>
                                 <option value="bug-report-technical">Bug Report & Technical Issues</option>
-                              </select>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="flair-container">Flair</label>
-                            <button type="button" id="add-flair" class="">+</button><br>
+                            <button type="button" id="add-flair" class="btn btn-light btn-sm plus-button"><i class="fas fa-plus"></i></button><br>
                             <div class="flair-container"></div>
                         </div>
                         <div class="form-group">
