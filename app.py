@@ -148,6 +148,16 @@ def forum():
         post.category = ''.join(word.capitalize() for word in post.category.split('-'))
     return render_template('forum.html', posts=posts)
 
+@app.get('/forum/<category>')
+def subforum(category):
+    posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%')).all()
+    category = ''.join(word.capitalize() for word in category.split('-'))
+    
+    for post in posts:
+        post.category = ''.join(word.capitalize() for word in post.category.split('-'))
+        
+    return render_template('subforum.html', category = category, posts=posts)
+
 @app.get('/forum_post/<int:post_id>')
 def get_single_post(post_id):
     post = ForumPost.query.get(post_id)
@@ -295,16 +305,6 @@ def search_posts():
        return render_template('subforum.html', category=query_category, posts=filtered_posts)
 
     return render_template('forum.html', posts=filtered_posts)
-
-@app.get('/forum/<category>')
-def subforum(category):
-    posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%')).all()
-    category = ''.join(word.capitalize() for word in category.split('-'))
-    
-    for post in posts:
-        post.category = ''.join(word.capitalize() for word in post.category.split('-'))
-        
-    return render_template('subforum.html', category = category, posts=posts)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
