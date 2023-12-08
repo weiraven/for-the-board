@@ -1,64 +1,12 @@
-{% extends '_template.html' %} {% block head %}
+{% extends '_template.html' %}
 
+{% block head %}
 <title>ForTheBoard - GuildBoard</title>
-
 {% endblock %} 
 
 {% block body %}
-<style>
-	a {
-		color: #FDB37C;
-	}
-	a:hover {
-		color: #944394;
-	}
-	.card-header {
-		background-color: #000419;
-		color: #ffffff;
-	}
-	.card {
-		margin-top: 20px;
-		background-color: #202428;
-		color: #ffffff;
-	}
-	.card-footer {
-		background-color: #000419;
-		color: #ffffff;
-		display: flex;
-	}
-	.form-control {
-		margin-bottom: 15px;
-	}
-	.btn.btn-primary.btn-block {
-		background-color: #944394;
-		border-color: #944394;
-		color: #ffffff;
-	}
-	.btn.btn-light.btn-sm {
-		background-color: #a2d0f7;
-		border-color: #a2d0f7;
-		margin-right: 5px;
-	}
-	.btn.btn-light.btn-sm.upvote-button {
-		background-color: #944394;
-		border-color: #944394;
-		margin-right: 5px;
-	}
-	.btn.btn-light.btn-sm.downvote-button {
-		background-color: #944394;
-		border-color: #944394;
-		margin-left: 5px;
-	}
-	.btn.btn-secondary {
-		background-color: #6a84da;
-		border-color: #6a84da;
-		color: #ffffff;
-	}
-	.badge.rounded-pill.text-bg-primary {
-		background-color: #FDB37C; 
-		color: #ffffff;
-	}
-</style>
+{% from 'forum/_macros.html' import forum_style, topic_card %}
+{{ forum_style() }}
 
 <div class="container-fluid">
 	<div class="row">
@@ -72,11 +20,9 @@
 		{% endfor %}
 		</div>
 		<div class="col-3">
-		{% from 'forum/_macros.html' import topic_card %}
 		{% set forum_name='Main' %}
 		{{ topic_card(forum_name) }}
 		</div>
 	</div>
 </div>
-
 {% endblock %}
