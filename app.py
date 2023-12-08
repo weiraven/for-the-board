@@ -77,7 +77,7 @@ def create_account():
 
 @app.get('/login')
 def login():
-    next_url = request.args.get('next')
+    next_url = request.args.get('next') or request.referrer
     return render_template('login.html', next_url=next_url)
 
 @app.post('/login')
