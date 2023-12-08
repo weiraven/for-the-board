@@ -66,6 +66,24 @@
     .badge-close-icon {
         cursor: pointer;
     }
+
+    .badge-clicked {
+        border: 1px solid white;
+    }
+
+    .hint-flair {
+        font-size: 10px;
+    }
+
+    @keyframes blinker {
+        50% {
+            opacity: 0;
+        }
+    }
+    
+    .badge-text {
+        animation: blinker 1s linear infinite;
+    }
 </style>
 
 <div class="container">
@@ -92,13 +110,15 @@
                             </select>
                         </div>
                         <div class="form-group">
+                            <div class="containerflair"></div>
                             <label for="flair-container">Flair</label>
                             <button type="button" id="add-flair" class="btn btn-light btn-sm plus-button"><i class="fas fa-plus"></i></button><br>
-                            <div class="flair-container"></div>
+                            <p class="hint-flair">Hint: Add a flair to customize your post.</p>
+                            <div class="flair-container col-sm-3 d-flex justify-content-between align-content-center gap-2"></div>
                         </div>
                         <div class="form-group">
                             <label for="postContent">Exposition</label>
-                            <textarea class="form-control" id="postContent" name="content" rows="10" placeholder="What do you seek?"></textarea>
+                            <textarea class="form-control" id="postContent" name="content" rows="10" placeholder="What do you seek?" ></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary btn-block">Submit</button>
                     </form>
@@ -124,28 +144,40 @@
 			</div>
 
 <script defer>
-    document.addEventListener('DOMContentLoaded', () => {
+        //global scope
+        const badges = [];
+
         document.getElementById('add-flair').addEventListener('click', e => {
             const flairContainer = document.querySelector('.flair-container')
             const existingBadges = flairContainer.querySelectorAll('.badge').length
             if (existingBadges >= 4) return ;
 
             const newBadge = document.createElement('span')
-            newBadge.classList.add('badge', 'rounded-pill', 'text-bg-primary', 'fs-7','text-center')
-            newBadge.textContent = 'New Flair'
-            newBadge.setAttribute('contenteditable', 'true')
+            newBadge.classList.add('badge', 'rounded-pill', 'text-bg-primary', 'fs-7', 'd-flex', 'justify-content-center', 'align-items-center', 'gap-1')
+
+            badgeText = document.createElement('span')
+            badgeText.textContent = 'Enter Text'
+            badgeText.classList.add('badge-text')
+            badgeText.setAttribute('contenteditable', 'true')
 
             const closeIcon = document.createElement('span')
             closeIcon.innerHTML = '&times;'
-            closeIcon.classList.add('badge-close-icon', 'fs-4')
+            closeIcon.classList.add('badge-close-icon', 'fs-5')
             closeIcon.onclick = function() {
                 flairContainer.removeChild(newBadge);
             };
-            newBadge.append(closeIcon)
+            newBadge.append(badgeText, closeIcon)
 
-            newBadge.addEventListener('blur', () => {
-                newBadge.setAttribute('contenteditable', 'true')
-                newBadge.append(closeIcon)
+            badgeText.addEventListener('click', () => {
+                badgeText.classList.remove('badge-text')
+            })
+
+            newBadge.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (newBadge.classList.contains('badge-clicked')) {
+                    newBadge.classList.remove('badge-clicked')
+                }
+                newBadge.classList.add('badge-clicked')
             })
 
             newBadge.addEventListener('keypress', () => {
@@ -155,6 +187,7 @@
             })
 
             flairContainer.appendChild(newBadge)
+            badges.push(newBadge);
         })
 
         document.querySelector('form').addEventListener('submit', e => {
@@ -170,7 +203,16 @@
             hiddenInput.value = joinedBadgeTexts
             form.appendChild(hiddenInput)
         })
-    })
+
+        //global array event listener 
+        document.addEventListener('click', (e) => {
+            badges.forEach(badge => {
+                if (!badge.contains(e.target)) {
+                    badge.classList.remove('badge-clicked');
+                }
+                badge.classList.remove('badge-text');
+            });
+        });
 
 </script>
 {% endblock %}
