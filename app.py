@@ -1,12 +1,14 @@
 import os
+import re
 from flask import Flask, flash, render_template, abort, request, redirect, url_for, session, jsonify
 from models import db, User, ForumPost, Game, ActiveGame, GameSession
 from dotenv import load_dotenv
 from flask_socketio import SocketIO
 from flask_bcrypt import Bcrypt
 from repositories.src.user_repository import player_repository_singleton
-from urllib.parse import urlparse, urljoin
 from repositories.src.game_repository import game_repository_singleton
+from urllib.parse import urlparse, urljoin
+
 
 load_dotenv()
 app = Flask(__name__)
@@ -95,7 +97,9 @@ def login_auth():
     if not bcrypt.check_password_hash(existing_user.password, raw_password):
         flash("☒ Invalid username or password. Please try again.")
         return redirect(url_for('login'))
-    session['username'] = username
+    user_id = existing_user.user_id # get logged-in user's user_id
+    session['username'] = username # store user's username
+    session['user_id'] = user_id # store user's id in session dictionary as well
     next_url = request.form.get('next')
     if next_url and is_safe_url(next_url): # check if the next parameter is set and is safe
         return redirect(next_url) # redirect to the next URL
@@ -117,9 +121,11 @@ def is_safe_url(target):
     test_url = urlparse(urljoin(request.host_url, target))
     return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
 
-@app.get('/profile')
-def profile():
-    return render_template('profile.html')
+@app.get('/profile/<int:user_id>')
+def profile(user_id):
+    if user_id is None:
+        return "Error: User does not exist" 
+    return render_template('profile.html', user_id=user_id)
 
 @app.route('/active_game')
 def active_game():
@@ -188,17 +194,26 @@ def forum():
 
 @app.get('/forum/<category>')
 def subforum(category):
-    posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%')).all()
+    posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%')).order_by(ForumPost.time_posted.desc()).all()
     category = ''.join(word.capitalize() for word in category.split('-'))
-    
+
     for post in posts:
         post.category = ''.join(word.capitalize() for word in post.category.split('-'))
-        
-    return render_template('subforum.html', category = category, posts=posts)
+
+    return render_template('subforum.html', category=category, posts=posts)
+
+def category_to_url(category):
+    category = re.sub(r'([a-z])([A-Z])', r'\1-\2', category)
+    category = category.lower()
+    category = category.replace(' ', '-')
+    return category
+# register the custom filter to the app's Jinja environment
+app.jinja_env.filters['category_to_url'] = category_to_url
 
 @app.get('/forum_post/<int:post_id>')
 def get_single_post(post_id):
     post = ForumPost.query.get(post_id)
+    post.category = ''.join(word.capitalize() for word in post.category.split('-'))
     if post is None:
         return "Error: Post does not exist" 
     return render_template('get_single_post.html', post=post)
