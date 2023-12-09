@@ -52,6 +52,65 @@
 		background-color: #FDB37C; 
 		color: #ffffff;
 	}
+	.popup {
+		position: relative;
+		display: flex;
+	}
+	.popup-header {
+		background-color: #944394;
+		color: #ffffff; 
+		border-radius: 5px;
+		align-items: center;
+		padding: 2px;
+		margin-bottom: 5px;
+	}
+	.popup-header h5 {
+		padding-top: 5px;
+		padding-left: 10px;
+	}
+	.popup-content {
+		display: none; 
+		position: absolute; 
+		top: 15px; 
+		left: 60%; 
+		visibility: hidden; 
+		z-index: 1;
+		background-color: #090112; 
+		box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+		border-radius: 8px; 
+		padding: 8px; 
+		margin-top: 8px;
+		margin-bottom: 8px;
+		margin-left: 8px;
+	}
+	.popup-content.show {
+		display: block;
+		visibility: visible;
+	}
+	.link-input {
+		width: 250px;
+	}
+	.link-container { 
+		display: flex;
+		flex: row-reverse;
+		align-items: center;
+		order: 1;
+	}
+	.copy-button {
+		margin-left: 10px;
+	}
+	.close-button {
+		position: absolute;
+		top: 0;
+		right: 8px;
+		width: 20px;
+		height: 20px;
+		border: none;
+		background: transparent;
+		font-size: 20px;
+		color:#000000;
+		cursor: pointer;
+	}
 </style>
 {%- endmacro -%}
 
