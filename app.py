@@ -151,7 +151,7 @@ def forum():
 @app.get('/forum/<category>')
 def subforum(category):
     posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%')).all()
-    category = ''.join(word.capitalize() for word in category.split('-'))
+
     
     for post in posts:
         post.category = ''.join(word.capitalize() for word in post.category.split('-'))
@@ -280,17 +280,16 @@ def handle_message(json):
     if user:
         socketio.emit('message', {'username': user.username, 'message': json['message']})
         
-@app.get('/search_post')
-def search_posts():
-    query_category = request.args.get('query-category', '')
+@app.get('/forum/<category>/search')
+def search_posts(category):
     query_flair = request.args.get('query-flair', '')
     query_title = request.args.get('query-title', '')
     subforum = False
     
     query = ForumPost.query
     
-    if query_category:
-        query = query.filter(ForumPost.category == query_category)
+    if category:
+        query = query.filter(ForumPost.category == category)
         subforum = True
     
     if query_flair:
@@ -302,7 +301,7 @@ def search_posts():
     filtered_posts = query.all()
     
     if subforum == True:
-       return render_template('subforum.html', category=query_category, posts=filtered_posts)
+       return render_template('subforum.html', category=category, posts=filtered_posts)
 
     return render_template('forum.html', posts=filtered_posts)
 
