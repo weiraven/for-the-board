@@ -47,3 +47,21 @@ VALUES
     ('How to pick up elves in a dungeon', 'Step 1: Just roll a nat 20 on your rizz check 4head lol', 4)
 ;
 
+CREATE TABLE Game (
+    game_id SERIAL PRIMARY KEY,
+    game VARCHAR(255) NOT NULL ,
+    description TEXT
+);
+
+CREATE TABLE game_session (
+    active_game_id SERIAL PRIMARY KEY,
+    game_id INTEGER REFERENCES game(game_id) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    open_for_join BOOLEAN DEFAULT TRUE NOT NULL
+);
+
+CREATE TABLE active_game (
+    active_game_id SERIAL NOT NULL,
+    user_id INTEGER REFERENCES player(user_id) NOT NULL
+);
+

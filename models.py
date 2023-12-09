@@ -104,3 +104,77 @@ class ForumPost(db.Model):
 
     def set_parent_post_id(self, parent_post_id:int):
         self.parent_post_id = parent_post_id
+
+
+class Game(db.Model):
+    __tablename__ = 'game'
+    game_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    game = db.Column(db.String(255), nullable=False, unique=True)   
+    description = db.Column(db.Text)
+
+    def __init__(self, game: str, description: str) -> None:
+        self.game = game
+        self.description = description
+
+    def get_game_id(self) -> int:
+        return self.game_id
+
+    def get_game(self) -> str:
+        return self.game
+
+    def get_description(self) -> str:
+        return self.description
+
+    def set_game(self, game: str):
+        self.game = game
+
+    def set_description(self, description: str):
+        self.description = description
+
+    def __repr__(self) -> str:
+        return f'Game({self.game_id}, {self.game})'
+    
+class ActiveGame(db.Model):
+    __tablename__ = 'active_game'
+
+    active_game_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('player.user_id'), nullable=False)
+
+    def get_active_game_id(self) -> int:
+        return self.active_game_id
+
+    def get_user_id(self) -> int:
+        return self.user_id
+
+    def __repr__(self) -> str:
+        return f'ActiveGame({self.active_game_id}, {self.user_id})'
+
+class GameSession(db.Model):
+    __tablename__ = 'game_session'
+
+    active_game_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('game.game_id'), nullable=False)
+    open_for_join = db.Column(db.Boolean, default=True, nullable=False)
+    title = db.Column(db.String(255), nullable=False) 
+
+    def get_active_game_id(self) -> int:
+        return self.active_game_id
+
+    def get_game_id(self) -> int:
+        return self.game_id
+    
+    def get_title(self) -> str:
+        return self.title
+
+    def is_open_for_join(self) -> bool:
+        return self.open_for_join
+    
+    def set_title(self, title: str):
+        self.title = title
+
+    def set_open_for_join(self, open_for_join: bool) -> None:
+        self.open_for_join = open_for_join
+
+    def __repr__(self) -> str:
+        return f'GameSession({self.active_game_id}, {self.game_id}, {self.open_for_join},  {self.title})'
+        

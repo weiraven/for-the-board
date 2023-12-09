@@ -1,119 +1,151 @@
 {% extends '_template.html' %}
 
 {% block body %} 
+
 <style>
-    .navbar {
-      background-color: #272733;
-    }
+  .othernavbar a {
+    color: #ffffff !important;
+    padding: 10px;
+  }
 
-    .navbar a {
-      color: #ffffff !important;
-    }
+  .othernavbar a:hover {
+    color: #800080 !important;
+  }
 
-    .navbar a:hover {
-      color: #800080 !important;
-    }
+  .othernavbar a.active {
+    color: #800080 !important; 
+  }
 
-    .navbar a.active {
-      color: #800080 !important; 
-    }
+  .container-title {
+    background-color: #262D34;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    position: relative;
+    text-align: center;
+  }
 
-    .container-title {
-      background-color: #262D34;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      position: relative;
-      text-align: center;
-    }
+  .title-line {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 2px;
+    background-color: #ffffff;
+  }
 
-    .title-line {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      height: 2px;
-      background-color: #ffffff;
-    }
+  .card {
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #343a40;
+    color: #ffffff;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+    margin-bottom: 20px; 
+    padding: 20px;
+  }
 
-    .card-container {
-      display: flex;
-      justify-content: space-between;
-      padding: 50px; 
-    }
+  .mb-3 {
+    margin-bottom: 1rem;
+  }
 
-    .card {
-      border: none;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      background-color: #343a40;
-      color: #ffffff;
-      text-decoration: none; 
-      transition: transform 0.2s ease; 
-    }
+  /* Additional styling for the form */
+  .form-label {
+    font-weight: bold;
+  }
 
-    .card:hover {
-      transform: scale(1.15); 
-    }
+  .btn-primary {
+    background-color: #800080;
+    border: none;
+  }
 </style>
 
+<!-- Container with Title -->
+<div class="container-title">
+  <h1>Create A Game Session</h1>
+  <div class="title-line"></div>
+</div>
 
-  <!-- Container with Title -->
-  <div class="container-title">
-    <h1>Create A Game Session</h1>
-    <div class="title-line"></div>
+<!-- Navbar -->
+<nav class="othernavbar">
+  <div class="container">
+    <ul class="nav" style="background-color: #272733;">
+      <li class="nav-item">
+        <a class="nav-link" href="active_game">My Game Sessions</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" aria-current="page" href="create_game">Create A Game</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="join_game">Join A Game</a>
+      </li>
+    </ul>
   </div>
+</nav>
 
-   <!-- Navbar -->
-   <nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container">
-      <ul class="nav" style = "background-color: #272733;">
-        <li class="nav-item">
-          <a class="nav-link" aria-current="page" href="active_game">My Game Sessions</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="create_game">Create A Game</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="join_game">Join A Game</a>
-          </li>
-      </ul>
+<div class="container mt-3">
+  <div class="col-md-4">
+    <div class="card mx-auto">
+      <form method="POST" action="{{ url_for('create_game') }}">
+        <div class="card-body">
+          <h5 class="card-title">Create/Recreate a New Game</h5>
 
-      <!-- Search Box  -->
-      <form class="d-flex">
-        <input class="form-control me-2" type="search" placeholder="Search Games To Create" aria-label="Search">
-        <button class="btn btn-outline-light" type="submit">Search</button>
+          <!-- Dropdown for Create or Recreate -->
+          <div class="mb-3">
+            <label for="game_type" class="form-label">Select Option</label>
+            <select class="form-control" id="game_type" name="game_type" required>
+              <option value="create">Create a New Game</option>
+              {% for game in games %}
+                <option value="{{ game.game_id }}" data-description="{{ game.description }}">{{ game.game }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Game Form -->
+          <div class="mb-3" id="game_creation">
+            <label for="game" class="form-label">Game</label>
+            <input type="text" class="form-control" id="game" name="game" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="title" class="form-label">Title of Lobby</label>
+            <input type="text" class="form-control" id="title" name="title" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Create Game</button>
+        </div>
       </form>
     </div>
-  </nav>
-
-
-  <div class="container mt-3 card-container">
-  <div class="col-md-4">
-    <a href="active_game">
-    <div class="card mx-auto">
-      <img src="/static/images/DDM.jpg" class="card-img-top" alt="Dungeon Dice Monsters">
-      <div class="card-body">
-        <h5 class="card-title">Dungeon Dice Monsters</h5>
-        <p class="card-text">Yu-Gi-Oh! Dungeon Dice Monsters is a dice-driven tactics video game based on an original board game featured in the Yu-Gi-Oh! storyline. It was developed and published by Konami, and released on March</p>
-      </div>
-    </div>
-</div>
-</a>
-
-<div class="container mt-3 card-container">
-    <div class="col-md-4">
-        <a href="active_game">
-      <div class="card mx-auto">
-        <img src="/static/images/D&D.jpg" class="card-img-top" alt="Dungeon & Dragons">
-        <div class="card-body">
-          <h5 class="card-title">Dungeons & Dragons</h5>
-          <p class="card-text">Dungeons & Dragons is a fantasy tabletop role-playing game originally created and designed by Gary Gygax and Dave Arneson. The game was first published in 1974 by Tactical Studies Rules, Inc.</p>
-        </div>
-      </div>
   </div>
-</a>
+</div>
 
+<script>
+  // JavaScript to handle autofilling form fields
+  document.addEventListener('DOMContentLoaded', function () {
+    var gameTypeDropdown = document.getElementById('game_type');
+    var gameCreationInput = document.getElementById('game');
+    var descriptionInput = document.getElementById('description');
 
+    gameTypeDropdown.addEventListener('change', function () {
+      if (gameTypeDropdown.value !== 'create') {
+        var selectedOption = gameTypeDropdown.options[gameTypeDropdown.selectedIndex];
+        var gameText = selectedOption.text;
+        var gameDescription = selectedOption.getAttribute('data-description');
+
+        gameCreationInput.value = gameText;
+        descriptionInput.value = gameDescription;
+      } else {
+        gameCreationInput.value = '';
+        descriptionInput.value = '';
+      }
+    });
+  });
+</script>
 
 {% endblock %}
