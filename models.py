@@ -83,6 +83,9 @@ class ForumPost(db.Model):
     def get_time_posted(self):
         # return self.time_posted.strftime('%m-%d-%Y %H:%M')
         return self.time_posted.isoformat()
+    
+    def get_category(self) -> str:
+        return self.category
 
     def get_upvotes(self) -> int:
         return self.upvotes
@@ -105,6 +108,12 @@ class ForumPost(db.Model):
         if self.upvotes > 0:
             self.upvotes -= 1
             db.session.commit()
+
+class Vote(db.Model):
+    __tablename__ = 'vote'
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.post_id'), primary_key=True)
+    vote_type = db.Column(db.String(10), nullable=False) # 'upvote' or 'downvote'
 
 class Game(db.Model):
     __tablename__ = 'game'
