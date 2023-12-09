@@ -52,17 +52,20 @@ class ForumPost(db.Model):
     content = db.Column(db.Text)
     author_id = db.Column(db.Integer, db.ForeignKey('player.user_id'))
     time_posted = db.Column(db.DateTime, default=datetime.utcnow)
-    upvotes = db.Column(db.Integer)
-    parent_post_id = db.Column(db.Integer, db.ForeignKey('forumpost.post_id'))
+    upvotes = db.Column(db.Integer, default=0)
     flairs = db.Column(db.String(255))
+    parent_post_id = db.Column(db.Integer, db.ForeignKey('forumpost.post_id'))
+    category = db.Column(db.String(255))
 
     # forumpost constructor
-    def __init__(self, title:str, content:str, author_id:int, flairs='', parent_post_id=None) -> None:
+    def __init__(self, title:str, content:str, author_id:int, flairs='', parent_post_id=None,category='') -> None:
         self.title = title
         self.content = content
-        self.author_id = author_id 
+        self.author_id = author_id
+        self.upvotes = 0
         self.flairs = flairs
         self.parent_post_id = parent_post_id
+        self.category = category
 
     # forumpost getters
     def get_post_id(self) -> int:
@@ -78,7 +81,11 @@ class ForumPost(db.Model):
         return self.author_id
 
     def get_time_posted(self):
-        return self.time_posted.strftime('%m-%d-%Y %H:%M (UTC-5)')
+        # return self.time_posted.strftime('%m-%d-%Y %H:%M')
+        return self.time_posted.isoformat()
+    
+    def get_category(self) -> str:
+        return self.category
 
     def get_upvotes(self) -> int:
         return self.upvotes
@@ -88,23 +95,25 @@ class ForumPost(db.Model):
     
     def get_flairs(self):
         return self.flairs
+    
+    def get_category(self):
+        return self.category
+    
+    # other methods
+    def upvote(self):
+        self.upvotes += 1
+        db.session.commit()
+    
+    def downvote(self):
+        if self.upvotes > 0:
+            self.upvotes -= 1
+            db.session.commit()
 
-    # forumpost setters
-    def set_title(self, title:str):
-        self.title = title
-
-    def set_content(self, content:str):
-        self.content = content
-
-    def set_author_id(self, author_id:int):
-        self.author_id = author_id
-
-    def set_upvotes(self, upvotes:int):
-        self.upvotes = upvotes
-
-    def set_parent_post_id(self, parent_post_id:int):
-        self.parent_post_id = parent_post_id
-
+class Vote(db.Model):
+    __tablename__ = 'vote'
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.post_id'), primary_key=True)
+    vote_type = db.Column(db.String(10), nullable=False) # 'upvote' or 'downvote'
 
 class Game(db.Model):
     __tablename__ = 'game'
@@ -177,4 +186,3 @@ class GameSession(db.Model):
 
     def __repr__(self) -> str:
         return f'GameSession({self.active_game_id}, {self.game_id}, {self.open_for_join},  {self.title})'
-        

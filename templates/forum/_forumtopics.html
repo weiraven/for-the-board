@@ -1,0 +1,13 @@
+<div class="card">
+    <div class="card-body">
+        <h5 cdivlass="card-title">Boards by Topic</h5>
+        <div class="card-link d-flex flex-column">
+            <a href="{{ url_for('subforum', category='community-square') }}" class="subforum-link">Community Square</a>
+            <a href="{{ url_for('subforum', category='looking-for-group') }}" class="subforum-link">Looking For Group</a>
+            <a href="{{ url_for('subforum', category='creative-content') }}" class="subforum-link">Creative Content</a>
+            <a href="{{ url_for('subforum', category='gamemaster-corner') }}" class="subforum-link">Gamemasters Corner</a>
+            <a href="{{ url_for('subforum', category='bug-report-technical') }}" class="subforum-link">Bug Report & Technical Issues</a>
+            <a href="{{ url_for('forum') }}" class="subforum-link">All Topics - GuildBoard Main</a>
+        </div>
+    </div>
+</div>

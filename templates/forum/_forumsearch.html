@@ -1,0 +1,22 @@
+<div class="card">
+	<div class="card-body">
+		<form action="{{ url_for('search_posts', category=category )}}" method="get">
+			<div class="mb-3">
+				<label for="search" name="query-flair" class="form-label"></label>
+				<input type="text" name="query-flair" placeholder="Search by flair" class="form-control" />
+				<button type="submit" class="btn btn-secondary">Search</button>
+			</div>
+		</form>
+	</div>
+</div>
+<div class="card">
+	<div class="card-body">
+		<form action="{{ url_for('search_posts', category=category )}}" method="get">
+			<div class="mb-3">
+				<label for="search" name="query-title" class="form-label"></label>
+				<input type="text" name="query-title" placeholder="Search by title..." class="form-control" />
+				<button type="submit" class="btn btn-secondary">Search</button>
+			</div>
+		</form>
+	</div>
+</div>

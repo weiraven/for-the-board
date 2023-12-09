@@ -18,9 +18,6 @@
     input::placeholder, textarea::placeholder { 
         color: var(--input-placeholder) !important; 
     }
-    select.form-select, select.form-select option {
-        color: #A2D0F7 !important;
-    }
     label {
         margin-bottom: 2px;
     }
@@ -66,24 +63,6 @@
     .badge-close-icon {
         cursor: pointer;
     }
-
-    .badge-clicked {
-        border: 1px solid white;
-    }
-
-    .hint-flair {
-        font-size: 10px;
-    }
-
-    @keyframes blinker {
-        50% {
-            opacity: 0;
-        }
-    }
-    
-    .badge-text {
-        animation: blinker 1s linear infinite;
-    }
 </style>
 
 <div class="container">
@@ -91,36 +70,35 @@
         <div class="col-sm-8">
             <div class="card">
                 <div class="card-header">
-                    <strong>Create a New Post</strong>
+                    <strong>Edit Post</strong>
                 </div>
                 <div class="card-body">
-                    <form action="/create_post" method="post">
+                    <form action="/update_post" method="post">
+                        <input type="hidden" name="post_id" value="{{ post.post_id }}">
                         <div class="form-group">
                             <label for="postTitle">Title</label>
-                            <input type="text" class="form-control" id="postTitle" name="title" placeholder="What is your quest?" required>
+                            <input type="text" class="form-control" id="postTitle" name="title" value="{{ post.title }}" required>
                         </div>
                         <div class="form-group">
                             <label for="forumCategory">Topic</label>
                             <select name="category" class="selectform form-select" aria-label="Default select">
-                                <option selected value="community-square">Community Square</option>
-                                <option value="looking-for-group">Looking For Group</option>
-                                <option value="creative-content">Creative Content</option>
-                                <option value="gamemaster-corner">Gamemasters Corner</option>
-                                <option value="bug-report-technical">Bug Report & Technical Issues</option>
+                                <option value="community-square" {% if post.category == 'community-square' %}selected{% endif %}>Community Square</option>
+                                <option value="looking-for-group" {% if post.category == 'looking-for-group' %}selected{% endif %}>Looking For Group</option>
+                                <option value="creative-content" {% if post.category == 'creative-content' %}selected{% endif %}>Creative Content</option>
+                                <option value="gamemaster-corner" {% if post.category == 'gamemaster-corner' %}selected{% endif %}>Gamemasters Corner</option>
+                                <option value="bug-report-technical" {% if post.category == 'bug-report-technical' %}selected{% endif %}>Bug Report & Technical Issues</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <div class="containerflair"></div>
                             <label for="flair-container">Flair</label>
                             <button type="button" id="add-flair" class="btn btn-light btn-sm plus-button"><i class="fas fa-plus"></i></button><br>
-                            <p class="hint-flair">Hint: Add a flair to customize your post.</p>
-                            <div class="flair-container col-sm-3 d-flex justify-content-between align-content-center gap-2"></div>
+                            <div class="flair-container"></div>
                         </div>
                         <div class="form-group">
                             <label for="postContent">Exposition</label>
-                            <textarea class="form-control" id="postContent" name="content" rows="10" placeholder="What do you seek?" ></textarea>
+                            <textarea class="form-control" id="postContent" name="content" rows="10">{{ post.content }}</textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-block">Submit</button>
+                        <button type="submit" class="btn btn-primary btn-block">Update Post</button>
                     </form>
 				</div>
 			</div>
@@ -144,40 +122,28 @@
 			</div>
 
 <script defer>
-        //global scope
-        const badges = [];
-
+    document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('add-flair').addEventListener('click', e => {
             const flairContainer = document.querySelector('.flair-container')
             const existingBadges = flairContainer.querySelectorAll('.badge').length
             if (existingBadges >= 4) return ;
 
             const newBadge = document.createElement('span')
-            newBadge.classList.add('badge', 'rounded-pill', 'text-bg-primary', 'fs-7', 'd-flex', 'justify-content-center', 'align-items-center', 'gap-1')
-
-            badgeText = document.createElement('span')
-            badgeText.textContent = 'Enter Text'
-            badgeText.classList.add('badge-text')
-            badgeText.setAttribute('contenteditable', 'true')
+            newBadge.classList.add('badge', 'rounded-pill', 'text-bg-primary', 'fs-7','text-center')
+            newBadge.textContent = 'New Flair'
+            newBadge.setAttribute('contenteditable', 'true')
 
             const closeIcon = document.createElement('span')
             closeIcon.innerHTML = '&times;'
-            closeIcon.classList.add('badge-close-icon', 'fs-5')
+            closeIcon.classList.add('badge-close-icon', 'fs-4')
             closeIcon.onclick = function() {
                 flairContainer.removeChild(newBadge);
             };
-            newBadge.append(badgeText, closeIcon)
+            newBadge.append(closeIcon)
 
-            badgeText.addEventListener('click', () => {
-                badgeText.classList.remove('badge-text')
-            })
-
-            newBadge.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (newBadge.classList.contains('badge-clicked')) {
-                    newBadge.classList.remove('badge-clicked')
-                }
-                newBadge.classList.add('badge-clicked')
+            newBadge.addEventListener('blur', () => {
+                newBadge.setAttribute('contenteditable', 'true')
+                newBadge.append(closeIcon)
             })
 
             newBadge.addEventListener('keypress', () => {
@@ -187,7 +153,6 @@
             })
 
             flairContainer.appendChild(newBadge)
-            badges.push(newBadge);
         })
 
         document.querySelector('form').addEventListener('submit', e => {
@@ -204,15 +169,11 @@
             form.appendChild(hiddenInput)
         })
 
-        //global array event listener 
-        document.addEventListener('click', (e) => {
-            badges.forEach(badge => {
-                if (!badge.contains(e.target)) {
-                    badge.classList.remove('badge-clicked');
-                }
-                badge.classList.remove('badge-text');
-            });
-        });
-
+        // Pre-populate existing flairs
+        const existingFlairs = "{{ post.flairs }}".split(",");
+        for (const flair of existingFlairs) {
+            createFlair(flair.trim())
+        }
+    })
 </script>
 {% endblock %}

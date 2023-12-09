@@ -1,0 +1,131 @@
+{% macro forum_style() -%}
+<style>
+	a {
+		color: #FDB37C;
+	}
+	a:hover {
+		color: #944394;
+	}
+	.card-header {
+		background-color: #000419;
+		color: #ffffff;
+	}
+	.card {
+		margin-top: 20px;
+		background-color: #202428;
+		color: #ffffff;
+	}
+	.card-footer {
+		background-color: #000419;
+		color: #ffffff;
+		display: flex;
+	}
+	.form-control {
+		margin-bottom: 15px;
+	}
+	.btn.btn-primary.btn-block {
+		background-color: #944394;
+		border-color: #944394;
+		color: #ffffff;
+	}
+	.btn.btn-light.btn-sm {
+		background-color: #a2d0f7;
+		border-color: #a2d0f7;
+		margin-right: 5px;
+	}
+	.btn.btn-light.btn-sm.upvote-button {
+		background-color: #944394;
+		border-color: #944394;
+		margin-right: 5px;
+	}
+	.btn.btn-light.btn-sm.downvote-button {
+		background-color: #944394;
+		border-color: #944394;
+		margin-left: 5px;
+	}
+	.btn.btn-secondary {
+		background-color: #6a84da;
+		border-color: #6a84da;
+		color: #ffffff;
+	}
+	.badge.rounded-pill.text-bg-primary {
+		background-color: #FDB37C; 
+		color: #ffffff;
+	}
+	.popup {
+		position: relative;
+		display: flex;
+	}
+	.popup-header {
+		background-color: #944394;
+		color: #ffffff; 
+		border-radius: 5px;
+		align-items: center;
+		padding: 2px;
+		margin-bottom: 5px;
+	}
+	.popup-header h5 {
+		padding-top: 5px;
+		padding-left: 10px;
+	}
+	.popup-content {
+		display: none; 
+		position: absolute; 
+		top: 15px; 
+		left: 60%; 
+		visibility: hidden; 
+		z-index: 1;
+		background-color: #090112; 
+		box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+		border-radius: 8px; 
+		padding: 8px; 
+		margin-top: 8px;
+		margin-bottom: 8px;
+		margin-left: 8px;
+	}
+	.popup-content.show {
+		display: block;
+		visibility: visible;
+	}
+	.link-input {
+		width: 250px;
+	}
+	.link-container { 
+		display: flex;
+		flex: row-reverse;
+		align-items: center;
+		order: 1;
+	}
+	.copy-button {
+		margin-left: 10px;
+	}
+	.close-button {
+		position: absolute;
+		top: 0;
+		right: 8px;
+		width: 20px;
+		height: 20px;
+		border: none;
+		background: transparent;
+		font-size: 20px;
+		color:#000000;
+		cursor: pointer;
+	}
+</style>
+{%- endmacro -%}
+
+{% macro topic_card(forum_name) -%}
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title" style="color: #FDB37C">gb/{{ forum_name }}</h5>
+        <p class="card-text">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos aspernatur omnis,
+            perferendis fuga quaerat ex, id sed dolores minus dolorum veritatis dolor commodi voluptates,
+            praesentium beatae error consectetur hic. Fuga consequuntur illo odit sit eveniet laudantium?
+            Impedit laboriosam mollitia ut iusto harum voluptates, nostrum nam esse tempora facilis
+            cupiditate.
+        </p>
+        <a href="/create_post" class="btn btn-primary btn-block">Create Post</a>
+    </div>
+</div>
+{%- endmacro -%}

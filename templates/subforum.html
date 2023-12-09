@@ -5,26 +5,34 @@
 {% endblock %} 
 
 {% block body %}
-{% from 'forum/_macros.html' import forum_style, post_header, post_body, post_footer, topic_card %}
+{% from 'forum/_macros.html' import forum_style, topic_card %}
 {{ forum_style() }}
 
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-3">
-		{% include "forum/_forumtopics.html" %}
-		{% include "forum/_forumsearch.html" %}
+			{% include "forum/_forumtopics.html" %}
+			{% include "forum/_forumsearch.html" %}
 		</div>
 		<div class="col-6">
-		{% for post in posts %}
-		{% include "forum/_forumpost.html" %}
-		{% endfor %}
+			{% for post in posts %}
+			{% include "forum/_forumpost.html" %}
+			{% endfor %}
 		</div>
 		<div class="col-3">
-		{% set forum_name='Main' %}
+		{% set forum_name=category %}
 		{{ topic_card(forum_name) }}
 		</div>
 	</div>
 </div>
+
+<script defer>
+	document.querySelectorAll('.search_post').forEach((form) => {
+		const category = window.location.pathname.split('/')[2];
+		document.querySelector('.query-category').value = category;
+		console.log(category);
+	});
+</script>
 
 <script>
 	/* Modify timestamps on post to reflect M-D-Y H:M AM/PM according to client's local time */
@@ -140,5 +148,4 @@
 		}
 	}
 </script>
-
 {% endblock %}
