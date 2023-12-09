@@ -3,19 +3,16 @@
 {% block body %} 
 
 <style>
-  .navbar.active-game {
-    background-color: #272733;
-  }
-
-  .navbar.active-game a {
+  .othernavbar a {
     color: #ffffff !important;
+    padding: 10px;
   }
 
-  .navbar.active-game a:hover {
+  .othernavbar a:hover {
     color: #800080 !important;
   }
 
-  .navbar.active-game a.active {
+  .othernavbar a.active {
     color: #800080 !important; 
   }
 
@@ -72,6 +69,7 @@
     bottom: 10px;
     right: 10px;
   }
+  
 </style>
 
 
@@ -82,7 +80,7 @@
 </div>
 
 <!-- Navbar -->
-<nav class="navbar active-game navbar-expand-lg navbar-light">
+<nav class="othernavbar">
   <div class="container">
     <ul class="nav" style = "background-color: #272733;">
       <li class="nav-item">
@@ -96,30 +94,44 @@
         </li>
     </ul>
 
-    <!-- Search Box on the Right -->
-    <form class="d-flex">
-      <input class="form-control me-2" type="search" placeholder="Search For Your Games" aria-label="Search">
-      <button class="btn btn-outline-light" type="submit">Search</button>
-    </form>
-  </div>
-</nav>
-
-<!-- Horizontal Card with Padding -->
-<div class="container mt-3">
-  <div class="card mx-auto">
-    <div class="row g-0">
-      <div class="col-md-4">
-        <img src="/static/images/DDM.jpg" class="img-fluid rounded-start" alt="Dungeon Dice Monsters">
-      </div>
-      <div class="col-md-8">
-        <div class="card-body">
-          <h5 class="card-title">Dungeon Dice Monster</h5>
-          <p class="card-text">Yu-Gi-Oh! Dungeon Dice Monsters is a dice-driven tactics video game based on an original board game featured in the Yu-Gi-Oh! storyline. It was developed and published by Konami, and released on March</p>
-          <p class="card-text"><small>Last updated 3 mins ago</small></p>
+    <div class="container">
+      <h2>Your Active Games</h2>
+      {% if active_games %}
+        <div class="row">
+          {% for active_game in active_games %}
+            <div class="col-md-4">
+              <div class="card mx-auto">
+                {% for game_session in game_sessions %}
+                  {% if active_game.active_game_id == game_session.active_game_id %}
+                    <img src="{{ url_for('static', filename='images/DDM.jpg') }}" class="card-img-top">
+                    <div class="card-body">
+                      <h5 class="card-title">
+                        {% for game in games %}
+                          {% if game_session.game_id == game.game_id %}
+                            {{ game.game }}
+                          {% endif %}
+                        {% endfor %}
+                      </h5>
+                      <p class="card-text">{{ game_session.title }}</p>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
         </div>
+      {% else %}
+        <p>No active games found.</p>
+      {% endif %}
+    </div>
+    
+    
+    
+
+
         
         <!-- Avatars Inside the Card -->
-        <div class="avatar-container" >
+        <!-- <div class="avatar-container" >
           <div class="avatar bg-primary text-light d-flex align-items-center justify-content-center">
             <span>PC</span>
           </div>
@@ -135,14 +147,14 @@
           <div class="avatar bg-danger text-light d-flex align-items-center justify-content-center">
             <span>RW</span>
           </div>
-        </div>
+        </div> -->
 
-        <!-- Submit Button -->
+        <!-- Submit Button
         <button type="submit" class="btn btn-primary submit-button">Play Board</button>
       </div>
     </div>
   </div>
-</div>
+</div> -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}

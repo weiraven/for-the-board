@@ -1,11 +1,12 @@
 import os
 from flask import Flask, flash, render_template, abort, request, redirect, url_for, session, jsonify
-from models import db, User, ForumPost
+from models import db, User, ForumPost, Game, ActiveGame, GameSession
 from dotenv import load_dotenv
 from flask_socketio import SocketIO
 from flask_bcrypt import Bcrypt
 from repositories.src.user_repository import player_repository_singleton
 from urllib.parse import urlparse, urljoin
+from repositories.src.game_repository import game_repository_singleton
 
 load_dotenv()
 app = Flask(__name__)
@@ -120,23 +121,60 @@ def is_safe_url(target):
 def profile():
     return render_template('profile.html')
 
-@app.get('/active_game')
+@app.route('/active_game')
 def active_game():
     if 'username' in session:
-        return render_template('active_game.html')
-    return redirect('login')
+        # Get the user_id for the logged-in user
+        username = session['username']
+        user = User.query.filter_by(username=username).first()
 
-@app.get('/create_game')
-def create_game():
-    if 'username' in session:
-        return render_template('create_game.html')
-    return redirect('login')
+        if user:
+            # Query active games for the user
+            active_games = ActiveGame.query.filter_by(user_id=user.user_id).all()
 
-@app.get('/join_game')
+            # Create a list to store game sessions
+            game_sessions = []
+
+            # Loop through active games and query for corresponding game sessions
+            for active_game in active_games:
+                game_session = GameSession.query.filter_by(active_game_id=active_game.active_game_id).first()
+
+                if game_session:
+                    game_sessions.append(game_session)
+
+            games = Game.query.all()
+
+            return render_template('active_game.html', active_games=active_games, game_sessions=game_sessions, games=games)
+        else:
+            # Handle the case where the user doesn't exist (unexpected case)
+            return render_template('error.html', error_message="User not found.")
+    else:
+        return redirect('login')
+
+@app.route('/join_game', methods=['GET', 'POST'])
 def join_game():
     if 'username' in session:
-        return render_template('join_game.html')
-    return redirect('login')
+        if request.method == 'POST':
+            
+            game_id_to_join = request.form.get('game_id')  
+
+            if game_id_to_join:
+                 
+                username = session.get('username')
+                user = User.query.filter_by(username=username).first()
+
+                active_game = ActiveGame(active_game_id=game_id_to_join, user_id=user.user_id)
+                db.session.add(active_game)
+                db.session.commit()
+ 
+                return redirect(url_for('active_game'))  
+        
+        games = Game.query.all()
+        game_session = GameSession.query.all()
+
+        return render_template('join_game.html', games=games, game_session=game_session)
+    else:
+        return redirect('login')
 
 @app.route('/forum', methods=('GET', 'POST'))
 def forum():
@@ -305,6 +343,62 @@ def search_posts():
        return render_template('subforum.html', category=query_category, posts=filtered_posts)
 
     return render_template('forum.html', posts=filtered_posts)
+
+@app.route('/create_game', methods=['GET', 'POST'])
+def create_game():
+    if request.method == 'POST':
+        # Get form data
+        game = request.form.get('game')
+        title = request.form.get('title')
+        description = request.form.get('description')
+
+        # Assuming 'game' is the name of the game you want to add
+        game_exists = Game.query.filter_by(game=game).first()
+
+        if game_exists:
+            username = session.get('username')
+            user = User.query.filter_by(username=username).first()
+
+            if user:
+                new_game_session = GameSession(title=title, game_id=game_exists.game_id, open_for_join=True)
+                db.session.add(new_game_session)
+                db.session.commit()
+
+                new_active_game = ActiveGame(active_game_id=new_game_session.active_game_id, user_id=user.user_id)
+                db.session.add(new_active_game)
+                db.session.commit()
+        else:
+            # Create a new Game instance
+            new_game = Game(game=game, description=description)
+
+            # Add the new game to the database
+            db.session.add(new_game)
+            db.session.commit()
+            print(f"Game '{game}' added to the database.")
+
+        # Get the user_id (replace 'username' with the actual session key you are using)
+            username = session.get('username')
+            user = User.query.filter_by(username=username).first()
+
+            if user:
+                new_game_session = GameSession(active_game_id=new_game.game_id, title=title, game_id=new_game.game_id, open_for_join=True)
+                db.session.add(new_game_session)
+                db.session.commit()
+
+                new_active_game = ActiveGame(active_game_id=new_game.game_id, user_id=user.user_id)
+                db.session.add(new_active_game)
+                db.session.commit()
+
+            # Redirect to a success page or any other route
+            return redirect(url_for('join_game'))
+
+    # Fetch all games from the database
+    games = Game.query.all()
+    
+    # Pass the games to the template
+    return render_template('create_game.html', games=games)
+
+        
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
