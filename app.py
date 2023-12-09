@@ -100,8 +100,31 @@ def logout():
     del session['username']
     return redirect('/')
 
-@app.get('/profile')
-def profile():
+@app.get('/profile/<str:username>')
+def profile(username: str):
+
+    return render_template('profile.html')
+
+@app.post('/profile')
+def player():
+    first_name = request.form.get('first_name')
+    last_name = request.form.get('last_name')
+    email = request.form.get('email')
+    username = request.form.get('username')
+    raw_password = request.form.get('password')
+
+    User.first_name = request.form.get('first_name')
+    User.last_name = last_name = request.form.get('last_name')
+    User.
+    active_user = User.query.filter_by(username=username).first()
+    session['username'] = {
+        'username': 
+        'first_name': 
+        'last_name': 
+        'profile_pic': 
+        'bio_text': 
+        'game_tags': 
+    }
     return render_template('profile.html')
 
 @app.get('/active_game')
@@ -152,10 +175,6 @@ def create_post():
 
         return redirect(url_for('forum'))  # redirect back to GuildBoard main page
     return render_template('create_post.html')
-
-@app.post('/profile')
-def player():
-    return render_template('profile.html')
 
 @app.get('/chatsession')
 def chat():
