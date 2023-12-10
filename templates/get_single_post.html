@@ -5,7 +5,7 @@
 {% endblock %} 
 
 {% block body %}
-{% from 'forum/_macros.html' import forum_style, post_header, post_body, post_footer, topic_card %}
+{% from 'forum/_macros.html' import forum_style, topic_card %}
 {{ forum_style() }}
 
 <div class="container-fluid">
@@ -15,12 +15,10 @@
 		{% include "forum/_forumsearch.html" %}
 		</div>
 		<div class="col-6">
-		{% for post in posts %}
 		{% include "forum/_forumpost.html" %}
-		{% endfor %}
 		</div>
 		<div class="col-3">
-		{% set forum_name='Main' %}
+		{% set forum_name=post.category %}
 		{{ topic_card(forum_name) }}
 		</div>
 	</div>
@@ -140,5 +138,4 @@
 		}
 	}
 </script>
-
 {% endblock %}
