@@ -101,31 +101,21 @@ def logout():
     del session['username']
     return redirect('/')
 
-@app.get('/profile/<str:username>')
+@app.get('/profile/<string:username>')
 def profile(username: str):
 
     return render_template('profile.html')
 
 @app.post('/profile')
 def player():
-    first_name = request.form.get('first_name')
-    last_name = request.form.get('last_name')
-    email = request.form.get('email')
-    username = request.form.get('username')
-    raw_password = request.form.get('password')
+    active_user = User.query.filter_by(session['username'])
 
-    User.first_name = request.form.get('first_name')
-    User.last_name = last_name = request.form.get('last_name')
-    User.
-    active_user = User.query.filter_by(username=username).first()
-    session['username'] = {
-        'username': 
-        'first_name': 
-        'last_name': 
-        'profile_pic': 
-        'bio_text': 
-        'game_tags': 
-    }
+    active_user.first_name = request.form.get('first_name')
+    active_user.last_name = request.form.get('last_name')
+    active_user.profile_pic = request.form.get('profile_pic')
+    active_user.bio_text = request.form.get('bio_text')
+    active_user.game_tags = request.form.get('game_tags')
+
     return render_template('profile.html')
 
 @app.route('/active_game')

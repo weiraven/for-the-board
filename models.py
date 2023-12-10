@@ -1,4 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Table, Column, Integer, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
 db = SQLAlchemy()
@@ -12,8 +14,12 @@ class User(db.Model):
     email = db.Column(db.String(255), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    profile_pic = db.Column(db.String(255), nullable=True)
+    bio_text = db.Column(db.Text, nullable=True)
+    game_tags = db.Column(db.String)
     posts = db.relationship('ForumPost', backref='author', lazy='dynamic')
-
+    game_tags = db.relationship('GameTags', backref='user', secondary='UserGames', lazy='dynamic')
+    
     # User constructor
     def __init__(self, first_name:str, last_name:str, email:str, username:str, password:str) -> None:
         self.first_name = first_name
@@ -177,4 +183,18 @@ class GameSession(db.Model):
 
     def __repr__(self) -> str:
         return f'GameSession({self.active_game_id}, {self.game_id}, {self.open_for_join},  {self.title})'
-        
+
+class GameTag(db.Model):
+    game_tag_id = db.Column(db.Integer, primary_key=True)
+    game_tag_name = db.Column(db.String(255), nullable=False)
+
+Base = declarative_base()
+
+UserGames = Table('UserGames',
+                  Base.metadata, 
+                  Column('user_id', Integer, ForeignKey('player.user_id')),
+                   Column('game_id', Integer, ForeignKey('GameTag.game_tag_id')) )
+
+#user_game_id = db.Column(db.Integer, primary_key=True)
+#user_id = db.Column(db.Integer, db.ForeignKey('player.user_id'))
+#game_id = db.Column(db.Integer, db.ForeignKey('GameTag.game_tag_id'))
