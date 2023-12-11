@@ -57,6 +57,9 @@ class ForumPost(db.Model):
     parent_post_id = db.Column(db.Integer, db.ForeignKey('forumpost.post_id'))
     category = db.Column(db.String(255))
 
+    # need to also delete vote data when associated post is deleted from db
+    votes = db.relationship('Vote', backref='forumpost', cascade='all, delete-orphan')
+
     # forumpost constructor
     def __init__(self, title:str, content:str, author_id:int, flairs='', parent_post_id=None,category='') -> None:
         self.title = title
@@ -111,9 +114,14 @@ class ForumPost(db.Model):
 
 class Vote(db.Model):
     __tablename__ = 'vote'
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), primary_key=True)
-    post_id = db.Column(db.Integer, db.ForeignKey('post.post_id'), primary_key=True)
-    vote_type = db.Column(db.String(10), nullable=False) # 'upvote' or 'downvote'
+    voter_id = db.Column(db.Integer, db.ForeignKey('player.user_id'), primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('forumpost.post_id'), primary_key=True)
+    vote_status = db.Column(db.Integer, default=0) # 1 for upvote, -1 for downvote, 0 for no vote
+
+    def __init__(self, user_id:int, post_id:int, vote_status:int=0) -> None:
+            self.voter_id = user_id
+            self.post_id = post_id
+            self.vote_status = vote_status
 
 class Game(db.Model):
     __tablename__ = 'game'
