@@ -1,218 +1,251 @@
-{% extends '_template.html' %}
-
-{% block head %}
+{% extends '_template.html' %} {% block head %}
 <title>ForTheBoard - Post to the GuildBoard</title>
-{% endblock %}
-
-{% block body %}
+{% endblock %} {% block body %}
 <style>
-    :root { 
-        --input-bg: #202428; 
-        --input-text: #FFFFFF; 
-        --input-placeholder: #A2D0F7; 
-    }
-    input, textarea { 
-        background-color: var(--input-bg) !important; 
-        color: var(--input-text) !important; 
-    }
-    input::placeholder, textarea::placeholder { 
-        color: var(--input-placeholder) !important; 
-    }
-    select.form-select, select.form-select option {
-        color: #A2D0F7 !important;
-    }
-    label {
-        margin-bottom: 2px;
-    }
-    .card-header{
-        background-color: #000419;
-        color: #FFFFFF;
-    }
-    .card {
-        margin-top: 20px;
-        background-color: #202428;
-        color: #FFFFFF;
-    }
-    .card-footer{
-        background-color: #000419;
-        color: #FFFFFF;
-    }
-    .btn.btn-primary.btn-block {
-        background-color: #944394;
-        border-color: #944394;
-        color: #FFFFFF;
-    }
-    .btn.btn-light.btn-sm { 
-        background-color: #944394; 
-        border-color: #944394;
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
-    .form-group {
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
+	:root {
+		--input-bg: #202428;
+		--input-text: #ffffff;
+		--input-placeholder: #a2d0f7;
+	}
+	input,
+	textarea {
+		background-color: var(--input-bg) !important;
+		color: var(--input-text) !important;
+	}
+	input::placeholder,
+	textarea::placeholder {
+		color: var(--input-placeholder) !important;
+	}
+	select.form-select,
+	select.form-select option {
+		color: #a2d0f7 !important;
+	}
+	label {
+		margin-bottom: 2px;
+	}
+	.card-header {
+		background-color: #000419;
+		color: #ffffff;
+	}
+	.card {
+		margin-top: 20px;
+		background-color: #202428;
+		color: #ffffff;
+	}
+	.card-footer {
+		background-color: #000419;
+		color: #ffffff;
+	}
+	.btn.btn-primary.btn-block {
+		background-color: #944394;
+		border-color: #944394;
+		color: #ffffff;
+	}
+	.btn.btn-light.btn-sm {
+		background-color: #944394;
+		border-color: #944394;
+		margin-top: 10px;
+		margin-bottom: 10px;
+	}
+	.form-group {
+		margin-top: 10px;
+		margin-bottom: 10px;
+	}
 	.list-group-item {
-        background-color: #202428;
-        color: #FFFFFF;
+		background-color: #202428;
+		color: #ffffff;
 		padding-left: 0;
-        	
 	}
 	.selectform {
-        background-color: #202428;
-        color: #FFFFFF;
-        padding-left: 13px;
+		background-color: #202428;
+		color: #ffffff;
+		padding-left: 13px;
 	}
-    .badge-close-icon {
-        cursor: pointer;
-    }
+	.badge-close-icon {
+		cursor: pointer;
+	}
 
-    .badge-clicked {
-        border: 1px solid white;
-    }
+	.badge-clicked {
+		border: 1px solid white;
+	}
 
-    .hint-flair {
-        font-size: 10px;
-    }
+	.hint-flair {
+		font-size: 10px;
+	}
 
-    @keyframes blinker {
-        50% {
-            opacity: 0;
-        }
-    }
-    
-    .badge-text {
-        animation: blinker 1s linear infinite;
-    }
+	@keyframes blinker {
+		50% {
+			opacity: 0;
+		}
+	}
+
+	.badge-text {
+		animation: blinker 1s linear infinite;
+	}
 </style>
 
 <div class="container">
-    <div class="row">
-        <div class="col-sm-8">
-            <div class="card">
-                <div class="card-header">
-                    <strong>Create a New Post</strong>
-                </div>
-                <div class="card-body">
-                    <form action="/create_post" method="post">
-                        <div class="form-group">
-                            <label for="postTitle">Title</label>
-                            <input type="text" class="form-control" id="postTitle" name="title" placeholder="What is your quest?" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="forumCategory">Topic</label>
-                            <select name="category" class="selectform form-select" aria-label="Default select">
-                                <option selected value="community-square">Community Square</option>
-                                <option value="looking-for-group">Looking For Group</option>
-                                <option value="creative-content">Creative Content</option>
-                                <option value="gamemaster-corner">Gamemasters Corner</option>
-                                <option value="bug-report-technical">Bug Report & Technical Issues</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <div class="containerflair"></div>
-                            <label for="flair-container">Flair</label>
-                            <button type="button" id="add-flair" class="btn btn-light btn-sm plus-button"><i class="fas fa-plus"></i></button><br>
-                            <p class="hint-flair">Hint: Add a flair to customize your post.</p>
-                            <div class="flair-container col-sm-3 d-flex justify-content-between align-content-center gap-2"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="postContent">Exposition</label>
-                            <textarea class="form-control" id="postContent" name="content" rows="10" placeholder="What do you seek?" ></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-block">Submit</button>
-                    </form>
+	<div class="row">
+		<div class="col-sm-8">
+			<div class="card">
+				<div class="card-header">
+					<strong>Create a New Post</strong>
+				</div>
+				<div class="card-body">
+					<form id="post-form" action="/create_post" method="post">
+						<div class="form-group">
+							<label for="postTitle">Title</label>
+							<input
+								type="text"
+								class="form-control"
+								id="postTitle"
+								name="title"
+								placeholder="What is your quest?"
+								required
+							/>
+						</div>
+						<div class="form-group">
+							<label for="forumCategory">Topic</label>
+							<select name="category" class="selectform form-select" aria-label="Default select">
+								<option selected value="community-square">Community Square</option>
+								<option value="looking-for-group">Looking For Group</option>
+								<option value="creative-content">Creative Content</option>
+								<option value="gamemaster-corner">Gamemasters Corner</option>
+								<option value="bug-report-technical">Bug Report & Technical Issues</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<div class="containerflair"></div>
+							<label for="flair-container">Flair</label>
+							<button type="button" id="add-flair" class="btn btn-light btn-sm plus-button">
+								<i class="fas fa-plus"></i></button
+							><br />
+							<p class="hint-flair">Hint: Add a flair to customize your post.</p>
+							<div
+								class="flair-container col-sm-3 d-flex justify-content-between align-content-center gap-2"
+							></div>
+						</div>
+						<div class="form-group">
+							<label for="postContent">Exposition</label>
+							<textarea
+								class="form-control"
+								id="postContent"
+								name="content"
+								rows="10"
+								placeholder="What do you seek?"
+							></textarea>
+						</div>
+						<button type="submit" class="btn btn-primary btn-block">Submit</button>
+					</form>
 				</div>
 			</div>
 		</div>
-			<div class="col-sm-4">
-				<div class="card">
-					<div class="card-body">
-						<h5 class="card-title">Posting to the GuildBoard</h5>
-						<p class="card-text">
-							<ul class="list-group list-group-flush">
+		<div class="col-sm-4">
+			<div class="card">
+				<div class="card-body">
+					<h5 class="card-title">Posting to the GuildBoard</h5>
+					<div class="card-text">
+						<ul class="list-group list-group-flush">
 							<li class="list-group-item">This is may be an escapist space</li>
 							<li class="list-group-item">But remember the human</li>
 							<li class="list-group-item">Behave as you would in the real world</li>
 							<li class="list-group-item">Fact check your non-fictional claims</li>
 							<li class="list-group-item">Look for duplicates before posting</li>
 							<li class="list-group-item">May your adventures be great and your rolls be blessed!</li>
-							</ul>
-						</p>
+						</ul>
 					</div>
 				</div>
 			</div>
+		</div>
 
-<script defer>
-        //global scope
-        const badges = [];
+		<script defer>
+			//global scope
+			document.addEventListener('DOMContentLoaded', () => {
+				const badges = [];
 
-        document.getElementById('add-flair').addEventListener('click', e => {
-            const flairContainer = document.querySelector('.flair-container')
-            const existingBadges = flairContainer.querySelectorAll('.badge').length
-            if (existingBadges >= 4) return ;
+				document.getElementById('add-flair').addEventListener('click', (e) => {
+					const flairContainer = document.querySelector('.flair-container');
+					const existingBadges = flairContainer.querySelectorAll('.badge').length;
+					if (existingBadges >= 4) return;
+					console.log(flairContainer);
 
-            const newBadge = document.createElement('span')
-            newBadge.classList.add('badge', 'rounded-pill', 'text-bg-primary', 'fs-7', 'd-flex', 'justify-content-center', 'align-items-center', 'gap-1')
+					const newBadge = document.createElement('span');
+					newBadge.classList.add(
+						'badge',
+						'rounded-pill',
+						'text-bg-primary',
+						'fs-7',
+						'd-flex',
+						'justify-content-center',
+						'align-items-center',
+						'gap-1'
+					);
 
-            badgeText = document.createElement('span')
-            badgeText.textContent = 'Enter Text'
-            badgeText.classList.add('badge-text')
-            badgeText.setAttribute('contenteditable', 'true')
+					badgeText = document.createElement('span');
+					badgeText.textContent = 'Enter Text';
+					badgeText.classList.add('badge-text');
+					badgeText.setAttribute('contenteditable', 'true');
 
-            const closeIcon = document.createElement('span')
-            closeIcon.innerHTML = '&times;'
-            closeIcon.classList.add('badge-close-icon', 'fs-5')
-            closeIcon.onclick = function() {
-                flairContainer.removeChild(newBadge);
-            };
-            newBadge.append(badgeText, closeIcon)
+					const closeIcon = document.createElement('span');
+					closeIcon.innerHTML = '&times;';
+					closeIcon.classList.add('badge-close-icon', 'fs-5');
+					closeIcon.onclick = function () {
+						flairContainer.removeChild(newBadge);
+					};
+					newBadge.append(badgeText, closeIcon);
 
-            badgeText.addEventListener('click', () => {
-                badgeText.classList.remove('badge-text')
-            })
+					badgeText.addEventListener('click', () => {
+						badgeText.classList.remove('badge-text');
+					});
 
-            newBadge.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (newBadge.classList.contains('badge-clicked')) {
-                    newBadge.classList.remove('badge-clicked')
-                }
-                newBadge.classList.add('badge-clicked')
-            })
+					newBadge.addEventListener('click', (e) => {
+						e.stopPropagation();
+						if (newBadge.classList.contains('badge-clicked')) {
+							newBadge.classList.remove('badge-clicked');
+						}
+						newBadge.classList.add('badge-clicked');
+					});
 
-            newBadge.addEventListener('keypress', () => {
-                if (newBadge.textContent.length > 15 || newBadge.textContent == 1 && event.keyCode !== 8 && event.keyCode !== 46) {
-                    event.preventDefault();                 
-                }
-            })
+					newBadge.addEventListener('keypress', () => {
+						if (
+							newBadge.textContent.length > 15 ||
+							(newBadge.textContent == 1 && event.keyCode !== 8 && event.keyCode !== 46)
+						) {
+							event.preventDefault();
+						}
+					});
 
-            flairContainer.appendChild(newBadge)
-            badges.push(newBadge);
-        })
+					flairContainer.appendChild(newBadge);
+					badges.push(newBadge);
+				});
 
-        document.querySelector('form').addEventListener('submit', e => {
-            const form = e.target;
-            const badgeElements = Array.from(document.querySelectorAll('.flair-container .badge'))
-            const joinedBadgeTexts = badgeElements.map(badge => badge.textContent.trim().replace('×', '')).join(', ');
+				document.getElementById('post-form').addEventListener('submit', (e) => {
+					console.log('Form submit');
+					const form = e.target;
+					const joinedBadgeTexts = badges
+						.map((badge) => badge.textContent.trim().replace('×', ''))
+						.join(', ');
 
-            console.log("Flairs to be submitted:", joinedBadgeTexts);
+					console.log('Flairs to be submitted:', joinedBadgeTexts);
 
-            const hiddenInput = document.createElement('input')
-            hiddenInput.type = 'hidden'
-            hiddenInput.name = 'flairs'
-            hiddenInput.value = joinedBadgeTexts
-            form.appendChild(hiddenInput)
-        })
+					const hiddenInput = document.createElement('input');
+					hiddenInput.type = 'hidden';
+					hiddenInput.name = 'flairs';
+					hiddenInput.value = joinedBadgeTexts;
+					form.appendChild(hiddenInput);
+				});
 
-        //global array event listener 
-        document.addEventListener('click', (e) => {
-            badges.forEach(badge => {
-                if (!badge.contains(e.target)) {
-                    badge.classList.remove('badge-clicked');
-                }
-                badge.classList.remove('badge-text');
-            });
-        });
-
-</script>
-{% endblock %}
+				//global array event listener
+				document.addEventListener('click', (e) => {
+					badges.forEach((badge) => {
+						if (!badge.contains(e.target)) {
+							badge.classList.remove('badge-clicked');
+						}
+						badge.classList.remove('badge-text');
+					});
+				});
+			});
+		</script>
+		{% endblock %}
+	</div>
+</div>
