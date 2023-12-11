@@ -1,59 +1,72 @@
 <div class="card">
-
 	{% macro post_header(post) -%}
-    <div class="card-header">
-        <strong>
-            <button class="btn btn-light btn-sm upvote-button" data-post-id="{{ post.get_post_id() }}">
-                <i class="fas fa-arrow-up"></i>
-            </button>
-                <span class="upvotes-count">{{ post.get_upvotes() }}</span>
-            <button class="btn btn-light btn-sm downvote-button" data-post-id="{{ post.get_post_id() }}">
-                <i class="fas fa-arrow-down"></i>
-            </button>
-        </strong>
-        gb/<a href="{{ url_for('subforum', category=post.category|category_to_url) }}">{{ post.category }}</a> •
-        <span class="text" style="font-size: 10pt; color: #ffffff">
-            Posted by u/<a href="{{ url_for('profile', user_id=post.author.user_id) }}">{{ post.author.username }}</a> at <span class="time_posted">{{ post.get_time_posted() }}</span>
-        </span>
-    </div>
-	{%- endmacro -%}
-	{{ post_header(post) }}
-
-	{% macro post_body(post) -%}
-    <div class="card-body">
-        <h5 class="card-title">{{ post.get_title() }}</h5>
-        {% if post.get_flairs() %}
-        <div class="post-flairs">
-            {% for flair in post.get_flairs().split(',') %}
-            <span class="badge rounded-pill text-bg-primary">{{ flair }}</span>
-            {% endfor %}
-        </div>
-        {% endif %}
-        <p class="card-text">{{ post.get_content() | safe }}</p>
-    </div>
-	{%- endmacro -%}
-	{{ post_body(post) }}
-
-	{% macro post_footer(post) -%}
-    <div class="card-footer text-muted">
-        <a href="" class="btn btn-light btn-sm"><i class="fas fa-comment"></i> 0 Comments</a>
-        <div class="popup"><button class="share-button btn btn-light btn-sm"><i class="fas fa-share"></i> Share</button>
-			<div class="popup-content">
-				<div class="popup-header"><span class="close-button" onclick="this.parentElement.parentElement.classList.remove('show')">x</span> <h5>Share this post!</h5></div>
-				<div class="link-container">
-					<input class="link-input" type="text" value="{{ url_for('get_single_post', post_id=post.get_post_id(), _external=True) }}" readonly>
-					<button class="copy-button btn btn-light btn-sm">Copy</button> 
-				</div>
-			</div> 
+	<div class="card-header">
+		<strong>
+			<button class="btn btn-light btn-sm upvote-button" data-post-id="{{ post.get_post_id() }}">
+				<i class="fas fa-arrow-up"></i>
+			</button>
+			<span class="upvotes-count">{{ post.get_upvotes() }}</span>
+			<button class="btn btn-light btn-sm downvote-button" data-post-id="{{ post.get_post_id() }}">
+				<i class="fas fa-arrow-down"></i>
+			</button>
+		</strong>
+		gb/<a href="{{ url_for('subforum', category=post.category|category_to_url) }}">{{ post.category }}</a> •
+		<span class="text" style="font-size: 10pt; color: #ffffff">
+			Posted by u/<a href="{{ url_for('profile', user_id=post.author.user_id) }}">{{ post.author.username }}</a>
+			at <span class="time_posted">{{ post.get_time_posted() }}</span>
+		</span>
+	</div>
+	{%- endmacro -%} {{ post_header(post) }} {% macro post_body(post) -%}
+	<div class="card-body">
+		<h5 class="card-title">{{ post.get_title() }}</h5>
+		{% if post.get_flairs() %}
+		<div class="post-flairs">
+			{% for flair in post.get_flairs().split(',') %}
+			<span class="badge rounded-pill text-bg-primary">{{ flair }}</span>
+			{% endfor %}
 		</div>
-        {% if session['username'] == post.author.username %}
-        <a href="{{ url_for('edit_post', post_id=post.get_post_id()) }}" class="btn btn-light btn-sm edit-post"><i class="fas fa-edit"></i> Edit</a>
-        <form method="POST" action="{{ url_for('delete_post', post_id=post.get_post_id()) }}">
-            <input type="hidden" name="_method" value="DELETE">
-            <button type="button" data-post-id="{{ post.get_post_id() }}" class="btn btn-light btn-sm delete-post" onclick="deletePost(event)"><i class="fas fa-trash"></i> Delete</button>
-        </form>
-        {% endif %}
-    </div>
-	{%- endmacro -%}
-	{{ post_footer(post) }}
+		{% endif %}
+		<p class="card-text">{{ post.get_content() | safe }}</p>
+	</div>
+	{%- endmacro -%} {{ post_body(post) }} {% macro post_footer(post) -%}
+	<div class="card-footer text-muted">
+		<a href="" class="btn btn-light btn-sm"><i class="fas fa-comment"></i> 0 Comments</a>
+		<div class="popup">
+			<button class="share-button btn btn-light btn-sm"><i class="fas fa-share"></i> Share</button>
+			<div class="popup-content">
+				<div class="popup-header">
+					<span class="close-button" onclick="this.parentElement.parentElement.classList.remove('show')"
+						>x</span
+					>
+					<h5>Share this post!</h5>
+				</div>
+				<div class="link-container">
+					<input
+						class="link-input"
+						type="text"
+						value="{{ url_for('get_single_post', post_id=post.get_post_id(), _external=True) }}"
+						readonly
+					/>
+					<button class="copy-button btn btn-light btn-sm">Copy</button>
+				</div>
+			</div>
+		</div>
+		{% if session['username'] == post.author.username %}
+		<a href="{{ url_for('edit_post', post_id=post.get_post_id()) }}" class="btn btn-light btn-sm edit-post"
+			><i class="fas fa-edit"></i> Edit</a
+		>
+		<form method="POST" action="{{ url_for('delete_post', post_id=post.get_post_id()) }}">
+			<input type="hidden" name="_method" value="DELETE" />
+			<button
+				type="button"
+				data-post-id="{{ post.get_post_id() }}"
+				class="btn btn-light btn-sm delete-post"
+				onclick="deletePost(event)"
+			>
+				<i class="fas fa-trash"></i> Delete
+			</button>
+		</form>
+		{% endif %}
+	</div>
+	{%- endmacro -%} {{ post_footer(post) }}
 </div>
