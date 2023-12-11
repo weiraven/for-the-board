@@ -1,6 +1,6 @@
 {% extends '_template.html' %}
 
-{% block body %} 
+{% block body %}
 
 <style>
   .othernavbar a {
@@ -13,7 +13,7 @@
   }
 
   .othernavbar a.active {
-    color: #800080 !important; 
+    color: #800080 !important;
   }
 
   .container-title {
@@ -46,7 +46,7 @@
     display: flex;
     gap: 10px;
     margin-top: 10px;
-    margin-left: 13px; 
+    margin-left: 13px;
   }
 
   .avatar {
@@ -57,7 +57,7 @@
     display: flex;
     align-items: normal;
     justify-content: center;
-    background-color: #007bff; 
+    background-color: #007bff;
   }
 
   .avatar span {
@@ -69,7 +69,6 @@
     bottom: 10px;
     right: 10px;
   }
-  
 </style>
 
 
@@ -82,7 +81,7 @@
 <!-- Navbar -->
 <nav class="othernavbar">
   <div class="container">
-    <ul class="nav" style = "background-color: #272733;">
+    <ul class="nav" style="background-color: #272733;">
       <li class="nav-item">
         <a class="nav-link active" aria-current="page" href="active_game">My Game Sessions</a>
       </li>
@@ -90,48 +89,50 @@
         <a class="nav-link" href="create_game">Create A Game</a>
       </li>
       <li class="nav-item">
-          <a class="nav-link" href="join_game">Join A Game</a>
-        </li>
+        <a class="nav-link" href="join_game">Join A Game</a>
+      </li>
     </ul>
 
     <div class="container">
       <h2>Your Active Games</h2>
       {% if active_games %}
-        <div class="row">
-          {% for active_game in active_games %}
-            <div class="col-md-4">
-              <div class="card mx-auto">
-                {% for game_session in game_sessions %}
-                  {% if active_game.active_game_id == game_session.active_game_id %}
-                    <img src="{{ url_for('static', filename='images/DDM.jpg') }}" class="card-img-top">
-                    <div class="card-body">
-                      <h5 class="card-title">
-                        {% for game in games %}
-                          {% if game_session.game_id == game.game_id %}
-                            {{ game.game }}
-                          {% endif %}
-                        {% endfor %}
-                      </h5>
-                      <p class="card-text">{{ game_session.title }}</p>
-                    </div>
-                  {% endif %}
+      <div class="row">
+        {% for active_game in active_games %}
+        <div class="col-md-4">
+          <div class="card mx-auto">
+            {% for game_session in game_sessions %}
+            {% if active_game.active_game_id == game_session.active_game_id %}
+            <a href="{{ url_for('chat', active_game_id=active_game.active_game_id) }}">
+            <img src="{{ url_for('static', filename='images/DDM.jpg') }}" class="card-img-top">
+            <div class="card-body">
+              <h5 class="card-title">
+                {% for game in games %}
+                {% if game_session.game_id == game.game_id %}
+                {{ game.game }}
+                {% endif %}
                 {% endfor %}
-              </div>
+              </h5>
+              <p class="card-text">{{ game_session.title }}</p>
             </div>
-          {% endfor %}
+            </a>
+            {% endif %}
+            {% endfor %}
+          </div>
         </div>
+        {% endfor %}
+      </div>
       {% else %}
-        <p>No active games found.</p>
+      <p>No active games found.</p>
       {% endif %}
     </div>
-    
-    
-    
 
 
-        
-        <!-- Avatars Inside the Card -->
-        <!-- <div class="avatar-container" >
+
+
+
+
+    <!-- Avatars Inside the Card -->
+    <!-- <div class="avatar-container" >
           <div class="avatar bg-primary text-light d-flex align-items-center justify-content-center">
             <span>PC</span>
           </div>
@@ -149,12 +150,12 @@
           </div>
         </div> -->
 
-        <!-- Submit Button
+    <!-- Submit Button
         <button type="submit" class="btn btn-primary submit-button">Play Board</button>
       </div>
     </div>
   </div>
 </div> -->
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% endblock %}
