@@ -190,6 +190,10 @@
 					closeIcon.innerHTML = '&times;';
 					closeIcon.classList.add('badge-close-icon', 'fs-5');
 					closeIcon.onclick = function () {
+						const index = badges.indexOf(newBadge);
+						if (index > -1) {
+							badges.splice(index, 1);
+						}
 						flairContainer.removeChild(newBadge);
 					};
 					newBadge.append(badgeText, closeIcon);
