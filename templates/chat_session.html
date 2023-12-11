@@ -4,9 +4,42 @@
 
 {% block head %}
 <style>
+    .chat-container {
+        display: flex;
+    }
+
+    .left-container {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        height: calc(80% - 70px);
+        width: 15%;
+        padding: 15px;
+        box-sizing: border-box;
+        z-index: 1;
+    }
+
+    .boardgame-box {
+        position: fixed;
+        top: 75px;
+        left: 15%;
+        border-radius: 40px;
+        height: calc(100% - 27%);
+        width: 54%;
+        background: black;
+        padding: 15px;
+        box-sizing: border-box;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        
+    }
+
     .chatbox {
         position: fixed;
-        bottom: 20vh; 
+        bottom: 20vh;
         right: 10px;
         width: 30%;
         background: #262D34;
@@ -38,7 +71,11 @@
         margin-top: 10px;
     }
 
-    .list-group-item, .form-select, .btn-primary, .form-control, .form-control:focus,
+    .list-group-item,
+    .form-select,
+    .btn-primary,
+    .form-control,
+    .form-control:focus,
     .form-select:focus {
         background-color: #2E3142;
         color: #ffffff;
@@ -47,35 +84,81 @@
 
     .bottom-controls {
         position: fixed;
-        bottom: 20px; 
-        right: 10px;
+        bottom: 40px;
+        right: 15px;
         width: 30%;
         background: #262D34;
         box-shadow: #000000;
         padding: 20px;
         border-radius: 25px;
+        height: 12.5%;
     }
 
-    .left-box {
-        position: fixed;
-        top: 70px; 
-        left: 0;
-        height: calc(100% - 70px); 
-        width: 68%; 
-        background: black;
-        padding: 25px;
-        box-sizing: border-box;
-        z-index: 1; 
+    .inventory-box {
+    background: #262D34;
+    height: 15vh;
+    width: 54%;
+    position: absolute;
+    bottom: 40px;
+    left: 15%;
+    border-radius: 20px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+#uploadedImage img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: auto;
+}
+
+    #uploadForm {
+        margin-top: 30%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+        left: 2%;
+    }
+
+    #uploadForm label,
+    #uploadForm input,
+    #uploadForm button {
+        margin-bottom: 10px;
     }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="chatbox">
-    <div class="card">
-        <div class="card-body message-box">
-            <div class="message-container">
-                <ul id="messages" class="list-group"></ul>
+<div class="chat-container">
+    <div class="left-container" id="userListContainer">
+        <h4>Players</h4>
+        <ul id="activeUsers" class="list-group"></ul>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label for="photo">Upload Image:</label>
+            <input type="file" name="photo" accept="image/*" required>
+            <button type="button" onclick="uploadImage()">Upload</button>
+        </form>
+    </div>
+
+
+    <div class="boardgame-box">
+
+        <div id="uploadedImage"></div>
+    </div>
+
+    <div class="inventory-box">
+        <div id="inventory-title"><u>Inventory</u></div>
+        <ol id="inventory-list"></ol>
+    </div>
+
+    <div class="chatbox">
+        <div class="card">
+            <div class="card-body message-box">
+                <div class="message-container">
+                    <ul id="messages" class="list-group"></ul>
+                </div>
             </div>
         </div>
     </div>
@@ -83,12 +166,8 @@
 
 <div class="bottom-controls">
     <label for="message">Enter a Message:</label>
-    <input id="message" class="form-control"/>
+    <input id="message" class="form-control" />
     <button id="send" class="btn btn-primary mt-2">Send</button>
-</div>
-
-<div class="left-box">
-
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
@@ -97,37 +176,114 @@
 
     function setActiveUser() {
         var selectedUsername = '{{ session["username"] }}';
-        console.log('Selected Username:', selectedUsername);
-        socket.emit('connected', { username: selectedUsername });
+        var activeGameId = '{{ active_game_id }}';
+        socket.emit('connected', { username: selectedUsername, active_game_id: activeGameId });
+        socket.emit('set_active_user', selectedUsername);
     }
 
     function sendMessage() {
         var messageInput = document.getElementById('message');
         var message = messageInput.value;
+        var activeGameId = '{{ active_game_id }}';
         if (message) {
-            socket.emit('message', { message: message });
+            socket.emit('message', { message: message, active_game_id: activeGameId });
             messageInput.value = '';
             scrollChatToBottom();
         }
     }
 
-    function scrollChatToBottom() {
-        var chatbox = document.querySelector('.chatbox');
-        chatbox.scrollTop = chatbox.scrollHeight;
+
+    function updateActiveUsersList(activeUsers) {
+        var activeUsersList = document.getElementById('activeUsers');
+        activeUsersList.innerHTML = '';
+
+        activeUsers.forEach(function (user) {
+            var listItem = document.createElement('li');
+            listItem.className = 'list-group-item';
+            listItem.textContent = user;
+            activeUsersList.appendChild(listItem);
+        });
     }
+
+    function scrollChatToBottom() {
+        var messages = document.getElementById('messages');
+        var lastMessage = messages.lastElementChild;
+
+        if (lastMessage) {
+            lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
+        }
+    }
+
+    socket.on('update_inventory', function (data) {
+        var items = data.inventory;
+        var activeGameId = data.active_game_id;
+        var inventoryList = document.getElementById('inventory-list');
+        inventoryList.innerHTML = '';
+
+        if (inventoryList) {
+            for (var i = 0; i < items.length; i++) {
+                var itemName = items[i].item_name;
+                var listItem = document.createElement('li');
+                listItem.textContent = itemName;
+                var itemId = 'item-' + (i + 1);
+                listItem.id = itemId;
+
+                inventoryList.appendChild(listItem);
+            }
+        }
+    });
+
+
+    socket.on('message', function (data) {
+        var messages = document.getElementById('messages');
+        var message = document.createElement('li');
+        message.className = 'list-group-item';
+        message.textContent = "[" + data.username + "]" + ": " + data.message;
+        messages.appendChild(message);
+        scrollChatToBottom();
+    });
+
+    socket.on('disconnect_from_room', function (data) {
+        var activeGameId = data.active_game_id;
+
+        if (activeGameId in active_users) {
+            var username = data.username;
+            active_users[activeGameId].delete(username);
+            updateActiveUsersList(active_users[activeGameId]);
+        }
+    });
 
     socket.on('connect', function () {
         setActiveUser();
     });
 
     socket.on('message', function (data) {
-        var messages = document.getElementById('messages');
-        var message = document.createElement('li');
-        message.className = 'list-group-item';
-        message.textContent = "["+ data.username + "]" + ": " + data.message;
-        messages.appendChild(message);
-        scrollChatToBottom();
+        processCommand(data);
     });
+
+    socket.on('active_users', function (data) {
+        updateActiveUsersList(data.active_users);
+    });
+
+    socket.on("image_uploaded", function (data) {
+        var imageUrl = data.url;
+        document.getElementById("uploadedImage").innerHTML = `<img src="${imageUrl}" alt="Uploaded Image">`;
+
+    });
+
+    function uploadImage() {
+        var formData = new FormData(document.getElementById("uploadForm"));
+
+        fetch("/upload", {
+            method: "POST",
+            body: formData,
+        })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("uploadedImage").innerHTML = `<img src="${data.url}" alt="Uploaded Image">`;
+            })
+            .catch(error => console.error("Error:", error));
+    }
 
     document.getElementById('send').addEventListener('click', sendMessage);
 
@@ -136,8 +292,6 @@
             sendMessage();
         }
     });
-
-    document.getElementById('userSelect').addEventListener('change', setActiveUser);
 </script>
 
 {% endblock %}
