@@ -24,6 +24,13 @@ CREATE TABLE ForumPost (
     FOREIGN KEY (parent_post_id) REFERENCES ForumPost (post_id)
 );
 
+CREATE TABLE Vote (
+    user_id INT REFERENCES Player (user_id),
+    post_id INT REFERENCES ForumPost (post_id),
+    vote_status INT CHECK (vote_status IN (-1, 0, 1)),
+    PRIMARY KEY (user_id, post_id)
+);
+
 CREATE TABLE Game (
     game_id SERIAL PRIMARY KEY,
     game VARCHAR(255) NOT NULL ,
