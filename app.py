@@ -195,7 +195,6 @@ def forum():
 @app.get('/forum/<category>')
 def subforum(category):
     posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%')).order_by(ForumPost.time_posted.desc()).all()
-    category = ''.join(word.capitalize() for word in category.split('-'))
 
     for post in posts:
         post.category = ''.join(word.capitalize() for word in post.category.split('-'))
@@ -332,8 +331,9 @@ def handle_message(json):
     user = player_repository_singleton.get_user_by_id(user_id)
     if user:
         socketio.emit('message', {'username': user.username, 'message': json['message']})
-        
-@app.get('/forum/<category>/search')
+       
+@app.get('/forum/search/', defaults={'category': None})
+@app.get('/forum/search/<category>')
 def search_posts(category):
     query_flair = request.args.get('query-flair', '')
     query_title = request.args.get('query-title', '')
