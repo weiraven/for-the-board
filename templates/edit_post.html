@@ -66,6 +66,16 @@
     .hint-flair {
 		font-size: 10px;
 	}
+
+    @keyframes blinker {
+		50% {
+			opacity: 0;
+		}
+	}
+
+	.badge-text {
+		animation: blinker 1s linear infinite;
+	}
 </style>
 
 <div class="container">
