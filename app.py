@@ -1,7 +1,7 @@
 import os, random, requests
 import re
 from flask import Flask, flash, render_template, abort, request, redirect, url_for, session, jsonify
-from models import db, User, ForumPost, Game, ActiveGame, GameSession
+from models import db, User, ForumPost, Vote, Game, ActiveGame, GameSession
 from dotenv import load_dotenv
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_bcrypt import Bcrypt
@@ -110,9 +110,8 @@ def login_auth():
 
 @app.post('/logout')
 def logout():
-    session['previous_page'] = request.referrer
-    del session['username'] # Log out by removing the session username
     previous_page = session.get('previous_page')
+    session.clear()
     if previous_page and is_safe_url(previous_page): # Check if the previous page URL is set and is safe
         return redirect(previous_page) # Redirect to the previous page URL
     else:
@@ -186,22 +185,34 @@ def join_game():
 
 @app.route('/forum', methods=('GET', 'POST'))
 def forum():
+    user_id = session.get('user_id')  # get the current user ID from session
     posts = ForumPost.query.order_by(ForumPost.time_posted.desc()).all()
     # display all posts in most-recent first order
     for post in posts:
         if not post.category:
             post.category = "None"
         post.category = ''.join(word.capitalize() for word in post.category.split('-'))
+        vote = Vote.query.filter_by(voter_id=user_id, post_id=post.post_id).first()  # get the vote record for this user-post pair
+        if vote:
+            post.user_vote_status = vote.vote_status  # store the vote status in the post object
+        else:
+            post.user_vote_status = 0  # default to no vote
     return render_template('forum.html', posts=posts)
+
 
 @app.get('/forum/<category>')
 def subforum(category):
+    user_id = session.get('user_id')
     posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%')).order_by(ForumPost.time_posted.desc()).all()
     category = ''.join(word.capitalize() for word in category.split('-'))
 
     for post in posts:
         post.category = ''.join(word.capitalize() for word in post.category.split('-'))
-
+        vote = Vote.query.filter_by(voter_id=user_id, post_id=post.post_id).first()  # get the vote record for this user-post pair
+        if vote:
+            post.user_vote_status = vote.vote_status  # store the vote status in the post object
+        else:
+            post.user_vote_status = 0  # default to no vote
     return render_template('subforum.html', category=category, posts=posts)
 
 def category_to_url(category):
@@ -214,10 +225,16 @@ app.jinja_env.filters['category_to_url'] = category_to_url
 
 @app.get('/forum_post/<int:post_id>')
 def get_single_post(post_id):
+    user_id = session.get('user_id')  # get the current user ID from session
     post = ForumPost.query.get(post_id)
+    vote = Vote.query.filter_by(voter_id=user_id, post_id=post.post_id).first()  # get the vote record for this user-post pair
     post.category = ''.join(word.capitalize() for word in post.category.split('-'))
     if post is None:
-        return "Error: Post does not exist" 
+        return "Error: Post does not exist"
+    if vote:
+        post.user_vote_status = vote.vote_status  # store the vote status in the post object
+    else:
+        post.user_vote_status = 0  # default to no vote
     return render_template('get_single_post.html', post=post)
 
 @app.post('/submit_forum_reply')
@@ -274,21 +291,47 @@ def update_post():
 
 @app.post('/upvote')
 def upvote_post():
+    if 'user_id' not in session:
+        return jsonify(success=False, message="You must log in to vote.")
     post_id = request.json.get('post_id')
     post = ForumPost.query.get(post_id)
+    vote = Vote.query.get((session['user_id'], post_id))
     if post:
-        post.upvote()
-        return jsonify(success=True)
+        if vote is None:
+            vote = Vote(user_id=session['user_id'], post_id=post_id, vote_status=1)
+            db.session.add(vote) # set user vote status to 1 and add to Vote table
+            post.upvote() # increment posts total upvotes
+        elif vote.vote_status == 0: # record of Vote exists but status is neutral
+            vote.vote_status = 1 # change user status to +1
+            post.upvote() # increment posts total upvotes
+        elif vote.vote_status == -1: # if user had previously downvoted the post
+            vote.vote_status = 0 # restore user's vote back to neutral
+            post.upvote() # return one upvote back to total
+        db.session.commit() # save changes to Vote and ForumPost tables
+        return jsonify(success=True, vote_status=vote.vote_status)
     else:
         return jsonify(success=False, message="Post not found"), 404
 
 @app.post('/downvote')
 def downvote_post():
+    if 'user_id' not in session:
+        return jsonify(success=False, message="You must log in to vote.")
     post_id = request.json.get('post_id')
     post = ForumPost.query.get(post_id)
+    vote = Vote.query.get((session['user_id'], post_id))
     if post:
-        post.downvote()
-        return jsonify(success=True)
+        if vote is None:
+            vote = Vote(user_id=session['user_id'], post_id=post_id, vote_status=-1)
+            db.session.add(vote) # set user vote status to -1 and add record of Vote to table
+            post.downvote() # decrement posts total upvotes
+        elif vote.vote_status == 0: # record of Vote exists but status is neutral
+            vote.vote_status = -1 # change user status to -1
+            post.downvote() # increment posts total upvotes
+        elif vote.vote_status == 1: # if user had previously upvoted the post
+            vote.vote_status = 0 # restore user's vote back to neutral
+            post.downvote() # remove one upvote from total
+        db.session.commit() # save changes to Vote and ForumPost tables
+        return jsonify(success=True, vote_status=vote.vote_status)
     else:
         return jsonify(success=False, message="Post not found"), 404
 

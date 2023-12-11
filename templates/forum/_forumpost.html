@@ -3,11 +3,11 @@
 	{% macro post_header(post) -%}
     <div class="card-header">
         <strong>
-            <button class="btn btn-light btn-sm upvote-button" data-post-id="{{ post.get_post_id() }}">
+            <button class="btn btn-light btn-sm upvote-button" data-post-id="{{ post.get_post_id() }}" data-vote-status="{{ post.user_vote_status }}" {% if post.user_vote_status == 1 %}disabled{% endif %}>
                 <i class="fas fa-arrow-up"></i>
             </button>
-                <span class="upvotes-count">{{ post.get_upvotes() }}</span>
-            <button class="btn btn-light btn-sm downvote-button" data-post-id="{{ post.get_post_id() }}">
+            <span class="upvotes-count">{{ post.get_upvotes() }}</span>
+            <button class="btn btn-light btn-sm downvote-button" data-post-id="{{ post.get_post_id() }}" data-vote-status="{{ post.user_vote_status }}" {% if post.user_vote_status == -1 %}disabled{% endif %}>
                 <i class="fas fa-arrow-down"></i>
             </button>
         </strong>
@@ -39,7 +39,7 @@
         <a href="" class="btn btn-light btn-sm"><i class="fas fa-comment"></i> 0 Comments</a>
         <div class="popup"><button class="share-button btn btn-light btn-sm"><i class="fas fa-share"></i> Share</button>
 			<div class="popup-content">
-				<div class="popup-header"><span class="close-button" onclick="this.parentElement.parentElement.classList.remove('show')">x</span> <h5>Share this post!</h5></div>
+				<div class="popup-header"><span class="close-button" onclick="this.parentElement.parentElement.classList.remove('show')">&times;</span> <h5>Share this post!</h5></div>
 				<div class="link-container">
 					<input class="link-input" type="text" value="{{ url_for('get_single_post', post_id=post.get_post_id(), _external=True) }}" readonly>
 					<button class="copy-button btn btn-light btn-sm">Copy</button> 
