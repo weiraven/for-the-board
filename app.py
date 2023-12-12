@@ -10,7 +10,6 @@ from repositories.src.game_repository import game_repository_singleton
 from urllib.parse import urlparse, urljoin
 from werkzeug.utils import secure_filename
 
-
 load_dotenv()
 app = Flask(__name__)
 
@@ -108,12 +107,16 @@ def login_auth():
     else:
         return redirect('/') # redirect to home
 
+@app.route('/is_logged_in') # if user is in session, send status as json to requester
+def is_logged_in():
+    return jsonify(is_logged_in='user_id' in session)
+
 @app.post('/logout')
 def logout():
-    previous_page = session.get('previous_page')
+    last_visited = session.get('last_visited')
     session.clear()
-    if previous_page and is_safe_url(previous_page): # Check if the previous page URL is set and is safe
-        return redirect(previous_page) # Redirect to the previous page URL
+    if last_visited and is_safe_url(last_visited): # Check if the previous page URL is set and is safe
+        return redirect(last_visited) # Redirect to the previous page URL
     else:
         return redirect(url_for('login')) # Redirect to the login page
 
@@ -134,23 +137,17 @@ def active_game():
         # Get the user_id for the logged-in user
         username = session['username']
         user = User.query.filter_by(username=username).first()
-
         if user:
             # Query active games for the user
             active_games = ActiveGame.query.filter_by(user_id=user.user_id).all()
-
             # Create a list to store game sessions
             game_sessions = []
-
             # Loop through active games and query for corresponding game sessions
             for active_game in active_games:
                 game_session = GameSession.query.filter_by(active_game_id=active_game.active_game_id).first()
-
                 if game_session:
                     game_sessions.append(game_session)
-
             games = Game.query.all()
-
             return render_template('active_game.html', active_games=active_games, game_sessions=game_sessions, games=games)
         else:
             # Handle the case where the user doesn't exist (unexpected case)
@@ -161,24 +158,17 @@ def active_game():
 @app.route('/join_game', methods=['GET', 'POST'])
 def join_game():
     if 'username' in session:
-        if request.method == 'POST':
-            
-            game_id_to_join = request.form.get('game_id')  
-
-            if game_id_to_join:
-                 
+        if request.method == 'POST':        
+            game_id_to_join = request.form.get('game_id')
+            if game_id_to_join:                 
                 username = session.get('username')
                 user = User.query.filter_by(username=username).first()
-
                 active_game = ActiveGame(active_game_id=game_id_to_join, user_id=user.user_id)
                 db.session.add(active_game)
                 db.session.commit()
- 
-                return redirect(url_for('active_game'))  
-        
+                return redirect(url_for('active_game'))        
         games = Game.query.all()
         game_session = GameSession.query.all()
-
         return render_template('join_game.html', games=games, game_session=game_session)
     else:
         return redirect('login')
@@ -186,8 +176,8 @@ def join_game():
 @app.route('/forum', methods=('GET', 'POST'))
 def forum():
     user_id = session.get('user_id')  # get the current user ID from session
-    posts = ForumPost.query.order_by(ForumPost.time_posted.desc()).all()
-    # display all posts in most-recent first order
+    posts = ForumPost.query.filter(ForumPost.parent_post_id.is_(None)).order_by(ForumPost.time_posted.desc()).all()
+    # display all parent posts in most-recent first order
     for post in posts:
         if not post.category:
             post.category = "None"
@@ -198,7 +188,6 @@ def forum():
         else:
             post.user_vote_status = 0  # default to no vote
     return render_template('forum.html', posts=posts)
-
 
 @app.get('/forum/<category>')
 def subforum(category):
@@ -237,11 +226,6 @@ def get_single_post(post_id):
         post.user_vote_status = 0  # default to no vote
     return render_template('get_single_post.html', post=post)
 
-@app.post('/submit_forum_reply')
-def submit_forum_reply():
-    # after post, redirect back to get_single_post.html
-    return render_template('forum.html')
-
 @app.get('/create_post')
 def goto_create_post():
     if 'username' in session:
@@ -259,8 +243,29 @@ def create_post():
     post = ForumPost(title=title, content=content, author_id=user.user_id, flairs=flairs, parent_post_id=None, category=category)
     db.session.add(post)
     db.session.commit()
-
     return redirect(url_for('forum'))  # redirect back to GuildBoard main page
+
+@app.post('/comment_post/<int:post_id>')
+def comment_post(post_id):
+    user_id = User.query.filter_by(user_id=session['user_id']).first()
+    parent_post = ForumPost.query.get(post_id)
+    if parent_post is None:
+        # handle error: post not found
+        pass
+    comment_content = request.form.get('content')
+    if comment_content is None or comment_content.strip() == '':
+        # content cannot be empty
+        pass
+    comment = ForumPost(
+        title=f"Re: {parent_post.title}",
+        content=comment_content,
+        author_id=user_id.user_id,
+        parent_post_id=parent_post.post_id,
+        category=parent_post.category
+    )
+    db.session.add(comment)
+    db.session.commit()
+    return redirect(request.referrer)
 
 @app.get('/edit_post/<int:post_id>')
 def edit_post(post_id):
@@ -269,12 +274,13 @@ def edit_post(post_id):
     if 'username' not in session:
         return redirect(url_for('login')) # Redirect to the login page
     if session['username'] == post.author.username:
-        return render_template('edit_post.html', post=post)
+        return render_template('edit_post.html', post=post, prev_url=request.referrer)
     else:
         abort(403) # Forbidden
 
 @app.post('/update_post')
 def update_post():
+    prev_url = request.form.get('prev_url')
     post_id = request.form.get('post_id')
     post = ForumPost.query.get(post_id)
     title = request.form.get('title')
@@ -287,7 +293,10 @@ def update_post():
     post.flairs = flairs
     post.category = category
     db.session.commit() # commit changes to post
-    return redirect(url_for('get_single_post', post_id=post_id))
+    if prev_url and is_safe_url(prev_url):
+        return redirect(prev_url)
+    else:
+        return redirect(url_for('get_single_post', post_id=post_id))
 
 @app.post('/upvote')
 def upvote_post():
@@ -310,7 +319,7 @@ def upvote_post():
         db.session.commit() # save changes to Vote and ForumPost tables
         return jsonify(success=True, vote_status=vote.vote_status)
     else:
-        return jsonify(success=False, message="Post not found"), 404
+        return jsonify(success=False, message="Oops! Something went wrong. Please try again."), 404
 
 @app.post('/downvote')
 def downvote_post():
@@ -333,7 +342,7 @@ def downvote_post():
         db.session.commit() # save changes to Vote and ForumPost tables
         return jsonify(success=True, vote_status=vote.vote_status)
     else:
-        return jsonify(success=False, message="Post not found"), 404
+        return jsonify(success=False, message="Oops! Something went wrong. Please try again."), 404
 
 @app.post('/delete_post/<int:post_id>')
 def delete_post(post_id):
@@ -345,11 +354,28 @@ def delete_post(post_id):
     if session['username'] != post.author.username: # double check if the current user is the author of the post
         # print("Current user is not the author of the post")  # error checking
         abort(403)
-
     db.session.delete(post) # remove the post
     db.session.commit()
     # print("Post deleted successfully")  # error checking
     return redirect(url_for('forum')) # redirect back to forum page
+
+@app.get('/forum/<category>/search')
+def search_posts(category):
+    query_flair = request.args.get('query-flair', '')
+    query_title = request.args.get('query-title', '')
+    subforum = False
+    query = ForumPost.query
+    if category:
+        query = query.filter(ForumPost.category == category)
+        subforum = True 
+    if query_flair:
+        query = query.filter((ForumPost.flairs.ilike(f'%{query_flair}%')))
+    if query_title:
+        query = query.filter((ForumPost.title.ilike(f'%{query_title}%')))
+    filtered_posts = query.all()   
+    if subforum == True:
+       return render_template('subforum.html', category=category, posts=filtered_posts)
+    return render_template('forum.html', posts=filtered_posts)
 
 @app.post('/profile')
 def new_player():
@@ -498,31 +524,6 @@ def upload_to_imgbb(filename):
         return result["data"]["url"]
     else:
         return None
-
-@app.get('/forum/<category>/search')
-def search_posts(category):
-    query_flair = request.args.get('query-flair', '')
-    query_title = request.args.get('query-title', '')
-    subforum = False
-    
-    query = ForumPost.query
-    
-    if category:
-        query = query.filter(ForumPost.category == category)
-        subforum = True
-    
-    if query_flair:
-        query = query.filter((ForumPost.flairs.ilike(f'%{query_flair}%')))
-
-    if query_title:
-        query = query.filter((ForumPost.title.ilike(f'%{query_title}%')))
-
-    filtered_posts = query.all()
-    
-    if subforum == True:
-       return render_template('subforum.html', category=category, posts=filtered_posts)
-
-    return render_template('forum.html', posts=filtered_posts)
 
 @app.route('/create_game', methods=['GET', 'POST'])
 def create_game():
