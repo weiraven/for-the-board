@@ -23,6 +23,22 @@
 	.form-control {
 		margin-bottom: 15px;
 	}
+	.comment-header {
+		background-color: #000419;
+		color: #ffffff;
+	}
+	.comment {
+		margin-left: 15px;
+		margin-top: 5px;
+		background-color: #202428;
+		color: #ffffff;
+	}
+	.comment-footer {
+		background-color: #000419;
+		color: #ffffff;
+		display: flex;
+		justify-content: flex-end;
+	}
 	.btn.btn-primary.btn-block {
 		background-color: #944394;
 		border-color: #944394;
@@ -110,6 +126,37 @@
 		font-size: 25px;
 		color:#000000;
 		cursor: pointer;
+	}
+	.comment-drawer {
+		margin-left: 20px;
+		display: none; /* This will hide the comment drawer by default */
+		background-color: var(--input-bg); 
+		color: var(--input-text); 
+		margin-top: 20px; 
+	}
+	.comment-drawer .form-group {
+		margin-top: 10px;
+		margin-bottom: 10px;
+	}
+	.comment-drawer .btn.btn-primary.reply {
+		background-color: #944394;
+		border-color: #944394;
+		color: #FFFFFF;
+	}
+	.button-container {
+		margin-bottom: 10px;
+    	display: flex;
+    	justify-content: flex-end;
+	}
+	.comment-drawer textarea {
+		margin-top: 10px;
+		width: 100%;
+		min-height: 100px;
+		background-color: var(--input-bg) !important;
+		color: var(--input-text) !important;
+	}
+	.comment-drawer textarea::placeholder {
+		color: var(--input-placeholder) !important;
 	}
 </style>
 {%- endmacro -%}
