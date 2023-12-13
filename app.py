@@ -1,7 +1,7 @@
 import os, random, requests
 import re
 from flask import Flask, flash, render_template, abort, request, redirect, url_for, session, jsonify
-from models import db, User, ForumPost, Vote, Game, ActiveGame, GameSession
+from models import db, User, ForumPost, Vote, Game, ActiveGame, GameSession, GameTag
 from dotenv import load_dotenv
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_bcrypt import Bcrypt
@@ -10,6 +10,8 @@ from repositories.src.game_repository import game_repository_singleton
 from urllib.parse import urlparse, urljoin
 from werkzeug.utils import secure_filename
 
+UPLOAD_FOLDER = './static/profile_pics'
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 load_dotenv()
 app = Flask(__name__)
@@ -18,7 +20,7 @@ app = Flask(__name__)
 app.config[
     'SQLALCHEMY_DATABASE_URI'
 ] = f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
-
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 app.secret_key = os.getenv('APP_SECRET_KEY', 'potato')
 
 db.init_app(app)
@@ -102,6 +104,7 @@ def login_auth():
     user_id = existing_user.user_id # get logged-in user's user_id
     session['username'] = username # store user's username
     session['user_id'] = user_id # store user's id in session dictionary as well
+    session['profile_pic'] = existing_user.profile_pic
     next_url = request.form.get('next')
     if next_url and is_safe_url(next_url): # check if the next parameter is set and is safe
         return redirect(next_url) # redirect to the next URL
@@ -126,24 +129,65 @@ def is_safe_url(target):
 def profile(user_id:int):
     active_user = User.query.filter_by(user_id = user_id).first()
 
-    return render_template('profile.html', active_user=active_user, sessionUser=session['username'])
+    return render_template('profile/profile.html', active_user=active_user, sessionUser=session['username'])
 
 @app.get('/profile/edit')
 def edit_profile():
     session_user = User.query.filter_by(username = session['username']).first()
+    game_tags = GameTag.query.all()
+    game_tag_names = [game_tag.game_tag_name for game_tag in game_tags]
 
-    return render_template('profile_edit.html', session_user=session_user)
-
+    return render_template('profile/profile_edit.html', session_user=session_user, game_tags=game_tag_names)
 
 @app.post('/profile/edit')
 def player():
     active_user = User.query.filter_by(username = session['username']).first()
+    game_tags = GameTag.query.all()
 
     active_user.first_name = request.form.get('first_name')
-    active_user.last_name = request.form.get('last_name')
-    active_user.profile_pic = request.form.get('profile_pic')
+    active_user.last_name = request.form.get('last_name', active_user.last_name)
     active_user.bio_text = request.form.get('bio_text')
-    #active_user.game_tags = request.form.get('game_tags')
+    game_tag_names = request.form.getlist('game_tag_input')
+
+    active_user.game_tags = []
+    db.session.commit()
+
+    match_tag = None
+    for tag_name in game_tag_names:
+
+        if not tag_name:
+            continue
+
+        for game_tag in game_tags:
+            if game_tag.game_tag_name == tag_name:
+                match_tag = game_tag
+                break;
+        
+        if match_tag is not None:
+            active_user.game_tags.append(game_tag)
+            match_tag = None
+        else:
+            print("miss")
+            new_game_tag = GameTag(game_tag_name = tag_name)
+            active_user.game_tags.append(new_game_tag)
+    
+    if 'profile_pic' not in request.files:
+        flash('No file part')
+        return redirect(request.url)
+    
+    file = request.files['profile_pic']
+    if file.filename == '':
+        flash('No selected file')
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, active_user.user_id + filename)
+        file.save(filepath)
+        active_user.profile_pic = filepath
+
+    #active_user.game_tags = [GameTag(game_tag_name = name) for name in game_tag_names]
+    #active_user.game_tags = [GameTag(game_tag_name = request.form.get('game_tags'))]
+    
     db.session.commit()
     return redirect('./' + str(active_user.user_id))
     #return render_template('profile.html', active_user=active_user)
@@ -599,6 +643,9 @@ def create_game():
     # Pass the games to the template
     return render_template('create_game.html', games=games)
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
         
 
 if __name__ == '__main__':

@@ -7,6 +7,8 @@ CREATE TABLE Player (
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    profile_pic VARCHAR(255),
+    bio_text TEXT,
     PRIMARY KEY (user_id)
 );
 
@@ -47,6 +49,16 @@ CREATE TABLE game_session (
 CREATE TABLE active_game (
     active_game_id SERIAL NOT NULL,
     user_id INTEGER REFERENCES player(user_id) NOT NULL
+);
+
+CREATE TABLE GameTag (
+    game_tag_id SERIAL PRIMARY KEY,
+    game_tag_name VARCHAR(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE UserGames (
+    user_id INTEGER REFERENCES Player (user_id),
+    game_tag_id INTEGER REFERENCES GameTag (game_tag_id)
 );
 
 -- Now that we have sign-up and login auth implemented. We can no longer manually edit

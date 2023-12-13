@@ -1,18 +1,22 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import DeclarativeBase, relationship, Mapped
 from datetime import datetime
+from dataclasses import dataclass
 
 db = SQLAlchemy()
 
-class GameTag(db.Model):
-    game_tag_id = db.Column(db.Integer, primary_key=True)
-    game_tag_name = db.Column(db.String(255), nullable=False)
+UserGames = db.Table('usergames',
+    db.Column('user_id', db.Integer, db.ForeignKey('player.user_id')),
+    db.Column('game_tag_id', db.Integer, db.ForeignKey('gametag.game_tag_id'))
+    )
 
-UserGames = db.Table('UserGames',
-            db.Column('user_id', db.Integer, db.ForeignKey('player.user_id'), primary_key=True),
-            db.Column('game_id', db.Integer, db.ForeignKey(GameTag.game_tag_id), primary_key=True)
-            )
+@dataclass
+class GameTag(db.Model):
+    __tablename__ = 'gametag'
+    game_tag_id = db.Column(db.Integer, primary_key=True)
+    game_tag_name = db.Column(db.String(255), nullable=False, unique=True)
 
 class User(db.Model):
     __tablename__ = 'player'
@@ -24,9 +28,9 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     profile_pic = db.Column(db.String(255), nullable=True)
-    bio_text = db.Column(db.Text, nullable=True)
+    bio_text = db.Column(db.Text, nullable=True, default='Sample Text')
     posts = db.relationship('ForumPost', backref='author', lazy='dynamic')
-    game_tags = db.relationship('GameTag', backref='user', secondary=UserGames, lazy='dynamic')
+    game_tags = db.relationship('GameTag', secondary=UserGames, backref='users')
     
     # User constructor
     def __init__(self, first_name:str, last_name:str, email:str, username:str, password:str) -> None:
@@ -58,6 +62,7 @@ class User(db.Model):
     # dunder method override for how user info prints
     def __repr__(self) -> str:
         return f'Player({self.user_id}, {self.username}, {self.email})'
+
 
 class ForumPost(db.Model):
     __tablename__ = 'forumpost'
