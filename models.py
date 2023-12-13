@@ -59,6 +59,7 @@ class ForumPost(db.Model):
 
     # need to also delete vote data when associated post is deleted from db
     votes = db.relationship('Vote', backref='forumpost', cascade='all, delete-orphan')
+    comments = db.relationship('ForumPost', backref=db.backref('parent', remote_side=[post_id]), lazy='dynamic')
 
     # forumpost constructor
     def __init__(self, title:str, content:str, author_id:int, flairs='', parent_post_id=None,category='') -> None:
@@ -69,6 +70,10 @@ class ForumPost(db.Model):
         self.flairs = flairs
         self.parent_post_id = parent_post_id
         self.category = category
+
+    # tabulate how many comments a post has
+    def count_comments(self):
+        return ForumPost.query.filter_by(parent_post_id=self.post_id).count()
 
     # forumpost getters
     def get_post_id(self) -> int:

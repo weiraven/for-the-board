@@ -35,7 +35,9 @@
 
 	{% macro post_footer(post) -%}
     <div class="card-footer text-muted">
-        <a href="" class="btn btn-light btn-sm"><i class="fas fa-comment"></i> 0 Comments</a>
+        <button class="btn btn-light btn-sm comment-button" data-post-id="{{ post.get_post_id() }}">
+            <i class="fas fa-comment"></i> {{ post.count_comments() }} Comments
+        </button>
         <div class="popup"><button class="share-button btn btn-light btn-sm"><i class="fas fa-share"></i> Share</button>
 			<div class="popup-content">
 				<div class="popup-header"><span class="close-button" onclick="this.parentElement.parentElement.classList.remove('show')">&times;</span> <h5>Share this post!</h5></div>
@@ -50,22 +52,52 @@
 				</div>
 			</div>
 		</div>
-		{% if session['username'] == post.author.username %}
-		<a href="{{ url_for('edit_post', post_id=post.get_post_id()) }}" class="btn btn-light btn-sm edit-post"
-			><i class="fas fa-edit"></i> Edit</a
-		>
-		<form method="POST" action="{{ url_for('delete_post', post_id=post.get_post_id()) }}">
-			<input type="hidden" name="_method" value="DELETE" />
-			<button
-				type="button"
-				data-post-id="{{ post.get_post_id() }}"
-				class="btn btn-light btn-sm delete-post"
-				onclick="deletePost(event)"
-			>
-				<i class="fas fa-trash"></i> Delete
-			</button>
-		</form>
-		{% endif %}
-	</div>
-	{%- endmacro -%} {{ post_footer(post) }}
+        {% if session['username'] == post.author.username %}
+        <a href="{{ url_for('edit_post', post_id=post.get_post_id()) }}" class="btn btn-light btn-sm edit-post"><i class="fas fa-edit"></i> Edit</a>
+        <form method="POST" action="{{ url_for('delete_post', post_id=post.get_post_id()) }}">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="button" data-post-id="{{ post.get_post_id() }}" class="btn btn-light btn-sm delete-post" onclick="deletePost(event)"><i class="fas fa-trash"></i> Delete</button>
+        </form>
+        {% endif %}
+    </div>
+	{%- endmacro -%} 
+	{{ post_footer(post) }}
+</div>
+<div class="comment-drawer" style="display: none;"> 
+    <form action="{{ url_for('comment_post', post_id=post.get_post_id()) }}" method="POST"> 
+    <input type="hidden" name="post_id" value="{{ post.get_post_id() }}"> 
+    <div class="form-group"> 
+    <label for="content">Reply to {{ post.author.username }}</label>
+    <textarea class="form-control" id="content" name="content" placeholder="Enter your comment here" required></textarea>  
+    </div> 
+    <div class="button-container">
+        <button type="submit" class="btn btn-primary reply">Submit</button>
+    </div>
+    </form> 
+</div>
+<div class="comments-list">
+    {% for comment in post.comments %}
+    {% macro comment_card(comment) -%}
+        <div class="card comment">
+            <div class="card-header comment-header">
+            <span class="text" style="font-size: 10pt; color: #ffffff">
+                {{ comment.get_title() }} • u/<a href="{{ url_for('profile', user_id=comment.author.user_id) }}">{{ comment.author.username }}</a> commented at <span class="time_posted">{{ post.get_time_posted() }}</span>
+            </span>
+            </div>
+            <div class="card-body comment-body">
+                <p>{{ comment.content | safe }}</p>
+            </div>
+            <div class="card-footer comment-footer text-muted">
+                {% if session['username'] == comment.author.username %}
+                <a href="{{ url_for('edit_post', post_id=comment.get_post_id()) }}" class="btn btn-light btn-sm edit-post"><i class="fas fa-edit"></i> Edit</a>
+                <form method="POST" action="{{ url_for('delete_post', post_id=comment.get_post_id()) }}">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="button" data-post-id="{{ comment.get_post_id() }}" class="btn btn-light btn-sm delete-post" onclick="deletePost(event)"><i class="fas fa-trash"></i> Delete</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    {%- endmacro -%}
+    {{ comment_card(comment) }}
+    {% endfor %}
 </div>

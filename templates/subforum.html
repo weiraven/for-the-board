@@ -21,6 +21,62 @@
 </script>
 
 <script>
+	/* Modify timestamps on post to reflect M-D-Y H:M AM/PM according to client's local time */
+	const timePostedElements = document.getElementsByClassName('time_posted');
+
+	for (let i = 0; i < timePostedElements.length; i++) {
+		const timePostedElement = timePostedElements[i];
+		const utcTime = timePostedElement.textContent + 'Z'; // Append 'Z' to treat as UTC
+		const date = new Date(utcTime);
+
+		// Format the dates and times as "month-day-year hour:minute AM/PM" of local client time
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+		const ampm = hours >= 12 ? 'PM' : 'AM';
+		hours = hours % 12;
+		hours = hours ? hours : 12; // Display hour '0' as '12'
+		minutes = minutes < 10 ? '0' + minutes : minutes;
+		const formattedDate =
+			(date.getMonth() + 1).toString().padStart(2, '0') +
+			'-' +
+			date.getDate().toString().padStart(2, '0') +
+			'-' +
+			date.getFullYear() +
+			' ' +
+			hours +
+			':' +
+			minutes +
+			' ' +
+			ampm;
+
+		timePostedElement.textContent = formattedDate;
+	}
+
+	/* Comment dropdown functionality */
+	let commentButtons = document.getElementsByClassName('comment-button');
+	for (let i = 0; i < commentButtons.length; i++) {
+		commentButtons[i].addEventListener('click', function () {
+			let postId = this.getAttribute('data-post-id'); // get the post id from the data-post-id attribute
+			let commentDrawer = document.querySelector(".comment-drawer input[name='post_id'][value='" + postId + "']")
+				.parentElement.parentElement;
+
+			fetch('/is_logged_in')
+				.then((response) => response.json())
+				.then((data) => {
+					if (data.is_logged_in) {
+						if (commentDrawer.style.display == 'none') {
+							commentDrawer.style.display = 'block';
+							fetchComments(postId); // retrieve existing comments
+						} else {
+							commentDrawer.style.display = 'none';
+						}
+					} else {
+						alert('You must log in to comment.');
+					}
+				});
+		});
+	}
+
 	/* Upvote-Downvote functionality */
 	document.querySelectorAll('.upvote-button, .downvote-button').forEach(function (button) {
 		button.vote_status = parseInt(button.getAttribute('data-vote-status')); // initialize the vote_status
@@ -82,55 +138,6 @@
 		});
 	});
 
-	/* Modify timestamps on post to reflect M-D-Y H:M AM/PM according to client's local time */
-	const timePostedElements = document.getElementsByClassName('time_posted');
-
-	for (let i = 0; i < timePostedElements.length; i++) {
-		const timePostedElement = timePostedElements[i];
-		const utcTime = timePostedElement.textContent + 'Z'; // Append 'Z' to treat as UTC
-		const date = new Date(utcTime);
-
-		// Format the dates and times as "month-day-year hour:minute AM/PM" of local client time
-		let hours = date.getHours();
-		let minutes = date.getMinutes();
-		const ampm = hours >= 12 ? 'PM' : 'AM';
-		hours = hours % 12;
-		hours = hours ? hours : 12; // Display hour '0' as '12'
-		minutes = minutes < 10 ? '0' + minutes : minutes;
-		const formattedDate =
-			(date.getMonth() + 1).toString().padStart(2, '0') +
-			'-' +
-			date.getDate().toString().padStart(2, '0') +
-			'-' +
-			date.getFullYear() +
-			' ' +
-			hours +
-			':' +
-			minutes +
-			' ' +
-			ampm;
-
-		timePostedElement.textContent = formattedDate;
-	}
-
-	shareButtons.forEach((button, index) => {
-		button.addEventListener('click', () => {
-			popups[index].querySelector('.popup-content').classList.toggle('show');
-		});
-	});
-
-	copyButtons.forEach((button, index) => {
-		button.addEventListener('click', () => {
-			const input = popups[index].querySelector('.link-input');
-			input.select();
-			document.execCommand('copy');
-			button.innerText = 'Copied!';
-			setTimeout(() => {
-				button.innerText = 'Copy';
-			}, 2000);
-		});
-	});
-
 	/* Share button initiates a popup with link to single post */
 	const shareButtons = document.querySelectorAll('.share-button');
 	const copyButtons = document.querySelectorAll('.copy-button');
@@ -161,18 +168,6 @@
 		});
 	});
 
-	/* Delete post functionality for post author */
-	function deletePost(event) {
-		const postId = event.currentTarget.dataset.postId;
-		const result = confirm('Post deletion is irreversible. Are you sure you want to delete this post?');
-		if (result) {
-			const form = document.querySelector("form[action='/delete_post/" + postId + "']");
-			form.submit();
-		} else {
-			event.preventDefault();
-		}
-	}
-	/* Delete post functionality for post author */
 	function deletePost(event) {
 		const postId = event.currentTarget.dataset.postId;
 		const result = confirm('Post deletion is irreversible. Are you sure you want to delete this post?');
