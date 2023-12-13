@@ -455,7 +455,8 @@ def upload_to_imgbb(filename):
     else:
         return None
 
-@app.get('/forum/<category>/search')
+@app.get('/forum/search/', defaults={'category': None})
+@app.get('/forum/search/<category>')
 def search_posts(category):
     query_flair = request.args.get('query-flair', '')
     query_title = request.args.get('query-title', '')
