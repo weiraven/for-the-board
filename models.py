@@ -5,6 +5,15 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
+class GameTag(db.Model):
+    game_tag_id = db.Column(db.Integer, primary_key=True)
+    game_tag_name = db.Column(db.String(255), nullable=False)
+
+UserGames = db.Table('UserGames',
+            db.Column('user_id', db.Integer, db.ForeignKey('player.user_id'), primary_key=True),
+            db.Column('game_id', db.Integer, db.ForeignKey(GameTag.game_tag_id), primary_key=True)
+            )
+
 class User(db.Model):
     __tablename__ = 'player'
     user_id = db.Column(db.Integer, primary_key=True)
@@ -16,9 +25,8 @@ class User(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     profile_pic = db.Column(db.String(255), nullable=True)
     bio_text = db.Column(db.Text, nullable=True)
-    game_tags = db.Column(db.String)
     posts = db.relationship('ForumPost', backref='author', lazy='dynamic')
-    game_tags = db.relationship('GameTags', backref='user', secondary='UserGames', lazy='dynamic')
+    game_tags = db.relationship('GameTag', backref='user', secondary=UserGames, lazy='dynamic')
     
     # User constructor
     def __init__(self, first_name:str, last_name:str, email:str, username:str, password:str) -> None:
@@ -192,17 +200,12 @@ class GameSession(db.Model):
 
     def __repr__(self) -> str:
         return f'GameSession({self.active_game_id}, {self.game_id}, {self.open_for_join},  {self.title})'
-class GameTag(db.Model):
-    game_tag_id = db.Column(db.Integer, primary_key=True)
-    game_tag_name = db.Column(db.String(255), nullable=False)
 
-Base = declarative_base()
 
-UserGames = Table('UserGames',
-                  Base.metadata, 
-                  Column('user_id', Integer, ForeignKey('player.user_id')),
-                   Column('game_id', Integer, ForeignKey('GameTag.game_tag_id')) )
 
-#user_game_id = db.Column(db.Integer, primary_key=True)
-#user_id = db.Column(db.Integer, db.ForeignKey('player.user_id'))
-#game_id = db.Column(db.Integer, db.ForeignKey('GameTag.game_tag_id'))
+
+
+#class UserGames(db.Model):
+#    user_game_id = db.Column(db.Integer, primary_key=True)
+#    user_id = db.Column(db.Integer, db.ForeignKey('player.user_id'))
+#    game_id = db.Column(db.Integer, db.ForeignKey('GameTag.game_tag_id'))

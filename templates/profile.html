@@ -1,29 +1,59 @@
 {% extends '_template.html' %}
+
+{% block head %}
+<title>{% block title %}ForTheBoard - Profile{% endblock %}</title>
+{% endblock %}
+
 {% block body %}
+<style>
+    .btn.btn-primary.btn-block {
+		background-color: #944394;
+		border-color: #944394;
+		color: #ffffff;
+        margin-top: 15px;
+	}
+</style>
+
 <div class="container">
-    <div class="row justify-content-center">
+    <div class="row justify-content-left">
         <div class="col-md-7 col-lg-4 mb-5 mb-lg-0">
             <div class="card border-0 shadow">
                 <div class="card-body p-1-9 p-xl-5">
                     <div class="mb-4">
-                        <h3 class="h4 mb-0">{{sessionUser.username}}</h3>
+                        <h3 class="h3 mb-0">{{active_user.username}}</h3>
+                    </div>
+                    <div class="mb-4">
+                        <h4>{{active_user.first_name}} {{active_user.last_name}}</h4>
                     </div>
                     <ul class="mb-4">
-                        <h4 class="h5 mb-0">{{sessionUser.profile_pic}}</h4>
+                        <h4 class="h5 mb-0">{{active_user.profile_pic}}</h4>
                     </ul>
+                    
                 </div>
             </div>
         </div>
-        <div class="col-lg-8">
-            <div class="ps-lg-1-6 ps-xl-5">
-                <div class="mb-5">
+        <div class="col-md-7 col-lg-4 mb-5 mb-lg-0">
+            <div class="card border-0 shadow">
+                <div class="card-body p-1-9 p-xl-5">
                     <div class="text-start mb-1-6">
-                        <h2 class="h1 mb-0 text-primary">About Me</h2>
+                        <h2 class="h3 mb-2">About Me:</h2>
                     </div>
-                    <p>Bio Text</p>
+                    <h5 class="mb-5">{{active_user.bio_text}}</h5>
                 </div>
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col align-self-end">
+            <a href="/profile/edit">
+                <button type="button" id="edit" class="btn btn-primary btn-block" style="float: left">Edit Profile</button>
+            </a>
+        </div>
+    </div>
+    
 </div>
+<script>
+    var showEdit = "{{active_user.username|safe}}" == "{{sessionUser|safe}}";
+    document.getElementById("edit").hidden = !showEdit
+</script>
 {% endblock %}

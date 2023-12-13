@@ -121,22 +121,31 @@ def is_safe_url(target):
     test_url = urlparse(urljoin(request.host_url, target))
     return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
 
-@app.get('/profile/<string:username>')
-def profile(username: str):
+@app.get('/profile/<int:user_id>')
+def profile(user_id:int):
+    active_user = User.query.filter_by(user_id = user_id).first()
 
-    return render_template('profile.html')
+    return render_template('profile.html', active_user=active_user, sessionUser=session['username'])
 
-@app.post('/profile')
+@app.get('/profile/edit')
+def edit_profile():
+    session_user = User.query.filter_by(username = session['username']).first()
+
+    return render_template('profile_edit.html', session_user=session_user)
+
+
+@app.post('/profile/edit')
 def player():
-    active_user = User.query.filter_by(session['username'])
+    active_user = User.query.filter_by(username = session['username']).first()
 
     active_user.first_name = request.form.get('first_name')
     active_user.last_name = request.form.get('last_name')
     active_user.profile_pic = request.form.get('profile_pic')
     active_user.bio_text = request.form.get('bio_text')
-    active_user.game_tags = request.form.get('game_tags')
-
-    return render_template('profile.html')
+    #active_user.game_tags = request.form.get('game_tags')
+    db.session.commit()
+    return redirect('./' + str(active_user.user_id))
+    #return render_template('profile.html', active_user=active_user)
 
 @app.route('/active_game')
 def active_game():
