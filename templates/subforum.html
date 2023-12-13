@@ -1,5 +1,5 @@
 {% extends '_template.html' %} {% block head %}
-<title>ForTheBoard - GuildBoard</title>
+<title>{% block title %}ForTheBoard - {{ category }}{% endblock %}</title>
 {% endblock %} {% block body %} {% from 'forum/_macros.html' import forum_style, topic_card %} {{ forum_style() }}
 
 <div class="container-fluid">
@@ -21,6 +21,67 @@
 </script>
 
 <script>
+	/* Upvote-Downvote functionality */
+	document.querySelectorAll('.upvote-button, .downvote-button').forEach(function (button) {
+		button.vote_status = parseInt(button.getAttribute('data-vote-status')); // initialize the vote_status
+		const countSpan = button.parentNode.querySelector('.upvotes-count');
+		if (button.vote_status == 1) {
+			countSpan.style.color = '#FDB37C'; // upvoted is orange
+		} else if (button.vote_status == -1) {
+			countSpan.style.color = '#a2d0f7'; // downvoted is blue
+		} else {
+			countSpan.style.color = '#FFFFFF'; // no vote is default white
+		}
+		button.addEventListener('click', function (event) {
+			event.preventDefault();
+			const postId = event.target.getAttribute('data-post-id');
+			const previousVoteStatus = button.vote_status || 0; // get the previous vote status
+			const isUpvote = button.classList.contains('upvote-button');
+			const url = isUpvote ? '/upvote' : '/downvote';
+			fetch(url, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ post_id: postId }),
+			})
+				.then((response) => response.json())
+				.then((data) => {
+					if (data.success) {
+						const countSpan = event.target.parentNode.querySelector('.upvotes-count');
+						const upvoteButton = event.target.parentNode.querySelector('.upvote-button');
+						const downvoteButton = event.target.parentNode.querySelector('.downvote-button');
+						if (data.vote_status == 1) {
+							countSpan.textContent =
+								parseInt(countSpan.textContent, 10) + (previousVoteStatus == -1 ? 2 : 1);
+							upvoteButton.setAttribute('disabled', '');
+							downvoteButton.removeAttribute('disabled');
+							upvoteButton.vote_status = 1; // update the vote status in the frontend
+							downvoteButton.vote_status = 1; // also update the vote status on the other button
+							countSpan.style.color = '#FDB37C'; // change the color to orange
+						} else if (data.vote_status == -1) {
+							countSpan.textContent =
+								parseInt(countSpan.textContent, 10) - (previousVoteStatus == 1 ? 2 : 1);
+							downvoteButton.setAttribute('disabled', '');
+							upvoteButton.removeAttribute('disabled');
+							downvoteButton.vote_status = -1;
+							upvoteButton.vote_status = -1; // also update the vote status on the other button
+							countSpan.style.color = '#a2d0f7'; // change the color to blue
+						} else if (data.vote_status == 0) {
+							countSpan.textContent = parseInt(countSpan.textContent, 10) + (isUpvote ? 1 : -1);
+							upvoteButton.removeAttribute('disabled');
+							downvoteButton.removeAttribute('disabled');
+							upvoteButton.vote_status = 0;
+							downvoteButton.vote_status = 0; // also update the vote status on the other button
+							countSpan.style.color = '#FFFFFF'; // change the color to white
+						}
+					} else {
+						alert(data.message);
+					}
+				});
+		});
+	});
+
 	/* Modify timestamps on post to reflect M-D-Y H:M AM/PM according to client's local time */
 	const timePostedElements = document.getElementsByClassName('time_posted');
 
@@ -52,58 +113,21 @@
 		timePostedElement.textContent = formattedDate;
 	}
 
-	/* Upvote functionality */
-	document.querySelectorAll('.upvote-button').forEach(function (button) {
-		button.addEventListener('click', function (event) {
-			event.preventDefault();
-			const button = event.target;
-			if (button.tagName !== 'BUTTON') {
-				button = button.parentNode;
-			}
-			const postId = event.target.getAttribute('data-post-id');
-			fetch('/upvote', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ post_id: postId }),
-			})
-				.then((response) => response.json())
-				.then((data) => {
-					if (data.success) {
-						const countSpan = event.target.parentNode.querySelector('.upvotes-count');
-						countSpan.textContent = parseInt(countSpan.textContent, 10) + 1;
-					}
-				});
+	shareButtons.forEach((button, index) => {
+		button.addEventListener('click', () => {
+			popups[index].querySelector('.popup-content').classList.toggle('show');
 		});
 	});
 
-	/* Downvote functionality */
-	document.querySelectorAll('.downvote-button').forEach(function (button) {
-		button.addEventListener('click', function (event) {
-			event.preventDefault();
-			const button = event.target;
-			if (button.tagName !== 'BUTTON') {
-				button = button.parentNode;
-			}
-			const postId = event.target.getAttribute('data-post-id');
-			const countSpan = button.parentNode.querySelector('.upvotes-count');
-			const currentCount = parseInt(countSpan.textContent, 10);
-			if (currentCount > 0) {
-				fetch('/downvote', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({ post_id: postId }),
-				})
-					.then((response) => response.json())
-					.then((data) => {
-						if (data.success) {
-							countSpan.textContent = currentCount - 1;
-						}
-					});
-			}
+	copyButtons.forEach((button, index) => {
+		button.addEventListener('click', () => {
+			const input = popups[index].querySelector('.link-input');
+			input.select();
+			document.execCommand('copy');
+			button.innerText = 'Copied!';
+			setTimeout(() => {
+				button.innerText = 'Copy';
+			}, 2000);
 		});
 	});
 
@@ -129,6 +153,7 @@
 			}, 2000);
 		});
 	});
+
 	const closeButton = document.querySelector('.close-button');
 	closeButtons.forEach((button) => {
 		button.addEventListener('click', function () {
@@ -136,6 +161,17 @@
 		});
 	});
 
+	/* Delete post functionality for post author */
+	function deletePost(event) {
+		const postId = event.currentTarget.dataset.postId;
+		const result = confirm('Post deletion is irreversible. Are you sure you want to delete this post?');
+		if (result) {
+			const form = document.querySelector("form[action='/delete_post/" + postId + "']");
+			form.submit();
+		} else {
+			event.preventDefault();
+		}
+	}
 	/* Delete post functionality for post author */
 	function deletePost(event) {
 		const postId = event.currentTarget.dataset.postId;
