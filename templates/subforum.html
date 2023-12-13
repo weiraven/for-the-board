@@ -7,7 +7,8 @@
 		<div class="col-3">{% include "forum/_forumtopics.html" %} {% include "forum/_forumsearch.html" %}</div>
 		<div class="col-6">{% for post in posts %} {% include "forum/_forumpost.html" %} {% endfor %}</div>
 		<div class="col-3">
-			{% set forum_name=category.replace("-", " ") | title | replace(" ", "") %} {{ topic_card(forum_name) }}
+			{% set forum_name=category.replace("-", " ") | title | replace(" ", "") %} {{ topic_card(forum_name,
+			description) }}
 		</div>
 	</div>
 </div>

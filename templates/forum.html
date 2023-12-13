@@ -1,179 +1,173 @@
-{% extends '_template.html' %}
-
-{% block head %}
+{% extends '_template.html' %} {% block head %}
 <title>{% block title %}ForTheBoard - GuildBoard{% endblock %}</title>
-{% endblock %} 
-
-{% block body %}
-{% from 'forum/_macros.html' import forum_style, topic_card %}
-{{ forum_style() }}
+{% endblock %} {% block body %} {% from 'forum/_macros.html' import forum_style, topic_card %} {{ forum_style() }}
 
 <div class="container-fluid">
 	<div class="row">
-		<div class="col-3">
-		{% include "forum/_forumtopics.html" %}
-		{% include "forum/_forumsearch.html" %}
-		</div>
-		<div class="col-6">
-		{% for post in posts %}
-		{% include "forum/_forumpost.html" %}
-		{% endfor %}
-		</div>
-		<div class="col-3">
-		{% set forum_name='Main' %}
-		{{ topic_card(forum_name) }}
-		</div>
+		<div class="col-3">{% include "forum/_forumtopics.html" %} {% include "forum/_forumsearch.html" %}</div>
+		<div class="col-6">{% for post in posts %} {% include "forum/_forumpost.html" %} {% endfor %}</div>
+		<div class="col-3">{% set forum_name='Main' %} {{ topic_card(forum_name, description) }}</div>
 	</div>
 </div>
 
 <script>
-/* Modify timestamps on post to reflect M-D-Y H:M AM/PM according to client's local time */
-const timePostedElements = document.getElementsByClassName('time_posted');
+	/* Modify timestamps on post to reflect M-D-Y H:M AM/PM according to client's local time */
+	const timePostedElements = document.getElementsByClassName('time_posted');
 
-for (let i = 0; i < timePostedElements.length; i++) {
-	const timePostedElement = timePostedElements[i];
-	const utcTime = timePostedElement.textContent + 'Z';  // Append 'Z' to treat as UTC
-	const date = new Date(utcTime);
+	for (let i = 0; i < timePostedElements.length; i++) {
+		const timePostedElement = timePostedElements[i];
+		const utcTime = timePostedElement.textContent + 'Z'; // Append 'Z' to treat as UTC
+		const date = new Date(utcTime);
 
-	// Format the dates and times as "month-day-year hour:minute AM/PM" of local client time
-	let hours = date.getHours();
-	let minutes = date.getMinutes();
-	const ampm = hours >= 12 ? 'PM' : 'AM';
-	hours = hours % 12;
-	hours = hours ? hours : 12; // Display hour '0' as '12'
-	minutes = minutes < 10 ? '0'+minutes : minutes;
-	const formattedDate = (date.getMonth() + 1).toString().padStart(2, '0') + "-"
-		+ date.getDate().toString().padStart(2, '0') + "-"
-		+ date.getFullYear() + " "
-		+ hours + ":"
-		+ minutes + " " + ampm;
+		// Format the dates and times as "month-day-year hour:minute AM/PM" of local client time
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+		const ampm = hours >= 12 ? 'PM' : 'AM';
+		hours = hours % 12;
+		hours = hours ? hours : 12; // Display hour '0' as '12'
+		minutes = minutes < 10 ? '0' + minutes : minutes;
+		const formattedDate =
+			(date.getMonth() + 1).toString().padStart(2, '0') +
+			'-' +
+			date.getDate().toString().padStart(2, '0') +
+			'-' +
+			date.getFullYear() +
+			' ' +
+			hours +
+			':' +
+			minutes +
+			' ' +
+			ampm;
 
-	timePostedElement.textContent = formattedDate;
-}
+		timePostedElement.textContent = formattedDate;
+	}
 
-/* Comment dropdown functionality */
-let commentButtons = document.getElementsByClassName("comment-button");
-for (let i = 0; i < commentButtons.length; i++) {
-	commentButtons[i].addEventListener("click", function() {
-		let postId = this.getAttribute("data-post-id"); // get the post id from the data-post-id attribute
-		let commentDrawer = document.querySelector(".comment-drawer input[name='post_id'][value='" + postId + "']").parentElement.parentElement;
+	/* Comment dropdown functionality */
+	let commentButtons = document.getElementsByClassName('comment-button');
+	for (let i = 0; i < commentButtons.length; i++) {
+		commentButtons[i].addEventListener('click', function () {
+			let postId = this.getAttribute('data-post-id'); // get the post id from the data-post-id attribute
+			let commentDrawer = document.querySelector(".comment-drawer input[name='post_id'][value='" + postId + "']")
+				.parentElement.parentElement;
 
-		fetch('/is_logged_in')
-		.then(response => response.json())
-		.then(data => {
-			if (data.is_logged_in) {
-				if (commentDrawer.style.display == "none") {
-					commentDrawer.style.display = "block";
-					fetchComments(postId); // retrieve existing comments
-				} else {
-					commentDrawer.style.display = "none";
-				}
-			} else {
-				alert("You must log in to comment.");
-			}
+			fetch('/is_logged_in')
+				.then((response) => response.json())
+				.then((data) => {
+					if (data.is_logged_in) {
+						if (commentDrawer.style.display == 'none') {
+							commentDrawer.style.display = 'block';
+							fetchComments(postId); // retrieve existing comments
+						} else {
+							commentDrawer.style.display = 'none';
+						}
+					} else {
+						alert('You must log in to comment.');
+					}
+				});
+		});
+	}
+
+	/* Upvote-Downvote functionality */
+	document.querySelectorAll('.upvote-button, .downvote-button').forEach(function (button) {
+		button.vote_status = parseInt(button.getAttribute('data-vote-status')); // initialize the vote_status
+		const countSpan = button.parentNode.querySelector('.upvotes-count');
+		if (button.vote_status == 1) {
+			countSpan.style.color = '#FDB37C'; // upvoted is orange
+		} else if (button.vote_status == -1) {
+			countSpan.style.color = '#a2d0f7'; // downvoted is blue
+		} else {
+			countSpan.style.color = '#FFFFFF'; // no vote is default white
+		}
+		button.addEventListener('click', function (event) {
+			event.preventDefault();
+			const postId = event.target.getAttribute('data-post-id');
+			const previousVoteStatus = button.vote_status || 0; // get the previous vote status
+			const isUpvote = button.classList.contains('upvote-button');
+			const url = isUpvote ? '/upvote' : '/downvote';
+			fetch(url, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ post_id: postId }),
+			})
+				.then((response) => response.json())
+				.then((data) => {
+					if (data.success) {
+						const countSpan = event.target.parentNode.querySelector('.upvotes-count');
+						const upvoteButton = event.target.parentNode.querySelector('.upvote-button');
+						const downvoteButton = event.target.parentNode.querySelector('.downvote-button');
+						if (data.vote_status == 1) {
+							countSpan.textContent =
+								parseInt(countSpan.textContent, 10) + (previousVoteStatus == -1 ? 2 : 1);
+							upvoteButton.setAttribute('disabled', '');
+							downvoteButton.removeAttribute('disabled');
+							upvoteButton.vote_status = 1; // update the vote status in the frontend
+							downvoteButton.vote_status = 1; // also update the vote status on the other button
+							countSpan.style.color = '#FDB37C'; // change the color to orange
+						} else if (data.vote_status == -1) {
+							countSpan.textContent =
+								parseInt(countSpan.textContent, 10) - (previousVoteStatus == 1 ? 2 : 1);
+							downvoteButton.setAttribute('disabled', '');
+							upvoteButton.removeAttribute('disabled');
+							downvoteButton.vote_status = -1;
+							upvoteButton.vote_status = -1; // also update the vote status on the other button
+							countSpan.style.color = '#a2d0f7'; // change the color to blue
+						} else if (data.vote_status == 0) {
+							countSpan.textContent = parseInt(countSpan.textContent, 10) + (isUpvote ? 1 : -1);
+							upvoteButton.removeAttribute('disabled');
+							downvoteButton.removeAttribute('disabled');
+							upvoteButton.vote_status = 0;
+							downvoteButton.vote_status = 0; // also update the vote status on the other button
+							countSpan.style.color = '#FFFFFF'; // change the color to white
+						}
+					} else {
+						alert(data.message);
+					}
+				});
 		});
 	});
-}
 
-/* Upvote-Downvote functionality */
-document.querySelectorAll('.upvote-button, .downvote-button').forEach(function(button) {
-    button.vote_status = parseInt(button.getAttribute('data-vote-status')); // initialize the vote_status
-    const countSpan = button.parentNode.querySelector('.upvotes-count');
-    if (button.vote_status == 1) {
-        countSpan.style.color = '#FDB37C'; // upvoted is orange
-    } else if (button.vote_status == -1) {
-        countSpan.style.color = '#a2d0f7'; // downvoted is blue
-    } else {
-        countSpan.style.color = '#FFFFFF'; // no vote is default white
-    }
-	button.addEventListener('click', function(event) {
-        event.preventDefault();
-        const postId = event.target.getAttribute('data-post-id');
-        const previousVoteStatus = button.vote_status || 0; // get the previous vote status
-        const isUpvote = button.classList.contains('upvote-button');
-        const url = isUpvote ? '/upvote' : '/downvote';
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ post_id: postId }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const countSpan = event.target.parentNode.querySelector('.upvotes-count');
-                const upvoteButton = event.target.parentNode.querySelector('.upvote-button');
-                const downvoteButton = event.target.parentNode.querySelector('.downvote-button');
-                if (data.vote_status == 1) {
-                    countSpan.textContent = parseInt(countSpan.textContent, 10) + (previousVoteStatus == -1 ? 2 : 1); 
-                    upvoteButton.setAttribute('disabled', ''); 
-                    downvoteButton.removeAttribute('disabled'); 
-                    upvoteButton.vote_status = 1; // update the vote status in the frontend
-                    downvoteButton.vote_status = 1; // also update the vote status on the other button
-                    countSpan.style.color = '#FDB37C'; // change the color to orange
-                } else if (data.vote_status == -1) {
-                    countSpan.textContent = parseInt(countSpan.textContent, 10) - (previousVoteStatus == 1 ? 2 : 1); 
-                    downvoteButton.setAttribute('disabled', ''); 
-                    upvoteButton.removeAttribute('disabled'); 
-                    downvoteButton.vote_status = -1;
-                    upvoteButton.vote_status = -1; // also update the vote status on the other button
-                    countSpan.style.color = '#a2d0f7'; // change the color to blue
-                } else if (data.vote_status == 0) {
-                    countSpan.textContent = parseInt(countSpan.textContent, 10) + (isUpvote ? 1 : -1);
-                    upvoteButton.removeAttribute('disabled');
-                    downvoteButton.removeAttribute('disabled');
-                    upvoteButton.vote_status = 0;
-                    downvoteButton.vote_status = 0; // also update the vote status on the other button
-                    countSpan.style.color = '#FFFFFF'; // change the color to white
-                }
-            } else {
-                alert(data.message);
-            }
-        });
-    });
-});
+	/* Share button initiates a popup with link to single post */
+	const shareButtons = document.querySelectorAll('.share-button');
+	const copyButtons = document.querySelectorAll('.copy-button');
+	const popups = document.querySelectorAll('.popup');
 
-/* Share button initiates a popup with link to single post */
-const shareButtons = document.querySelectorAll(".share-button"); 
-const copyButtons = document.querySelectorAll(".copy-button"); 
-const popups = document.querySelectorAll(".popup");
+	shareButtons.forEach((button, index) => {
+		button.addEventListener('click', () => {
+			popups[index].querySelector('.popup-content').classList.toggle('show');
+		});
+	});
 
-shareButtons.forEach((button, index) => { 
-	button.addEventListener("click", () => { 
-		popups[index].querySelector(".popup-content").classList.toggle("show"); 
-	}); 
-});
+	copyButtons.forEach((button, index) => {
+		button.addEventListener('click', () => {
+			const input = popups[index].querySelector('.link-input');
+			input.select();
+			document.execCommand('copy');
+			button.innerText = 'Copied!';
+			setTimeout(() => {
+				button.innerText = 'Copy';
+			}, 2000);
+		});
+	});
 
-copyButtons.forEach((button, index) => { 
-	button.addEventListener("click", () => { 
-		const input = popups[index].querySelector(".link-input");
-		input.select(); 
-		document.execCommand("copy"); 
-		button.innerText = "Copied!"; 
-		setTimeout(() => { 
-			button.innerText = "Copy"; 
-		}, 2000); 
-	}); 
-});
+	const closeButton = document.querySelector('.close-button');
+	closeButtons.forEach((button) => {
+		button.addEventListener('click', function () {
+			this.parentElement.parentElement.classList.remove('show');
+		});
+	});
 
-const closeButton = document.querySelector(".close-button"); 
-closeButtons.forEach((button) => { 
-	button.addEventListener("click", function() { 
-		this.parentElement.parentElement.classList.remove("show"); 
-	}); 
-});
-
-/* Delete post functionality for post author */
-function deletePost(event) {
-	const postId = event.currentTarget.dataset.postId;
-	const result = confirm("Post deletion is irreversible. Are you sure you want to delete this post?");
-	if (result) {
-		const form = document.querySelector("form[action='/delete_post/" + postId + "']");
-		form.submit();
-	} else {
-		event.preventDefault();
+	/* Delete post functionality for post author */
+	function deletePost(event) {
+		const postId = event.currentTarget.dataset.postId;
+		const result = confirm('Post deletion is irreversible. Are you sure you want to delete this post?');
+		if (result) {
+			const form = document.querySelector("form[action='/delete_post/" + postId + "']");
+			form.submit();
+		} else {
+			event.preventDefault();
+		}
 	}
-}
 </script>
 {% endblock %}
