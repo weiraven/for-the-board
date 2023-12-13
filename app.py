@@ -1,7 +1,7 @@
 import os, random, requests
 import re
 from flask import Flask, flash, render_template, abort, request, redirect, url_for, session, jsonify
-from models import db, User, ForumPost, Vote, Game, ActiveGame, GameSession
+from models import db, User, ForumPost, Vote, Game, ActiveGame, GameSession, ForumDescription
 from dotenv import load_dotenv
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_bcrypt import Bcrypt
@@ -187,7 +187,8 @@ def forum():
             post.user_vote_status = vote.vote_status  # store the vote status in the post object
         else:
             post.user_vote_status = 0  # default to no vote
-    return render_template('forum.html', posts=posts)
+    description = get_forum_description('main')
+    return render_template('forum.html', description=description, posts=posts)
 
 @app.get('/forum/<category>')
 def subforum(category):
@@ -201,7 +202,8 @@ def subforum(category):
             post.user_vote_status = vote.vote_status  # store the vote status in the post object
         else:
             post.user_vote_status = 0  # default to no vote
-    return render_template('subforum.html', category=category, posts=posts)
+    description = get_forum_description(category)
+    return render_template('subforum.html', category=category, description=description, posts=posts)
 
 def category_to_url(category):
     category = re.sub(r'([a-z])([A-Z])', r'\1-\2', category)
@@ -357,24 +359,6 @@ def delete_post(post_id):
     db.session.commit()
     # print("Post deleted successfully")  # error checking
     return redirect(url_for('forum')) # redirect back to forum page
-
-@app.get('/forum/<category>/search')
-def search_posts(category):
-    query_flair = request.args.get('query-flair', '')
-    query_title = request.args.get('query-title', '')
-    subforum = False
-    query = ForumPost.query
-    if category:
-        query = query.filter(ForumPost.category == category)
-        subforum = True 
-    if query_flair:
-        query = query.filter((ForumPost.flairs.ilike(f'%{query_flair}%')))
-    if query_title:
-        query = query.filter((ForumPost.title.ilike(f'%{query_title}%')))
-    filtered_posts = query.all()   
-    if subforum == True:
-       return render_template('subforum.html', category=category, posts=filtered_posts)
-    return render_template('forum.html', posts=filtered_posts)
 
 @app.post('/profile')
 def new_player():
@@ -545,10 +529,12 @@ def search_posts(category):
 
     filtered_posts = query.all()
     
+    description = get_forum_description(category)
+    
     if subforum == True:
-       return render_template('subforum.html', category=category, posts=filtered_posts)
+       return render_template('subforum.html', category=category, description=description, posts=filtered_posts)
 
-    return render_template('forum.html', posts=filtered_posts)
+    return render_template('forum.html', description=get_forum_description('main'), posts=filtered_posts)
 
 @app.route('/create_game', methods=['GET', 'POST'])
 def create_game():
@@ -605,7 +591,11 @@ def create_game():
     # Pass the games to the template
     return render_template('create_game.html', games=games)
 
-        
+def get_forum_description(category):
+    forum_description = ForumDescription.query.filter_by(category=category).first()
+    if not forum_description:
+        return "No description available"
+    return forum_description.description
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
