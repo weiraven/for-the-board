@@ -199,3 +199,13 @@ class GameSession(db.Model):
 
     def __repr__(self) -> str:
         return f'GameSession({self.active_game_id}, {self.game_id}, {self.open_for_join},  {self.title})'
+    
+class ForumDescription(db.Model):
+    __tablename__ = 'forum_description'
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(255), unique=True)
+    description = db.Column(db.Text)
+
+    def __init__(self, category:str, description:str) -> None:
+            self.category = category
+            self.description = description
