@@ -25,10 +25,10 @@ CREATE TABLE ForumPost (
 );
 
 CREATE TABLE Vote (
-    user_id INT REFERENCES Player (user_id),
+    voter_id INT REFERENCES Player (user_id),
     post_id INT REFERENCES ForumPost (post_id),
     vote_status INT CHECK (vote_status IN (-1, 0, 1)),
-    PRIMARY KEY (user_id, post_id)
+    PRIMARY KEY (voter_id, post_id)
 );
 
 CREATE TABLE Game (
@@ -48,6 +48,14 @@ CREATE TABLE active_game (
     active_game_id SERIAL NOT NULL,
     user_id INTEGER REFERENCES player(user_id) NOT NULL
 );
+
+CREATE TABLE forum_description (
+    id SERIAL PRIMARY KEY,
+    category VARCHAR(255) UNIQUE,
+    description TEXT
+);
+
+
 
 -- Now that we have sign-up and login auth implemented. We can no longer manually edit
 -- passwords since Bcrypt will now salt and hash our passwords for us, so remember to 
@@ -161,3 +169,13 @@ VALUES ('Issue with Scoring in Online Board Game', 'Fellow gamers, has anyone el
 -- Post 12: Technical issue with a D&D character creation tool
 INSERT INTO ForumPost (title, content, author_id, upvotes, flairs, category)
 VALUES ('Glitch in D&D Character Creator Tool', 'Greetings, adventurers! I’ve been facing a peculiar glitch in the D&D character creator tool where certain abilities are not updating correctly. Anyone else experiencing this or know a workaround?', 5, 18, 'D&D, Character Creation, Glitch', 'bug-report-technical');
+
+-- forum descripton
+INSERT INTO forum_description (category, description)
+VALUES
+('community-square', 'Welcome to the Community Square - the bustling heart of our forum where players and enthusiasts come together. Share your experiences, discuss the latest in tabletop gaming, and connect with fellow adventurers.'),
+('looking-for-group', 'Ready to embark on a new quest but in need of companions? Look no further! Post here to find fellow players and groups for your next D&D adventure.'),
+('creative-content', 'A dedicated space for the artists, writers, and creatives of our D&D community. Share your artwork, stories, campaign ideas, and more.'),
+('gamemaster-corner', 'A haven for Dungeon Masters. Share tips, seek advice, and discuss campaign strategies. From novice to master, all are welcome in the Gamemaster''s Corner.'),
+('bug-report-technical', 'Encountered a bug or facing technical issues? Report them here and get assistance. Help us improve the forum experience for all.'),
+('main', 'All Topics - GuildBoard Main: Your one-stop destination for general discussions, announcements, and everything else not covered in other categories.');
