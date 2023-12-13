@@ -128,6 +128,9 @@ def is_safe_url(target):
 @app.get('/profile/<int:user_id>')
 def profile(user_id:int):
     active_user = User.query.filter_by(user_id = user_id).first()
+    
+    if active_user is None:
+        return "Error: User does not exist"
 
     return render_template('profile/profile.html', active_user=active_user, sessionUser=session['username'])
 
