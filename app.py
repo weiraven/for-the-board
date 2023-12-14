@@ -533,7 +533,7 @@ def handle_connect(json):
             print(log_data)
             game_inventories[active_game_id]=[]
             game_inventories[active_game_id].extend(log_data)
-            socketio.emit('update_inventory', {'inventory': game_inventories[active_game_id], 'active_game_id': active_game_id}, room=active_game_id)
+            socketio.emit('update_inventory', {'inventory': game_inventories[active_game_id], 'active_game_id': active_game_id}, room=active_game_id)           
 
 @socketio.on('disconnect')
 def handle_disconnect():
@@ -568,7 +568,7 @@ def handle_message(json):
             items = [item.strip() for item in items if item.strip()]
             if items:
                 for item in items:
-                    socketio.emit('message', {'username': 'Server', 'message': f'[{user.username}] has added to the inventory: {item} ', 'active_game_id': active_game_id}, room=active_game_id)
+                    socketio.emit('message', {'username': 'Server', 'message': f'[{user.username}] has added to Game Log: {item} ', 'active_game_id': active_game_id}, room=active_game_id)
         
                 add_items_to_inventory(user, active_game_id, items)
         
@@ -591,7 +591,7 @@ def remove_item_from_inventory(active_game_id, item_number):
         if 1 <= item_number <= len(game_inventories[active_game_id]):
             removed_item = game_inventories[active_game_id].pop(item_number - 1)
             socketio.emit('update_inventory', {'inventory': game_inventories[active_game_id], 'active_game_id': active_game_id}, room=active_game_id)
-            socketio.emit('message', {'username': 'Server', 'message': f'[{user.username}] has removed from the inventory: {removed_item["item_name"]}', 'active_game_id': active_game_id}, room=active_game_id)
+            socketio.emit('message', {'username': 'Server', 'message': f'[{user.username}] has removed from the Game Log: {removed_item["item_name"]}', 'active_game_id': active_game_id}, room=active_game_id)
             game_session.log = jsons.dumps([game_inventories[active_game_id]])
             db.session.commit()
 
