@@ -603,7 +603,7 @@ def upload():
 def upload_to_imgbb(photo):
     imgbb_api_key = {os.getenv("IMGBB")}
     imgbb_url = "https://api.imgbb.com/1/upload"
-    files = {"image": photo}
+    files = {"image": (file.filename, file.read())}
     params = {"key": imgbb_api_key}
     response = requests.post(imgbb_url, files=files, params=params)
     result = response.json()
