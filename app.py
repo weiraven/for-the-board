@@ -17,11 +17,11 @@ load_dotenv()
 app = Flask(__name__)
 
 # For local DB connection only:
-# app.config[
-#     'SQLALCHEMY_DATABASE_URI'
-# ] = f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
+app.config[
+    'SQLALCHEMY_DATABASE_URI'
+] = f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+# app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 app.secret_key = os.getenv('APP_SECRET_KEY', 'potato')
 
@@ -193,6 +193,10 @@ def edit_profile():
 
     db.session.commit()
     return redirect('./' + str(active_user.user_id))
+
+@app.get('/tutorial')
+def tutorial():
+    return render_template('tutorial.html')
 
 @app.route('/forum', methods=('GET', 'POST'))
 def forum():

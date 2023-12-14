@@ -1,0 +1,60 @@
+{% extends '_template.html' %}
+
+{% block body %}
+<!-- Link script.js file to run image carousel -->
+<script src="{{ url_for('static', filename='imageCarousel.js') }}" defer></script>
+
+<h1 class="tutorial-header">Getting Started!</h1>
+<div class="tutorial-container">
+    <div class="card tutorial-signup-info">
+        <div class="card-body">
+            <h5 class="card-title tutorial-card-title">Signing Up:</h5>
+            <p class="card-text">At the top right of the screen within the header there are Sign Up / Login buttons, use these to create an account!</p>
+            <p class="card-text">If you're on a smaller screen, there will be a dropdown button, when the menu opens the Sign Up / Login buttons will be at the bottom of it.</p>
+        </div>
+    </div>
+    <div class="card tutorial-forum-info">
+        <div class="card-body">
+            <h5 class="card-title tutorial-card-title">Forum:</h5>
+            <p class="card-text">Once signed in, you can navigate to the GuildBoard page using the header. Once there you will see other posts made by users and have the oppurtunity to make your own posts!</p>
+            <p class="card-text">On the right there will be a 'Create Post' button to get started!</p>
+        </div>
+    </div>
+<div class="tutorial-container">
+</div>
+    <div class="card tutorial-chatroom-info">
+        <div class="card-body">
+            <h5 class="card-title tutorial-card-title">Chatroom Commands:</h5>
+            <p class="card-text">!roll #: Generates a random number between 1 and the specified limit (e.g., !roll 20).</p>
+            <p class="card-text">!add string: Adds items to the inventory (e.g., !add sword or !add sword,,shield). Supports multiple items separated by two commas: ',,' .</p>
+            <p class="card-text">!remove #: Removes one item from the inventory based on the provided index.</p>
+        </div>
+    </div>
+    <div class="card tutorial-gameplay-info">
+        <div class="card-body">
+            <h5 class="card-title tutorial-card-title">Gameplay:</h5>
+            <p class="card-text">Once signed in, you can navigate to the Play Now page using the header. This will allow you to view your active game sessions, create a new session or join an already made session.</p>
+            <p class="card-text">When creating a game, you will be able to type in what game the session is for, as well as give the session a title, image and description. Make sure to make it descriptive and to use the forum to help find players to join you on your next campaign!</p>
+        </div>
+    </div>
+</div>
+
+<!-- Image Carousel -->
+<h1 class="tutorial-header">Examples of Commonly Played Games</h1>
+    <div class="carousel-container">
+        <button class="carousel-btn left"><i class="fa-solid fa-chevron-left"></i></button>
+        <ul class="carousel">
+            <li class="carousel-item active"><img src="static/images/D&D.jpg" alt="Tutorial1"></li>
+            <li class="carousel-item"><img src="static/images/DDM.jpg" alt="Tutorial2"></li>
+            <li class="carousel-item"><img src="static/images/pathfinder.png" alt="Tutorial3"></li>
+            <li class="carousel-item"><img src="static/images/starfinder.png" alt="Tutorial4"></li>
+        </ul>
+        <button class="carousel-btn right"><i class="fa-solid fa-chevron-right"></i></button>
+        <div class="carousel-nav">
+            <div class="nav-item-carousel dot-1 active"></div>
+            <div class="nav-item-carousel dot-2"></div>
+            <div class="nav-item-carousel dot-3"></div>
+            <div class="nav-item-carousel dot-4"></div>
+        </div>
+    </div>
+{% endblock %}
