@@ -360,6 +360,40 @@ def delete_post(post_id):
     # print("Post deleted successfully")  # error checking
     return redirect(url_for('forum')) # redirect back to forum page
 
+@app.get('/forum/search/', defaults={'category': None})
+@app.get('/forum/search/<category>')
+def search_posts(category):
+    query_flair = request.args.get('query-flair', '')
+    query_title = request.args.get('query-title', '')
+    subforum = False
+    
+    query = ForumPost.query.filter(ForumPost.parent_post_id.is_(None)).order_by(ForumPost.time_posted.desc()).all()
+    
+    if category:
+        query = query.filter(ForumPost.category == category)
+        subforum = True
+    
+    if query_flair:
+        query = query.filter((ForumPost.flairs.ilike(f'%{query_flair}%')))
+
+    if query_title:
+        query = query.filter((ForumPost.title.ilike(f'%{query_title}%')))
+
+    filtered_posts = query.all()
+    
+    description = get_forum_description(category)
+    
+    if subforum == True:
+       return render_template('subforum.html', category=category, description=description, posts=filtered_posts)
+
+    return render_template('forum.html', description=get_forum_description('main'), posts=filtered_posts)
+
+def get_forum_description(category):
+    forum_description = ForumDescription.query.filter_by(category=category).first()
+    if not forum_description:
+        return "No description available"
+    return forum_description.description
+
 @app.post('/profile')
 def new_player():
     return render_template('profile.html')
@@ -508,34 +542,6 @@ def upload_to_imgbb(filename):
     else:
         return None
 
-@app.get('/forum/search/', defaults={'category': None})
-@app.get('/forum/search/<category>')
-def search_posts(category):
-    query_flair = request.args.get('query-flair', '')
-    query_title = request.args.get('query-title', '')
-    subforum = False
-    
-    query = ForumPost.query
-    
-    if category:
-        query = query.filter(ForumPost.category == category)
-        subforum = True
-    
-    if query_flair:
-        query = query.filter((ForumPost.flairs.ilike(f'%{query_flair}%')))
-
-    if query_title:
-        query = query.filter((ForumPost.title.ilike(f'%{query_title}%')))
-
-    filtered_posts = query.all()
-    
-    description = get_forum_description(category)
-    
-    if subforum == True:
-       return render_template('subforum.html', category=category, description=description, posts=filtered_posts)
-
-    return render_template('forum.html', description=get_forum_description('main'), posts=filtered_posts)
-
 @app.route('/create_game', methods=['GET', 'POST'])
 def create_game():
     if request.method == 'POST':
@@ -590,12 +596,6 @@ def create_game():
     
     # Pass the games to the template
     return render_template('create_game.html', games=games)
-
-def get_forum_description(category):
-    forum_description = ForumDescription.query.filter_by(category=category).first()
-    if not forum_description:
-        return "No description available"
-    return forum_description.description
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
