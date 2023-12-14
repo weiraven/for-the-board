@@ -74,6 +74,9 @@ def create_account():
     new_user = User(first_name, last_name, email, username, hashed_password)
     db.session.add(new_user)
     db.session.commit()
+    # Log in the new user upon successful account creation
+    session['username'] = new_user.username
+    session['user_id'] = new_user.user_id
     return redirect('/')
 
 @app.get('/login')
@@ -162,7 +165,7 @@ def edit_profile():
         for game_tag in game_tags:
             if game_tag.game_tag_name == tag_name:
                 match_tag = game_tag
-                break;
+                break
         
         if match_tag is not None:
             active_user.game_tags.append(game_tag)
@@ -188,73 +191,6 @@ def edit_profile():
 
     db.session.commit()
     return redirect('./' + str(active_user.user_id))
-
-@app.route('/active_game')
-def active_game():
-    if 'username' in session:
-        
-        username = session['username']
-        user = User.query.filter_by(username=username).first()
-        if user:
-            
-            active_games = ActiveGame.query.filter_by(user_id=user.user_id).all()
-
-            game_sessions = []
-            
-            for active_game in active_games:
-                game_session = GameSession.query.filter_by(active_game_id=active_game.active_game_id).first()
-                if game_session:
-                    game_sessions.append(game_session)
-            games = Game.query.all()
-
-            return render_template('active_game.html', active_games=active_games, game_sessions=game_sessions, games=games, user=user)
-        else:
-            return render_template('error.html', error_message="User not found.")
-    else:
-        return redirect('login')
-    
-@app.route('/game_availability/<int:active_game_id>', methods=['POST'])
-def game_availability(active_game_id):
-    game_session = GameSession.query.get_or_404(active_game_id)
-
-    username = session['username']
-    user = User.query.filter_by(username=username).first()
-
-    # Check if the logged-in user is the owner of the game session
-    if game_session.owner == user.username:
-        game_session.open_for_join = not game_session.open_for_join
-        db.session.commit()
-
-    return redirect(url_for('active_game'))
-
-
-
-@app.route('/join_game', methods=['GET', 'POST'])
-def join_game():
-    if 'username' in session:
-        username = session.get('username')
-        user = User.query.filter_by(username=username).first()
-
-        # Retrieve the user's active game IDs
-        user_active_game_ids = [active_game.active_game_id for active_game in user.active_games]
-
-        if request.method == 'POST':
-            game_id_to_join = request.form.get('game_id')
-
-            if game_id_to_join and game_id_to_join not in user_active_game_ids:
-                active_game = ActiveGame(active_game_id=game_id_to_join, user_id=user.user_id)
-                db.session.add(active_game)
-                db.session.commit()
-
-                return redirect(url_for('active_game'))
-
-        games = Game.query.all()
-        game_session = GameSession.query.all()
-
-        return render_template('join_game.html', games=games, game_session=game_session, user_active_game_ids=user_active_game_ids)
-    else:
-        return redirect('login')
-
 
 @app.route('/forum', methods=('GET', 'POST'))
 def forum():
@@ -484,43 +420,51 @@ game_inventories = {}
 
 @app.route('/active_game')
 def active_game():
-    if 'username' in session:
-        # Get the user_id for the logged-in user
+    if 'username' in session:       
         username = session['username']
         user = User.query.filter_by(username=username).first()
         if user:
-            # Query active games for the user
             active_games = ActiveGame.query.filter_by(user_id=user.user_id).all()
-            # Create a list to store game sessions
             game_sessions = []
-            # Loop through active games and query for corresponding game sessions
             for active_game in active_games:
                 game_session = GameSession.query.filter_by(active_game_id=active_game.active_game_id).first()
                 if game_session:
                     game_sessions.append(game_session)
             games = Game.query.all()
-            return render_template('active_game.html', active_games=active_games, game_sessions=game_sessions, games=games)
+            return render_template('active_game.html', active_games=active_games, game_sessions=game_sessions, games=games, user=user)
         else:
-            # Handle the case where the user doesn't exist (unexpected case)
             return render_template('error.html', error_message="User not found.")
     else:
         return redirect('login')
+    
+@app.route('/game_availability/<int:active_game_id>', methods=['POST'])
+def game_availability(active_game_id):
+    game_session = GameSession.query.get_or_404(active_game_id)
+    username = session['username']
+    user = User.query.filter_by(username=username).first()
+    # Check if the logged-in user is the owner of the game session
+    if game_session.owner == user.username:
+        game_session.open_for_join = not game_session.open_for_join
+        db.session.commit()
+    return redirect(url_for('active_game'))
 
 @app.route('/join_game', methods=['GET', 'POST'])
 def join_game():
     if 'username' in session:
-        if request.method == 'POST':        
+        username = session.get('username')
+        user = User.query.filter_by(username=username).first()
+        # Retrieve the user's active game IDs
+        user_active_game_ids = [active_game.active_game_id for active_game in user.active_games]
+        if request.method == 'POST':
             game_id_to_join = request.form.get('game_id')
-            if game_id_to_join:                 
-                username = session.get('username')
-                user = User.query.filter_by(username=username).first()
+            if game_id_to_join and game_id_to_join not in user_active_game_ids:
                 active_game = ActiveGame(active_game_id=game_id_to_join, user_id=user.user_id)
                 db.session.add(active_game)
                 db.session.commit()
-                return redirect(url_for('active_game'))        
+                return redirect(url_for('active_game'))
         games = Game.query.all()
         game_session = GameSession.query.all()
-        return render_template('join_game.html', games=games, game_session=game_session)
+        return render_template('join_game.html', games=games, game_session=game_session, user_active_game_ids=user_active_game_ids)
     else:
         return redirect('login')
 
@@ -529,7 +473,6 @@ def chat(active_game_id):
     if 'username' in session:
         username = session['username']
         user = User.query.filter_by(username=username).first()
-
         if user:
             is_user_in_active_game = ActiveGame.query.filter_by(user_id=user.user_id, active_game_id=active_game_id).first()
 
