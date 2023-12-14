@@ -16,7 +16,7 @@ ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 load_dotenv()
 app = Flask(__name__)
 
-# For local DB connection only:
+#For local DB connection only:
 # app.config[
 #     'SQLALCHEMY_DATABASE_URI'
 # ] = f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
@@ -31,6 +31,7 @@ bcrypt.init_app(app)
 
 socketio = SocketIO(app, cors_allowed_origins="*")
 app.config['UPLOAD_FOLDER'] = 'uploads'
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 @app.route('/', methods=('GET', 'POST'))
 def index():
@@ -186,9 +187,12 @@ def edit_profile():
         flash('No selected file')
     
     if file and allowed_file(file.filename):
-        link = upload_to_imgbb(file)
+        filename = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(file.filename))
+        file.save(filename)
+        link = upload_to_imgbb(filename)
         active_user.profile_pic = link
         session['profile_pic'] = active_user.profile_pic
+        os.remove(filename)
 
     db.session.commit()
     return redirect('./' + str(active_user.user_id))
@@ -598,18 +602,24 @@ def upload():
         photo = request.files["photo"]
         if photo.filename == "":
             return jsonify({"error": "No file selected"}), 400
-        imgbb_url = upload_to_imgbb(photo)
+        filename = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(photo.filename))
+        photo.save(filename)
+        imgbb_url = upload_to_imgbb(filename)
         socketio.emit("image_uploaded", {"url": imgbb_url})
+        os.remove(filename)
+
         return jsonify({"url": imgbb_url})
+
     return jsonify({"error": "No file provided"}), 400
-        
-def upload_to_imgbb(photo):
+
+def upload_to_imgbb(filename):
     imgbb_api_key = {os.getenv("IMGBB")}
     imgbb_url = "https://api.imgbb.com/1/upload"
-    files = {"image": (file.filename, file.read())}
+    files = {"image": (filename, open(filename, "rb"))}
     params = {"key": imgbb_api_key}
     response = requests.post(imgbb_url, files=files, params=params)
     result = response.json()
+
     if result["success"]:
         return result["data"]["url"]
     else:
@@ -665,20 +675,6 @@ def goto_devblog():
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-        
-def upload_to_imgbb(file):
-    imgbb_api_key = os.getenv("IMGBB")
-    imgbb_url = "https://api.imgbb.com/1/upload"
-    files = {"image": (file.filename, file.read())}
-    params = {"key": imgbb_api_key}
-
-    response = requests.post(imgbb_url, files=files, params=params)
-    result = response.json()
-
-    if response.status_code == 200 and result["success"]:
-        return result["data"]["url"]
-    else:
-        return None
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
