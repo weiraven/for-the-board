@@ -194,6 +194,10 @@ def edit_profile():
     db.session.commit()
     return redirect('./' + str(active_user.user_id))
 
+@app.get('/tutorial')
+def tutorial():
+    return render_template('tutorial.html')
+
 @app.route('/forum', methods=('GET', 'POST'))
 def forum():
     user_id = session.get('user_id')  # get the current user ID from session
