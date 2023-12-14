@@ -5,6 +5,7 @@ bidict==0.22.1
 black==22.12.0
 blinker==1.7.0
 certifi==2022.12.7
+cffi==1.16.0
 charset-normalizer==3.1.0
 click==8.1.7
 colorama==0.4.6
@@ -16,6 +17,7 @@ Flask==3.0.0
 Flask-Bcrypt==1.0.1
 Flask-SocketIO==5.3.6
 Flask-SQLAlchemy==3.1.1
+gevent==23.9.1
 gitdb==4.0.10
 GitPython==3.1.29
 greenlet==3.0.1
@@ -39,6 +41,7 @@ psycopg==3.1.12
 psycopg-binary==3.1.12
 psycopg2==2.9.9
 psycopg2-binary==2.9.9
+pycparser==2.21
 pylint==2.15.8
 pytest==7.4.3
 python-dotenv==1.0.0
@@ -60,3 +63,5 @@ Werkzeug==3.0.1
 wrapt==1.14.1
 wsproto==1.2.0
 zmq==0.0.0
+zope.event==5.0
+zope.interface==6.1
