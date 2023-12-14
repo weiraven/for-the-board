@@ -5,30 +5,119 @@
 {% endblock %}
 
 {% block body %}
+
+<style>
+    .btn.btn-primary.btn-block {
+		background-color: #944394;
+		border-color: #944394;
+		color: #ffffff;
+        margin-top: 15px;
+	}
+    .form-label {
+        display: block;
+        text-align: left;
+    }
+    .form-control, .btn {
+        margin-bottom: 15px;
+    }
+    .card {
+        background-color: #000419;
+        color: #ffffff;
+        margin-bottom: 15px;
+    }
+    .nav-link.two {
+        color: #DD8B59;
+    }
+    .nav-link:hover {
+        color: var(--primary-color);
+    }
+    
+</style>
+
 <div class="container">
-    <div class="row justify-content-center">
+    <div class="row justify-content-left">
         <div class="col-md-7 col-lg-4 mb-5 mb-lg-0">
-            <div class="card border-0 shadow">
+            <div class="card">
                 <div class="card-body p-1-9 p-xl-5">
                     <div class="mb-4">
-                        <h3 class="h4 mb-0">Username Here</h3>
+                        <h3 class="h3 mb-0">{{active_user.username}}</h3>
                     </div>
-                    <ul class="mb-4">
-                        <h4 class="h5 mb-0">Avatar Here</h4>
-                    </ul>
+                    <div class="mb-4">
+                        <h4>{{active_user.first_name}} {{active_user.last_name}}</h4>
+                    </div>
+                    <div class="mb-4">
+                        <img src="../{{active_user.profile_pic}}" style="display: none" onload="this.style.display=''" class="img-fluid">
+                    </div>
+                    
                 </div>
             </div>
         </div>
-        <div class="col-lg-8">
-            <div class="ps-lg-1-6 ps-xl-5">
-                <div class="mb-5">
+        <div class="col-md-7 col-lg-4 mb-5 mb-lg-0">
+            <div class="card">
+                <div class="card-body p-1-9 p-xl-5">
                     <div class="text-start mb-1-6">
-                        <h2 class="h1 mb-0 text-primary">About Me</h2>
+                        <h2 class="h3 mb-3">About Me:</h2>
                     </div>
-                    <p>Bio Text</p>
+                    <h5 class="mb-5">{{active_user.bio_text}}</h5>
                 </div>
             </div>
         </div>
     </div>
+    <div class="row justify-content-left">
+        <div class="col-md-7 col-lg-4 mb-5 mb-lg-0">
+            <div class="card">
+                <div class="card-body p-1-9 p-xl-5">
+                    <table class="table-dark">
+                        <thead><th><h4>Game List:</h4></th></thead>
+                        <tbody>
+                            {% for tag in active_user.game_tags %}
+                            <tr>
+                                <td>{{tag.game_tag_name}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-7 col-lg-4 mb-5 mb-lg-0">
+            <div class="card">
+                <div class="card-body p-1-9 p-xl-5">
+                    <table class="table-dark">
+                        <thead>
+                            <th><h4>Forum Posts:</h4></th>
+                            <th></th>
+                        </thead>
+                        <tbody>
+                            {% for post in active_user.posts %}
+                            <tr>
+                                <td>
+                                    <a href = /forum_post/{{post.post_id}} class="nav-link two">{{post.title}}</a>
+                                </td>
+                                <td>
+                                    {{post.upvotes}}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col align-self-end">
+            <a href="/profile/edit">
+                <button type="button" id="edit" class="btn btn-primary btn-block" style="float: left">Edit Profile</button>
+            </a>
+        </div>
+    </div>
+    
 </div>
+
+<script>
+    var showEdit = "{{active_user.username|safe}}" == "{{sessionUser|safe}}";
+    document.getElementById("edit").hidden = !showEdit
+</script>
+
 {% endblock %}
