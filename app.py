@@ -188,7 +188,7 @@ def edit_profile():
     
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        filepath = os.path.join(UPLOAD_FOLDER, active_user.user_id + filename)
+        filepath = os.path.join(UPLOAD_FOLDER, str(active_user.user_id) + filename)
         file.save(filepath)
         active_user.profile_pic = filepath
 
