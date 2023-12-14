@@ -145,8 +145,7 @@ def forum():
 @app.get('/forum/<category>')
 def subforum(category):
     user_id = session.get('user_id')
-    posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%'),ForumPost.parent_post_id.is_(None)).order_by(ForumPost.time_posted.desc()).all()
-
+    posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%'), ForumPost.parent_post_id.is_(None)).order_by(ForumPost.time_posted.desc()).all()
     for post in posts:
         post.category = ''.join(word.capitalize() for word in post.category.split('-'))
         vote = Vote.query.filter_by(voter_id=user_id, post_id=post.post_id).first()  # get the vote record for this user-post pair
@@ -469,7 +468,6 @@ def handle_disconnect():
         leave_room(active_game_id)
         socketio.emit('disconnect_from_room', {'active_game_id': active_game_id, 'username': active_username}, room=active_game_id)
 
-
 @socketio.on('message')
 def handle_message(json):
     user_id = session.get('active_user_id')
@@ -521,7 +519,6 @@ def add_items_to_inventory(user, active_game_id, items):
         game_inventories[active_game_id].append({'username': user.username, 'item_name': item_name})
 
     socketio.emit('update_inventory', {'inventory': game_inventories[active_game_id], 'active_game_id': active_game_id}, room=active_game_id)
-
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # Handle file upload
