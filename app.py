@@ -187,10 +187,9 @@ def edit_profile():
         flash('No selected file')
     
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(UPLOAD_FOLDER, str(active_user.user_id) + filename)
-        file.save(filepath)
-        active_user.profile_pic = filepath
+        link = upload_to_imgbb(file)
+        active_user.profile_pic = link
+        session['profile_pic'] = active_user.profile_pic
 
     db.session.commit()
     return redirect('./' + str(active_user.user_id))
@@ -602,24 +601,18 @@ def upload():
 
         if photo.filename == "":
             return jsonify({"error": "No file selected"}), 400
-
-        # Save the file to the "uploads" folder
-        filename = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(photo.filename))
-        photo.save(filename)
-
-        # Use ImgBB API to upload the image and get the URL
-        imgbb_url = upload_to_imgbb(filename)
+        imgbb_url = upload_to_imgbb(photo)
         socketio.emit("image_uploaded", {"url": imgbb_url})
 
         return jsonify({"url": imgbb_url})
 
     return jsonify({"error": "No file provided"}), 400
         
-def upload_to_imgbb(filename):
+def upload_to_imgbb(photo):
     imgbb_api_key = {os.getenv("IMGBB")}
 
     imgbb_url = "https://api.imgbb.com/1/upload"
-    files = {"image": (filename, open(filename, "rb"))}
+    files = {"image": photo}
     params = {"key": imgbb_api_key}
 
     response = requests.post(imgbb_url, files=files, params=params)
