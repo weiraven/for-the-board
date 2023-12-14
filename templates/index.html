@@ -23,7 +23,7 @@
 		color: #ffffff;
 		box-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
 	}
-	.container.intro {
+	.container.container-intro {
 		margin-top: 50px;
 		display: flex;
 		align-items: center;
@@ -32,34 +32,11 @@
 	.logo-image {
 		margin-left: 50px;
 	}
-	.carousel.testimonial {
-		margin-top: 50px;
-		display: flex;
-		overflow: auto;
-		white-space: nowrap;
-		scroll-snap-type: x mandatory;
-		-webkit-overflow-scrolling: touch;
-	}
-    .carousel.carousel.testimonial div {
-		scroll-snap-align: start;
-		flex-shrink: 0;
-		width: 100%;
-		height: 100%;
-		margin-right: 50px;
-		border-radius: 10px;
-		background: #000419;
-		transform-origin: center center;
-		transform: scale(1);
-		transition: transform 0.5s;
-		position: relative;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		font-size: 100px;
-	}
+
+
 </style>
 
-<div class="container intro">
+<div class="container container-intro">
     <div>
         <h1 style="margin: 30px 0;">A new adventure awaits...</h1>
         <p class="ftb-intro-blurb">Connect with like-minded people, schedule time for gatherings, manage your campaign, and deploy your gaming session all in one place.</p>
@@ -67,11 +44,27 @@
     </div>
 	<img class="logo-image" src="/static/images/ftb_logo.png" alt="ForTheBoard Logo">
 </div>
-<div class="carousel testimonial">
-    <div>Testimonial 1</div>
-    <div>Testimonial 2</div>
-    <div>Testimonial 3</div>
-    <div>Testimonial 4</div>
-    <div>Testimonial 5</div>
-</div>
+
+<div id="carouselExample" class="carousel slide">
+	<div class="carousel-inner">
+	  <div class="carousel-item active">
+		<img src="/static/images/fantasy-backdrop-01.jpg" class="d-block w-100" alt="Fantastical Setting">
+	  </div>
+	  <div class="carousel-item">
+		<img src="/static/images/fantasy-backdrop-02.jpg" class="d-block w-100" alt="Fantastical Setting">
+	  </div>
+	  <div class="carousel-item">
+		<img src="/static/images/fantasy-backdrop-03.jpg" class="d-block w-100" alt="Fantastical Setting">
+	  </div>
+	</div>
+	<button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+	  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+	  <span class="visually-hidden">Previous</span>
+	</button>
+	<button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+	  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+	  <span class="visually-hidden">Next</span>
+	</button>
+  </div>
+
 {% endblock %}
