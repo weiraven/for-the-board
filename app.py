@@ -132,18 +132,18 @@ def profile(user_id:int):
     if active_user is None:
         return "Error: User does not exist"
 
-    return render_template('profile/profile.html', active_user=active_user, sessionUser=session['username'])
+    return render_template('profile.html', active_user=active_user, sessionUser=session['username'])
 
 @app.get('/profile/edit')
-def edit_profile():
+def display_edit_profile():
     session_user = User.query.filter_by(username = session['username']).first()
     game_tags = GameTag.query.all()
     game_tag_names = [game_tag.game_tag_name for game_tag in game_tags]
 
-    return render_template('profile/profile_edit.html', session_user=session_user, game_tags=game_tag_names)
+    return render_template('profile_edit.html', session_user=session_user, game_tags=game_tag_names)
 
 @app.post('/profile/edit')
-def player():
+def edit_profile():
     active_user = User.query.filter_by(username = session['username']).first()
     game_tags = GameTag.query.all()
 
@@ -188,12 +188,8 @@ def player():
         file.save(filepath)
         active_user.profile_pic = filepath
 
-    #active_user.game_tags = [GameTag(game_tag_name = name) for name in game_tag_names]
-    #active_user.game_tags = [GameTag(game_tag_name = request.form.get('game_tags'))]
-    
     db.session.commit()
     return redirect('./' + str(active_user.user_id))
-    #return render_template('profile.html', active_user=active_user)
 
 @app.route('/active_game')
 def active_game():
