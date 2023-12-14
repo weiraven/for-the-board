@@ -47,32 +47,26 @@ def filter_by_keyword(messages, keyword):
 @app.post('/signup')
 def create_account():
     saved_input = {}
-
     first_name = request.form.get('first_name')
     last_name = request.form.get('last_name')
     email = request.form.get('email')
     username = request.form.get('username')
     raw_password = request.form.get('password')
-
     saved_input['first_name'] = first_name
     saved_input['last_name'] = last_name
     saved_input['email'] = email
     saved_input['username'] = username
-
     if not first_name or not last_name or not email or not username or not raw_password:
         flash("* This is a required field.")
         return render_template('signup.html', saved_input=saved_input)
-
     email_exists = User.query.filter_by(email=email).first()
     if email_exists:
         flash("☒ This email already exists. Please login.")
         return render_template('signup.html', saved_input=saved_input)
-
     username_exists = User.query.filter_by(username=username).first()
     if username_exists:
         flash("☒ Username is taken. Please choose another.")
         return render_template('signup.html', saved_input=saved_input)
-    
     hashed_password = bcrypt.generate_password_hash(raw_password, 16).decode()
     new_user = User(first_name, last_name, email, username, hashed_password)
     db.session.add(new_user)
@@ -131,48 +125,6 @@ def profile(user_id):
         return "Error: User does not exist" 
     return render_template('profile.html', user_id=user_id)
 
-@app.route('/active_game')
-def active_game():
-    if 'username' in session:
-        # Get the user_id for the logged-in user
-        username = session['username']
-        user = User.query.filter_by(username=username).first()
-        if user:
-            # Query active games for the user
-            active_games = ActiveGame.query.filter_by(user_id=user.user_id).all()
-            # Create a list to store game sessions
-            game_sessions = []
-            # Loop through active games and query for corresponding game sessions
-            for active_game in active_games:
-                game_session = GameSession.query.filter_by(active_game_id=active_game.active_game_id).first()
-                if game_session:
-                    game_sessions.append(game_session)
-            games = Game.query.all()
-            return render_template('active_game.html', active_games=active_games, game_sessions=game_sessions, games=games)
-        else:
-            # Handle the case where the user doesn't exist (unexpected case)
-            return render_template('error.html', error_message="User not found.")
-    else:
-        return redirect('login')
-
-@app.route('/join_game', methods=['GET', 'POST'])
-def join_game():
-    if 'username' in session:
-        if request.method == 'POST':        
-            game_id_to_join = request.form.get('game_id')
-            if game_id_to_join:                 
-                username = session.get('username')
-                user = User.query.filter_by(username=username).first()
-                active_game = ActiveGame(active_game_id=game_id_to_join, user_id=user.user_id)
-                db.session.add(active_game)
-                db.session.commit()
-                return redirect(url_for('active_game'))        
-        games = Game.query.all()
-        game_session = GameSession.query.all()
-        return render_template('join_game.html', games=games, game_session=game_session)
-    else:
-        return redirect('login')
-
 @app.route('/forum', methods=('GET', 'POST'))
 def forum():
     user_id = session.get('user_id')  # get the current user ID from session
@@ -213,6 +165,12 @@ def category_to_url(category):
 # register the custom filter to the app's Jinja environment
 app.jinja_env.filters['category_to_url'] = category_to_url
 
+def get_forum_description(category):
+    forum_description = ForumDescription.query.filter_by(category=category).first()
+    if not forum_description:
+        return "No description available"
+    return forum_description.description
+
 @app.get('/forum_post/<int:post_id>')
 def get_single_post(post_id):
     user_id = session.get('user_id')  # get the current user ID from session
@@ -226,6 +184,26 @@ def get_single_post(post_id):
     else:
         post.user_vote_status = 0  # default to no vote
     return render_template('get_single_post.html', post=post)
+
+@app.get('/forum/search/', defaults={'category': None})
+@app.get('/forum/search/<category>')
+def search_posts(category):
+    query_flair = request.args.get('query-flair', '')
+    query_title = request.args.get('query-title', '')
+    subforum = False
+    query = ForumPost.query
+    if category:
+        query = query.filter(ForumPost.category == category)
+        subforum = True
+    if query_flair:
+        query = query.filter((ForumPost.flairs.ilike(f'%{query_flair}%')))
+    if query_title:
+        query = query.filter((ForumPost.title.ilike(f'%{query_title}%')))
+    filtered_posts = query.all()
+    description = get_forum_description(category)
+    if subforum == True:
+       return render_template('subforum.html', category=category, description=description, posts=filtered_posts)
+    return render_template('forum.html', description=get_forum_description('main'), posts=filtered_posts)
 
 @app.get('/create_post')
 def goto_create_post():
@@ -360,12 +338,50 @@ def delete_post(post_id):
     # print("Post deleted successfully")  # error checking
     return redirect(url_for('forum')) # redirect back to forum page
 
-@app.post('/profile')
-def new_player():
-    return render_template('profile.html')
-
 active_users = {}
 game_inventories = {}
+
+@app.route('/active_game')
+def active_game():
+    if 'username' in session:
+        # Get the user_id for the logged-in user
+        username = session['username']
+        user = User.query.filter_by(username=username).first()
+        if user:
+            # Query active games for the user
+            active_games = ActiveGame.query.filter_by(user_id=user.user_id).all()
+            # Create a list to store game sessions
+            game_sessions = []
+            # Loop through active games and query for corresponding game sessions
+            for active_game in active_games:
+                game_session = GameSession.query.filter_by(active_game_id=active_game.active_game_id).first()
+                if game_session:
+                    game_sessions.append(game_session)
+            games = Game.query.all()
+            return render_template('active_game.html', active_games=active_games, game_sessions=game_sessions, games=games)
+        else:
+            # Handle the case where the user doesn't exist (unexpected case)
+            return render_template('error.html', error_message="User not found.")
+    else:
+        return redirect('login')
+
+@app.route('/join_game', methods=['GET', 'POST'])
+def join_game():
+    if 'username' in session:
+        if request.method == 'POST':        
+            game_id_to_join = request.form.get('game_id')
+            if game_id_to_join:                 
+                username = session.get('username')
+                user = User.query.filter_by(username=username).first()
+                active_game = ActiveGame(active_game_id=game_id_to_join, user_id=user.user_id)
+                db.session.add(active_game)
+                db.session.commit()
+                return redirect(url_for('active_game'))        
+        games = Game.query.all()
+        game_session = GameSession.query.all()
+        return render_template('join_game.html', games=games, game_session=game_session)
+    else:
+        return redirect('login')
 
 @app.route('/chatsession/<int:active_game_id>')
 def chat(active_game_id):
@@ -382,7 +398,6 @@ def chat(active_game_id):
                 return redirect('/join_game')
     else:
         return redirect('/login')
-
 
 @socketio.on('set_active_user')
 def set_active_user(username):
@@ -508,34 +523,6 @@ def upload_to_imgbb(filename):
     else:
         return None
 
-@app.get('/forum/search/', defaults={'category': None})
-@app.get('/forum/search/<category>')
-def search_posts(category):
-    query_flair = request.args.get('query-flair', '')
-    query_title = request.args.get('query-title', '')
-    subforum = False
-    
-    query = ForumPost.query
-    
-    if category:
-        query = query.filter(ForumPost.category == category)
-        subforum = True
-    
-    if query_flair:
-        query = query.filter((ForumPost.flairs.ilike(f'%{query_flair}%')))
-
-    if query_title:
-        query = query.filter((ForumPost.title.ilike(f'%{query_title}%')))
-
-    filtered_posts = query.all()
-    
-    description = get_forum_description(category)
-    
-    if subforum == True:
-       return render_template('subforum.html', category=category, description=description, posts=filtered_posts)
-
-    return render_template('forum.html', description=get_forum_description('main'), posts=filtered_posts)
-
 @app.route('/create_game', methods=['GET', 'POST'])
 def create_game():
     if request.method == 'POST':
@@ -591,11 +578,9 @@ def create_game():
     # Pass the games to the template
     return render_template('create_game.html', games=games)
 
-def get_forum_description(category):
-    forum_description = ForumDescription.query.filter_by(category=category).first()
-    if not forum_description:
-        return "No description available"
-    return forum_description.description
+@app.get('/devblog')
+def goto_devblog():
+    return render_template('devblog.html')
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
