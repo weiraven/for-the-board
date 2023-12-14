@@ -582,7 +582,6 @@ def add_last_inventory(user, active_game_id, items):
     # if game_session and game_session.log:
     #     log_data = jsons.loads(game_session.log)
     #     game_inventories[active_game_id].extend(log_data)
-
     for item_name in items:
         game_inventories[active_game_id].append({'username': user.username, 'item_name': item_name})
     socketio.emit('update_inventory', {'inventory': game_inventories[active_game_id], 'active_game_id': active_game_id}, room=active_game_id)
@@ -620,10 +619,8 @@ def create_game():
         description = request.form.get('description')
         file = request.files.get('image')  # Use .get() to avoid KeyError if 'image' is not present
         imgbb_url = None  # Default or placeholder image URL
-
         if file and file.filename != '':
             imgbb_url = upload_to_imgbb(file)
-
         # Create a new game record
         game_exists = Game.query.filter_by(game=game).first()
         if game_exists:
@@ -637,13 +634,11 @@ def create_game():
                 db.session.add(new_active_game)
                 db.session.commit()
                 return redirect(url_for('join_game'))
-
         else:
             new_game = Game(game=game, description=description)
             db.session.add(new_game)
             db.session.commit()
             print(f"Game '{game}' added to the database.")
-
             username = session.get('username')
             user = User.query.filter_by(username=username).first()
             if user:
@@ -653,7 +648,6 @@ def create_game():
                 new_active_game = ActiveGame(active_game_id=new_game_session.active_game_id, user_id=user.user_id)
                 db.session.add(new_active_game)
                 db.session.commit()
-
             return redirect(url_for('join_game'))
     # Fetch all games from the database
     games = Game.query.all()
