@@ -186,7 +186,7 @@ class Game(db.Model):
         return f'Game({self.game_id}, {self.game})'
     
 class ActiveGame(db.Model):
-    __tablename__ = 'activegame'
+    __tablename__ = 'active_game'
 
     active_game_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('player.user_id'), nullable=False)
@@ -199,14 +199,19 @@ class ActiveGame(db.Model):
 
     def __repr__(self) -> str:
         return f'ActiveGame({self.active_game_id}, {self.user_id})'
+    
+    user = db.relationship('User', backref='active_games')
 
 class GameSession(db.Model):
-    __tablename__ = 'gamesession'
+    __tablename__ = 'game_session'
 
     active_game_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     game_id = db.Column(db.Integer, db.ForeignKey('game.game_id'), nullable=False)
     open_for_join = db.Column(db.Boolean, default=True, nullable=False)
     title = db.Column(db.String(255), nullable=False) 
+    owner = db.Column(db.String(255), db.ForeignKey('player.username'))
+    log = db.Column(db.Text)
+    image = db.Column(db.String(255), default='https://i.ibb.co/nrbzM1k/FTB-Logo-full.jpg')
 
     def get_active_game_id(self) -> int:
         return self.active_game_id
@@ -227,13 +232,5 @@ class GameSession(db.Model):
         self.open_for_join = open_for_join
 
     def __repr__(self) -> str:
-        return f'GameSession({self.active_game_id}, {self.game_id}, {self.open_for_join},  {self.title})'
-
-
-
-
-
-#class UserGames(db.Model):
-#    user_game_id = db.Column(db.Integer, primary_key=True)
-#    user_id = db.Column(db.Integer, db.ForeignKey('player.user_id'))
-#    game_id = db.Column(db.Integer, db.ForeignKey('GameTag.game_tag_id'))
+        return f'GameSession({self.active_game_id}, {self.game_id}, {self.open_for_join},  {self.title}, {self.owner})'
+        

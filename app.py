@@ -198,44 +198,69 @@ def edit_profile():
 @app.route('/active_game')
 def active_game():
     if 'username' in session:
-        # Get the user_id for the logged-in user
+        
         username = session['username']
         user = User.query.filter_by(username=username).first()
         if user:
-            # Query active games for the user
+            
             active_games = ActiveGame.query.filter_by(user_id=user.user_id).all()
-            # Create a list to store game sessions
+
             game_sessions = []
-            # Loop through active games and query for corresponding game sessions
+            
             for active_game in active_games:
                 game_session = GameSession.query.filter_by(active_game_id=active_game.active_game_id).first()
                 if game_session:
                     game_sessions.append(game_session)
             games = Game.query.all()
-            return render_template('active_game.html', active_games=active_games, game_sessions=game_sessions, games=games)
+
+            return render_template('active_game.html', active_games=active_games, game_sessions=game_sessions, games=games, user=user)
         else:
-            # Handle the case where the user doesn't exist (unexpected case)
             return render_template('error.html', error_message="User not found.")
     else:
         return redirect('login')
+    
+@app.route('/game_availability/<int:active_game_id>', methods=['POST'])
+def game_availability(active_game_id):
+    game_session = GameSession.query.get_or_404(active_game_id)
+
+    username = session['username']
+    user = User.query.filter_by(username=username).first()
+
+    # Check if the logged-in user is the owner of the game session
+    if game_session.owner == user.username:
+        game_session.open_for_join = not game_session.open_for_join
+        db.session.commit()
+
+    return redirect(url_for('active_game'))
+
+
 
 @app.route('/join_game', methods=['GET', 'POST'])
 def join_game():
     if 'username' in session:
-        if request.method == 'POST':        
+        username = session.get('username')
+        user = User.query.filter_by(username=username).first()
+
+        # Retrieve the user's active game IDs
+        user_active_game_ids = [active_game.active_game_id for active_game in user.active_games]
+
+        if request.method == 'POST':
             game_id_to_join = request.form.get('game_id')
-            if game_id_to_join:                 
-                username = session.get('username')
-                user = User.query.filter_by(username=username).first()
+
+            if game_id_to_join and game_id_to_join not in user_active_game_ids:
                 active_game = ActiveGame(active_game_id=game_id_to_join, user_id=user.user_id)
                 db.session.add(active_game)
                 db.session.commit()
-                return redirect(url_for('active_game'))        
+
+                return redirect(url_for('active_game'))
+
         games = Game.query.all()
         game_session = GameSession.query.all()
-        return render_template('join_game.html', games=games, game_session=game_session)
+
+        return render_template('join_game.html', games=games, game_session=game_session, user_active_game_ids=user_active_game_ids)
     else:
         return redirect('login')
+
 
 @app.route('/forum', methods=('GET', 'POST'))
 def forum():
@@ -612,8 +637,13 @@ def create_game():
         game = request.form.get('game')
         title = request.form.get('title')
         description = request.form.get('description')
+        file = request.files.get('image')  # Use .get() to avoid KeyError if 'image' is not present
+        imgbb_url = None  # Default or placeholder image URL
 
-        # Assuming 'game' is the name of the game you want to add
+        if file and file.filename != '':
+            imgbb_url = upload_to_imgbb(file)
+
+        # Create a new game record
         game_exists = Game.query.filter_by(game=game).first()
 
         if game_exists:
@@ -621,7 +651,7 @@ def create_game():
             user = User.query.filter_by(username=username).first()
 
             if user:
-                new_game_session = GameSession(title=title, game_id=game_exists.game_id, open_for_join=True)
+                new_game_session = GameSession(title=title, game_id=game_exists.game_id, open_for_join=True, owner=username, image=imgbb_url)
                 db.session.add(new_game_session)
                 db.session.commit()
 
@@ -629,21 +659,18 @@ def create_game():
                 db.session.add(new_active_game)
                 db.session.commit()
                 return redirect(url_for('join_game'))
-        else:
-            # Create a new Game instance
-            new_game = Game(game=game, description=description)
 
-            # Add the new game to the database
+        else:
+            new_game = Game(game=game, description=description)
             db.session.add(new_game)
             db.session.commit()
             print(f"Game '{game}' added to the database.")
 
-        # Get the user_id (replace 'username' with the actual session key you are using)
             username = session.get('username')
             user = User.query.filter_by(username=username).first()
 
             if user:
-                new_game_session = GameSession(title=title, game_id=new_game.game_id, open_for_join=True)
+                new_game_session = GameSession(title=title, game_id=new_game.game_id, open_for_join=True, owner=username, image=imgbb_url)
                 db.session.add(new_game_session)
                 db.session.commit()
 
@@ -651,19 +678,29 @@ def create_game():
                 db.session.add(new_active_game)
                 db.session.commit()
 
-            # Redirect to a success page or any other route
             return redirect(url_for('join_game'))
 
     # Fetch all games from the database
     games = Game.query.all()
-    
-    # Pass the games to the template
     return render_template('create_game.html', games=games)
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
         
+def upload_to_imgbb(file):
+    imgbb_api_key = os.getenv("IMGBB")
+    imgbb_url = "https://api.imgbb.com/1/upload"
+    files = {"image": (file.filename, file.read())}
+    params = {"key": imgbb_api_key}
+
+    response = requests.post(imgbb_url, files=files, params=params)
+    result = response.json()
+
+    if response.status_code == 200 and result["success"]:
+        return result["data"]["url"]
+    else:
+        return None
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

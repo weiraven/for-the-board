@@ -45,14 +45,17 @@ CREATE TABLE Game (
     description TEXT
 );
 
-CREATE TABLE GameSession (
+CREATE TABLE game_session (
     active_game_id SERIAL PRIMARY KEY,
     game_id INTEGER REFERENCES game(game_id) NOT NULL,
     title VARCHAR(255) NOT NULL,
-    open_for_join BOOLEAN DEFAULT TRUE NOT NULL
+    open_for_join BOOLEAN DEFAULT TRUE NOT NULL,
+    owner VARCHAR(255) REFERENCES player(username),
+    log TEXT, 
+    image VARCHAR(255) DEFAULT 'https://i.ibb.co/nrbzM1k/FTB-Logo-full.jpg'
 );
 
-CREATE TABLE ActiveGame (
+CREATE TABLE active_game (
     active_game_id SERIAL NOT NULL,
     user_id INTEGER REFERENCES player(user_id) NOT NULL
 );
