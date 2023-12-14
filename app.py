@@ -184,26 +184,6 @@ def get_single_post(post_id):
         post.user_vote_status = 0  # default to no vote
     return render_template('get_single_post.html', post=post)
 
-@app.get('/forum/search/', defaults={'category': None})
-@app.get('/forum/search/<category>')
-def search_posts(category):
-    query_flair = request.args.get('query-flair', '')
-    query_title = request.args.get('query-title', '')
-    subforum = False
-    query = ForumPost.query
-    if category:
-        query = query.filter(ForumPost.category == category)
-        subforum = True
-    if query_flair:
-        query = query.filter((ForumPost.flairs.ilike(f'%{query_flair}%')))
-    if query_title:
-        query = query.filter((ForumPost.title.ilike(f'%{query_title}%')))
-    filtered_posts = query.all()
-    description = get_forum_description(category)
-    if subforum == True:
-       return render_template('subforum.html', category=category, description=description, posts=filtered_posts)
-    return render_template('forum.html', description=get_forum_description('main'), posts=filtered_posts)
-
 @app.get('/create_post')
 def goto_create_post():
     if 'username' in session:
@@ -343,22 +323,16 @@ def search_posts(category):
     query_flair = request.args.get('query-flair', '')
     query_title = request.args.get('query-title', '')
     subforum = False
-    
     query = ForumPost.query.filter(ForumPost.parent_post_id.is_(None)).order_by(ForumPost.time_posted.desc())
     if category:
         query = query.filter(ForumPost.category == category)
         subforum = True
-    
     if query_flair:
         query = query.filter((ForumPost.flairs.ilike(f'%{query_flair}%')))
-
     if query_title:
         query = query.filter((ForumPost.title.ilike(f'%{query_title}%')))
-
     filtered_posts = query.order_by(ForumPost.time_posted.desc()).all()
-    
     description = get_forum_description(category)
-    
     if subforum == True:
        return render_template('subforum.html', category=category, description=description, posts=filtered_posts)
 
