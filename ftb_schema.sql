@@ -24,6 +24,12 @@ CREATE TABLE ForumPost (
     FOREIGN KEY (parent_post_id) REFERENCES ForumPost (post_id)
 );
 
+CREATE TABLE ForumDescription (
+    id SERIAL PRIMARY KEY,
+    category VARCHAR(255) UNIQUE,
+    description TEXT
+);
+
 CREATE TABLE Vote (
     voter_id INT REFERENCES Player (user_id),
     post_id INT REFERENCES ForumPost (post_id),
@@ -37,25 +43,17 @@ CREATE TABLE Game (
     description TEXT
 );
 
-CREATE TABLE game_session (
+CREATE TABLE GameSession (
     active_game_id SERIAL PRIMARY KEY,
     game_id INTEGER REFERENCES game(game_id) NOT NULL,
     title VARCHAR(255) NOT NULL,
     open_for_join BOOLEAN DEFAULT TRUE NOT NULL
 );
 
-CREATE TABLE active_game (
+CREATE TABLE ActiveGame (
     active_game_id SERIAL NOT NULL,
     user_id INTEGER REFERENCES player(user_id) NOT NULL
 );
-
-CREATE TABLE forum_description (
-    id SERIAL PRIMARY KEY,
-    category VARCHAR(255) UNIQUE,
-    description TEXT
-);
-
-
 
 -- Now that we have sign-up and login auth implemented. We can no longer manually edit
 -- passwords since Bcrypt will now salt and hash our passwords for us, so remember to 
@@ -104,7 +102,7 @@ VALUES ('Rick', 'Rogue', 'SneakyStabber', 'sneakystabber@roll20forum.com', 'stea
 INSERT INTO Player (first_name, last_name, username, email, password)
 VALUES ('Lawrence', 'Legality', 'RuleLawyer', 'rulelawyer@roll20forum.com', 'ruleTheGame123');
 
--- Insert Player 7: The "It's What My Character Would Do" Excuse User
+-- Insert Player 7: The 'It's What My Character Would Do' Excuse User
 INSERT INTO Player (first_name, last_name, username, email, password)
 VALUES ('Chris', 'Chaos', 'ChaoticNeutral', 'chaoticneutral@roll20forum.com', 'chaosIsMyPass');
 
@@ -170,12 +168,11 @@ VALUES ('Issue with Scoring in Online Board Game', 'Fellow gamers, has anyone el
 INSERT INTO ForumPost (title, content, author_id, upvotes, flairs, category)
 VALUES ('Glitch in D&D Character Creator Tool', 'Greetings, adventurers! I’ve been facing a peculiar glitch in the D&D character creator tool where certain abilities are not updating correctly. Anyone else experiencing this or know a workaround?', 5, 18, 'D&D, Character Creation, Glitch', 'bug-report-technical');
 
--- forum descripton
-INSERT INTO forum_description (category, description)
-VALUES
-('community-square', 'Welcome to the Community Square - the bustling heart of our forum where players and enthusiasts come together. Share your experiences, discuss the latest in tabletop gaming, and connect with fellow adventurers.'),
-('looking-for-group', 'Ready to embark on a new quest but in need of companions? Look no further! Post here to find fellow players and groups for your next D&D adventure.'),
-('creative-content', 'A dedicated space for the artists, writers, and creatives of our D&D community. Share your artwork, stories, campaign ideas, and more.'),
-('gamemaster-corner', 'A haven for Dungeon Masters. Share tips, seek advice, and discuss campaign strategies. From novice to master, all are welcome in the Gamemaster''s Corner.'),
-('bug-report-technical', 'Encountered a bug or facing technical issues? Report them here and get assistance. Help us improve the forum experience for all.'),
-('main', 'All Topics - GuildBoard Main: Your one-stop destination for general discussions, announcements, and everything else not covered in other categories.');
+-- forum descriptons
+INSERT INTO ForumDescription (category, description)
+VALUES ('community-square', 'Welcome to the vibrant epicenter of the GuildBoards, where players and aficionados converge to share, discuss, and revel in the world of tabletop gaming. Share your stories and experiences, discuss the latest in tabletop gaming, and connect with fellow adventurers. The Community Square is more than just a web forum, it’s a virtual town square where beginners can find guidance, seasoned players can share their tales, and everyone in between can find a home.'), 
+('looking-for-group', 'Ready to embark on a new quest but in need of companions? Look no further! Post here to find fellow players and groups for your next epic adventure. Whether you’re a seasoned adventurer seeking a worthy party, or a newcomer looking for your first taste of the action, this is the place for you. State your requirements, your game preferences, and your availability. Watch as the community comes together to form the perfect group!'),
+('creative-content', 'A dedicated space for the artists, writers, and creatives of our diverse community. Share your artwork, stories, campaign ideas, and more. Whether you’re an MS Paint wizard or a seasoned content creator, this is a place for you to shine. Engage with others, receive feedback, and draw inspiration. From sketches to epic tales, from campaign ideas to character designs, every form of creativity is celebrated here.'),
+('gamemaster-corner', 'Welcome to the Gamemaster’s Corner, a haven for Dungeon Masters of all levels. This is your sanctuary to share tips, seek advice, and discuss campaign strategies. Whether you’re a novice just starting your journey or a master with countless campaigns under your belt, this is your space. Share your triumphs, your challenges, and your innovative ideas. Seek advice on complex scenarios, engage in discussions about game mechanics, and learn from the collective wisdom of the FTB community.'),
+('bug-report-technical', 'Encountered a bug or facing technical issues? Report your issues here and receive assistance from our dedicated dev team and community members. Your feedback is invaluable in helping us enhance the FTB experience for all. Whether it’s a minor glitch or a major hurdle, don’t hesitate to post. Your contribution today can lead to a smoother, more enjoyable experience for everyone tomorrow.'), 
+('main', 'All of the latest posts are presented here! Your one-stop destination for the latest queries, commissions, and quirks from the FTB community. A melting pot of ideas, a chorus of voices, a deluge of discussion! Dive in, engage, and enrich our forum with your thoughts and perspectives.');
