@@ -29,7 +29,7 @@ db.init_app(app)
 bcrypt = Bcrypt()
 bcrypt.init_app(app)
 
-socketio = SocketIO(app)
+socketio = SocketIO(app, transport='websocket')
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
 @app.route('/', methods=('GET', 'POST'))
