@@ -17,7 +17,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # For local DB connection only:
-# app.config[
+#app.config[
 #     'SQLALCHEMY_DATABASE_URI'
 # ] = f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
 
@@ -134,8 +134,12 @@ def profile(user_id:int):
     
     if active_user is None:
         return "Error: User does not exist"
+    
+    sessionUser = ''
+    if session.__contains__('username') and session['username']:
+        sessionUser = session['username']
 
-    return render_template('profile.html', active_user=active_user, sessionUser=session['username'])
+    return render_template('profile.html', active_user=active_user, sessionUser=sessionUser)
 
 @app.get('/profile/edit')
 def display_edit_profile():
