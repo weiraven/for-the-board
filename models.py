@@ -117,6 +117,16 @@ class ForumPost(db.Model):
             self.upvotes -= 1
             db.session.commit()
 
+class ForumDescription(db.Model):
+    __tablename__ = 'forumdescription'
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(255), unique=True)
+    description = db.Column(db.Text)
+
+    def __init__(self, category:str, description:str) -> None:
+            self.category = category
+            self.description = description
+
 class Vote(db.Model):
     __tablename__ = 'vote'
     voter_id = db.Column(db.Integer, db.ForeignKey('player.user_id'), primary_key=True)
@@ -157,7 +167,7 @@ class Game(db.Model):
         return f'Game({self.game_id}, {self.game})'
     
 class ActiveGame(db.Model):
-    __tablename__ = 'active_game'
+    __tablename__ = 'activegame'
 
     active_game_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('player.user_id'), nullable=False)
@@ -172,7 +182,7 @@ class ActiveGame(db.Model):
         return f'ActiveGame({self.active_game_id}, {self.user_id})'
 
 class GameSession(db.Model):
-    __tablename__ = 'game_session'
+    __tablename__ = 'gamesession'
 
     active_game_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     game_id = db.Column(db.Integer, db.ForeignKey('game.game_id'), nullable=False)
@@ -199,13 +209,3 @@ class GameSession(db.Model):
 
     def __repr__(self) -> str:
         return f'GameSession({self.active_game_id}, {self.game_id}, {self.open_for_join},  {self.title})'
-    
-class ForumDescription(db.Model):
-    __tablename__ = 'forum_description'
-    id = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.String(255), unique=True)
-    description = db.Column(db.Text)
-
-    def __init__(self, category:str, description:str) -> None:
-            self.category = category
-            self.description = description
