@@ -63,7 +63,6 @@ class User(db.Model):
     def __repr__(self) -> str:
         return f'Player({self.user_id}, {self.username}, {self.email})'
 
-
 class ForumPost(db.Model):
     __tablename__ = 'forumpost'
     post_id = db.Column(db.Integer, primary_key=True)
@@ -137,7 +136,7 @@ class ForumPost(db.Model):
             db.session.commit()
 
 class ForumDescription(db.Model):
-    __tablename__ = 'forum_description'
+    __tablename__ = 'forumdescription'
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(255), unique=True)
     description = db.Column(db.Text)
@@ -187,7 +186,6 @@ class Game(db.Model):
     
 class ActiveGame(db.Model):
     __tablename__ = 'active_game'
-
     active_game_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('player.user_id'), nullable=False)
 
@@ -204,7 +202,6 @@ class ActiveGame(db.Model):
 
 class GameSession(db.Model):
     __tablename__ = 'game_session'
-
     active_game_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     game_id = db.Column(db.Integer, db.ForeignKey('game.game_id'), nullable=False)
     open_for_join = db.Column(db.Boolean, default=True, nullable=False)
@@ -233,4 +230,3 @@ class GameSession(db.Model):
 
     def __repr__(self) -> str:
         return f'GameSession({self.active_game_id}, {self.game_id}, {self.open_for_join},  {self.title}, {self.owner})'
-        

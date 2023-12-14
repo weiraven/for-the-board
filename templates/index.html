@@ -4,6 +4,7 @@
 <!--Import Jim Nightshade font-->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jim+Nightshade&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Happy+Monkey&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap">
 
 <style>
 	h1 {
@@ -17,14 +18,34 @@
 		text-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
 		margin-bottom: 60px;
 	}
+	.test-bold {
+		margin-top: 200px;
+		font-size: 96px;
+	}
+	.test-caption {
+		text-shadow: 2px 1px 3px rgba(0, 0, 0, 1);
+		margin-bottom: 20px;
+	}
+	.test-quote-mark {
+		font-family: 'Playfair Display', serif;
+		font-size: 100px;
+		margin-top: 10%;
+		text-shadow: 2px 1px 3px rgba(0, 0, 0, 1);
+		margin-bottom: 0px;
+	}
+	.testimony-text {
+		font-family: 'Happy Monkey', cursive;
+		font-size: 24px;
+		text-shadow: 2px 2px 3px rgba(0, 0, 0, 1);
+	}
 	.btn.btn-primary.btn-block {
 		background-color: #944394;
 		border-color: #944394;
 		color: #ffffff;
 		box-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
 	}
-	.container.intro {
-		margin-top: 50px;
+	.container.container-intro {
+		margin-top: 40px;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -32,34 +53,34 @@
 	.logo-image {
 		margin-left: 50px;
 	}
-	.carousel.testimonial {
+	.car-item {
 		margin-top: 50px;
-		display: flex;
-		overflow: auto;
-		white-space: nowrap;
-		scroll-snap-type: x mandatory;
-		-webkit-overflow-scrolling: touch;
+		height: 650px;
 	}
-    .carousel.carousel.testimonial div {
-		scroll-snap-align: start;
-		flex-shrink: 0;
-		width: 100%;
+	.car-img {
 		height: 100%;
-		margin-right: 50px;
-		border-radius: 10px;
-		background: #000419;
-		transform-origin: center center;
-		transform: scale(1);
-		transition: transform 0.5s;
-		position: relative;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		font-size: 100px;
+		object-fit: cover;
+		filter: brightness(0.7);
 	}
+	.card-img-top {
+		height: 65%;
+		object-fit: cover;
+	}
+	.card-body {
+		background-color: #000419;
+		color: #ffffff;
+	}
+	.card {
+		border-color: #000000;
+		transition: all 0.4s;
+	}
+	.card:hover {
+		transform: scale(1.15);
+	}
+
 </style>
 
-<div class="container intro">
+<div class="container container-intro">
     <div>
         <h1 style="margin: 30px 0;">A new adventure awaits...</h1>
         <p class="ftb-intro-blurb">Connect with like-minded people, schedule time for gatherings, manage your campaign, and deploy your gaming session all in one place.</p>
@@ -67,11 +88,108 @@
     </div>
 	<img class="logo-image" src="/static/images/ftb_logo.png" alt="ForTheBoard Logo">
 </div>
-<div class="carousel testimonial">
-    <div>Testimonial 1</div>
-    <div>Testimonial 2</div>
-    <div>Testimonial 3</div>
-    <div>Testimonial 4</div>
-    <div>Testimonial 5</div>
-</div>
+
+<div id="testimonial-carousel" class="carousel slide" data-bs-ride="carousel">
+	<div class="carousel-indicators">
+		<button type="button" data-bs-target="#testimonial-carousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+		<button type="button" data-bs-target="#testimonial-carousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+		<button type="button" data-bs-target="#testimonial-carousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+		<button type="button" data-bs-target="#testimonial-carousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+		<button type="button" data-bs-target="#testimonial-carousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
+	  </div>
+	<div class="carousel-inner">
+	  	<div class="carousel-item active car-item">
+			<img src="/static/images/fantasy-backdrop-01.jpg" class="d-block w-100 car-img" alt="Fantastical Setting 1 ">
+			<div class="carousel-caption top-0 mt-4 d-none d-md-block">
+				<h1 class="test-bold">It's dangerous to go alone!</h1>
+				<p class="test-caption mt-3 fs-3">Take us on board.</p>
+				<a href="/signup" class="btn btn-primary btn-block">Sign Up Now</a>
+			</div>
+	  	</div>
+	  	<div class="carousel-item car-item">
+			<img src="/static/images/fantasy-backdrop-02.jpg" class="d-block w-100 car-img" alt="Fantastical Setting 2">
+			<div class="carousel-caption top-0 mt-4 d-none d-md-block">
+				<h2 class="test-quote-mark">“</h1>
+				<p class="testimony-text">I’m totally blown away by this online table-top site. It’s like a dream come true for nerds like me. The LFG forum is indispensable for finding people--I met my best friend there and we’ve been inseparable in every campaign since! The convenience of scheduling, gathering, playing, and tracking all in one place is just too good. Kudos to the team for this brilliant creation.</p>
+				<p class="fs-4">-KawaiiKrusader</p>
+			</div>
+	  	</div>
+	  	<div class="carousel-item car-item">
+			<img src="/static/images/fantasy-backdrop-03.jpg" class="d-block w-100 car-img" alt="Fantastical Setting 3">
+			<div class="carousel-caption top-0 mt-4 d-none d-md-block">
+				<h2 class="test-quote-mark">“</h1>
+				<p class="testimony-text">FTB is the best in-browser board gaming site yet. The loot tracker and game session calendaring features are highly efficient and user-friendly. This platform is an absolute must-join for all table-top enthusiasts out there.</p>
+				<p class="fs-4">-llamallamaduck</p>
+			</div>
+	  	</div>
+	  	<div class="carousel-item car-item">
+			<img src="/static/images/fantasy-backdrop-04.jpg" class="d-block w-100 car-img" alt="Fantastical Setting 4">
+			<div class="carousel-caption top-0 mt-4 d-none d-md-block">	
+				<h2 class="test-quote-mark">“</h1>
+				<p class="testimony-text">I love ForTheBoard because it lets me play Pathfinder with my friends online. It has everything I need: customizable uploads, dice, chat, and more. It’s easy to use, fun, and FREE! FTB is the best way to enjoy tabletop RPGs in the digital age.</p>
+				<p class="fs-4">-Dreamcaster77</p>
+			</div>
+	  	</div>
+	  	<div class="carousel-item car-item">
+			<img src="/static/images/fantasy-backdrop-05.jpg" class="d-block w-100 car-img" alt="Fantastical Setting 5">
+			<div class="carousel-caption top-0 mt-4 d-none d-md-block">
+				<h2 class="test-quote-mark">“</h1>
+				<p class="testimony-text">This website has transformed our game nights! FTB’s versatility, user-friendly interface, and community features make it a one-hop-stop for all our gaming needs. It’s the perfect platform for storytellers and fantasy enthusiasts like us.</p>
+				<p class="fs-4">-MaliceMiser & Quantum_Leap</p>
+			</div>
+	  </div>
+	</div>
+	<button class="carousel-control-prev" type="button" data-bs-target="#testimonial-carousel" data-bs-slide="prev">
+	  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+	  <span class="visually-hidden">Previous</span>
+	</button>
+	<button class="carousel-control-next" type="button" data-bs-target="#testimonial-carousel" data-bs-slide="next">
+	  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+	  <span class="visually-hidden">Next</span>
+	</button>
+  </div>
+
+	<section id="features" class="pt-md-5">
+		<div class="container">
+			<div class="row gy-3">
+				<div class="col-md-3">
+					<div class="card h-100" style="width: 18rem;">
+						<img src="/static/images/dice-and-minis.jpg" class="card-img-top" alt="Dice & Miniatures">
+						<div class="card-body">
+						<h5 class="card-title">Take the Initiative</h5>
+						<p class="card-text">Choose an existing game and rules system or create your own with our customizable in-browser tools and features.</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="card h-100" style="width: 18rem;">
+						<img src="/static/images/spinning-worlds.jpg" class="card-img-top" alt="Spinning Worlds">
+						<div class="card-body">
+						<h5 class="card-title">Weave New Worlds</h5>
+						<p class="card-text">Upload character sheets, maps, game boards, or whatever you need to spin a tale right into your live game session.</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="card h-100" style="width: 18rem;">
+						<img src="/static/images/players-group1.jpg" class="card-img-top" alt="Group of Players">
+						<div class="card-body">
+						<h5 class="card-title">Gather & Plan</h5>
+						<p class="card-text">Whether your LFG or LFM, you’ll be able to recruit or find like-minded individuals by posting in our community-building forums.</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div class="card h-100" style="width: 18rem;">
+						<img src="/static/images/loot-chest.jpg" class="card-img-top" alt="Treasure Chest">
+						<div class="card-body">
+						<h5 class="card-title">Loot Tracking</h5>
+						<p class="card-text">Can’t remember who needs gear or who got what? Organize and track your loot in the same place. No need for another app.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
 {% endblock %}

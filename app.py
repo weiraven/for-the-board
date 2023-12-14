@@ -50,36 +50,33 @@ def filter_by_keyword(messages, keyword):
 @app.post('/signup')
 def create_account():
     saved_input = {}
-
     first_name = request.form.get('first_name')
     last_name = request.form.get('last_name')
     email = request.form.get('email')
     username = request.form.get('username')
     raw_password = request.form.get('password')
-
     saved_input['first_name'] = first_name
     saved_input['last_name'] = last_name
     saved_input['email'] = email
     saved_input['username'] = username
-
     if not first_name or not last_name or not email or not username or not raw_password:
         flash("* This is a required field.")
         return render_template('signup.html', saved_input=saved_input)
-
     email_exists = User.query.filter_by(email=email).first()
     if email_exists:
         flash("☒ This email already exists. Please login.")
         return render_template('signup.html', saved_input=saved_input)
-
     username_exists = User.query.filter_by(username=username).first()
     if username_exists:
         flash("☒ Username is taken. Please choose another.")
         return render_template('signup.html', saved_input=saved_input)
-    
     hashed_password = bcrypt.generate_password_hash(raw_password, 16).decode()
     new_user = User(first_name, last_name, email, username, hashed_password)
     db.session.add(new_user)
     db.session.commit()
+    # Log in the new user upon successful account creation
+    session['username'] = new_user.username
+    session['user_id'] = new_user.user_id
     return redirect('/')
 
 @app.get('/login')
@@ -168,7 +165,7 @@ def edit_profile():
         for game_tag in game_tags:
             if game_tag.game_tag_name == tag_name:
                 match_tag = game_tag
-                break;
+                break
         
         if match_tag is not None:
             active_user.game_tags.append(game_tag)
@@ -195,73 +192,6 @@ def edit_profile():
     db.session.commit()
     return redirect('./' + str(active_user.user_id))
 
-@app.route('/active_game')
-def active_game():
-    if 'username' in session:
-        
-        username = session['username']
-        user = User.query.filter_by(username=username).first()
-        if user:
-            
-            active_games = ActiveGame.query.filter_by(user_id=user.user_id).all()
-
-            game_sessions = []
-            
-            for active_game in active_games:
-                game_session = GameSession.query.filter_by(active_game_id=active_game.active_game_id).first()
-                if game_session:
-                    game_sessions.append(game_session)
-            games = Game.query.all()
-
-            return render_template('active_game.html', active_games=active_games, game_sessions=game_sessions, games=games, user=user)
-        else:
-            return render_template('error.html', error_message="User not found.")
-    else:
-        return redirect('login')
-    
-@app.route('/game_availability/<int:active_game_id>', methods=['POST'])
-def game_availability(active_game_id):
-    game_session = GameSession.query.get_or_404(active_game_id)
-
-    username = session['username']
-    user = User.query.filter_by(username=username).first()
-
-    # Check if the logged-in user is the owner of the game session
-    if game_session.owner == user.username:
-        game_session.open_for_join = not game_session.open_for_join
-        db.session.commit()
-
-    return redirect(url_for('active_game'))
-
-
-
-@app.route('/join_game', methods=['GET', 'POST'])
-def join_game():
-    if 'username' in session:
-        username = session.get('username')
-        user = User.query.filter_by(username=username).first()
-
-        # Retrieve the user's active game IDs
-        user_active_game_ids = [active_game.active_game_id for active_game in user.active_games]
-
-        if request.method == 'POST':
-            game_id_to_join = request.form.get('game_id')
-
-            if game_id_to_join and game_id_to_join not in user_active_game_ids:
-                active_game = ActiveGame(active_game_id=game_id_to_join, user_id=user.user_id)
-                db.session.add(active_game)
-                db.session.commit()
-
-                return redirect(url_for('active_game'))
-
-        games = Game.query.all()
-        game_session = GameSession.query.all()
-
-        return render_template('join_game.html', games=games, game_session=game_session, user_active_game_ids=user_active_game_ids)
-    else:
-        return redirect('login')
-
-
 @app.route('/forum', methods=('GET', 'POST'))
 def forum():
     user_id = session.get('user_id')  # get the current user ID from session
@@ -282,8 +212,7 @@ def forum():
 @app.get('/forum/<category>')
 def subforum(category):
     user_id = session.get('user_id')
-    posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%'),ForumPost.parent_post_id.is_(None)).order_by(ForumPost.time_posted.desc()).all()
-
+    posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%'), ForumPost.parent_post_id.is_(None)).order_by(ForumPost.time_posted.desc()).all()
     for post in posts:
         post.category = ''.join(word.capitalize() for word in post.category.split('-'))
         vote = Vote.query.filter_by(voter_id=user_id, post_id=post.post_id).first()  # get the vote record for this user-post pair
@@ -301,6 +230,12 @@ def category_to_url(category):
     return category
 # register the custom filter to the app's Jinja environment
 app.jinja_env.filters['category_to_url'] = category_to_url
+
+def get_forum_description(category):
+    forum_description = ForumDescription.query.filter_by(category=category).first()
+    if not forum_description:
+        return "No description available"
+    return forum_description.description
 
 @app.get('/forum_post/<int:post_id>')
 def get_single_post(post_id):
@@ -455,22 +390,16 @@ def search_posts(category):
     query_flair = request.args.get('query-flair', '')
     query_title = request.args.get('query-title', '')
     subforum = False
-    
     query = ForumPost.query.filter(ForumPost.parent_post_id.is_(None)).order_by(ForumPost.time_posted.desc())
     if category:
         query = query.filter(ForumPost.category == category)
         subforum = True
-    
     if query_flair:
         query = query.filter((ForumPost.flairs.ilike(f'%{query_flair}%')))
-
     if query_title:
         query = query.filter((ForumPost.title.ilike(f'%{query_title}%')))
-
     filtered_posts = query.order_by(ForumPost.time_posted.desc()).all()
-    
     description = get_forum_description(category)
-    
     if subforum == True:
        return render_template('subforum.html', category=category, description=description, posts=filtered_posts)
 
@@ -489,12 +418,61 @@ def new_player():
 active_users = {}
 game_inventories = {}
 
+@app.route('/active_game')
+def active_game():
+    if 'username' in session:       
+        username = session['username']
+        user = User.query.filter_by(username=username).first()
+        if user:
+            active_games = ActiveGame.query.filter_by(user_id=user.user_id).all()
+            game_sessions = []
+            for active_game in active_games:
+                game_session = GameSession.query.filter_by(active_game_id=active_game.active_game_id).first()
+                if game_session:
+                    game_sessions.append(game_session)
+            games = Game.query.all()
+            return render_template('active_game.html', active_games=active_games, game_sessions=game_sessions, games=games, user=user)
+        else:
+            return render_template('error.html', error_message="User not found.")
+    else:
+        return redirect('login')
+    
+@app.route('/game_availability/<int:active_game_id>', methods=['POST'])
+def game_availability(active_game_id):
+    game_session = GameSession.query.get_or_404(active_game_id)
+    username = session['username']
+    user = User.query.filter_by(username=username).first()
+    # Check if the logged-in user is the owner of the game session
+    if game_session.owner == user.username:
+        game_session.open_for_join = not game_session.open_for_join
+        db.session.commit()
+    return redirect(url_for('active_game'))
+
+@app.route('/join_game', methods=['GET', 'POST'])
+def join_game():
+    if 'username' in session:
+        username = session.get('username')
+        user = User.query.filter_by(username=username).first()
+        # Retrieve the user's active game IDs
+        user_active_game_ids = [active_game.active_game_id for active_game in user.active_games]
+        if request.method == 'POST':
+            game_id_to_join = request.form.get('game_id')
+            if game_id_to_join and game_id_to_join not in user_active_game_ids:
+                active_game = ActiveGame(active_game_id=game_id_to_join, user_id=user.user_id)
+                db.session.add(active_game)
+                db.session.commit()
+                return redirect(url_for('active_game'))
+        games = Game.query.all()
+        game_session = GameSession.query.all()
+        return render_template('join_game.html', games=games, game_session=game_session, user_active_game_ids=user_active_game_ids)
+    else:
+        return redirect('login')
+
 @app.route('/chatsession/<int:active_game_id>')
 def chat(active_game_id):
     if 'username' in session:
         username = session['username']
         user = User.query.filter_by(username=username).first()
-
         if user:
             is_user_in_active_game = ActiveGame.query.filter_by(user_id=user.user_id, active_game_id=active_game_id).first()
 
@@ -504,7 +482,6 @@ def chat(active_game_id):
                 return redirect('/join_game')
     else:
         return redirect('/login')
-
 
 @socketio.on('set_active_user')
 def set_active_user(username):
@@ -517,11 +494,9 @@ def handle_connect(json):
     active_game_id = json.get('active_game_id')
     join_room(active_game_id)
     user = player_repository_singleton.get_user_by_username(username)
-
     if user:
         session['active_user_id'] = user.user_id
         session['active_game_id'] = active_game_id
-
         active_users.setdefault(active_game_id, set()).add(username)
         set_active_user(username)
         emit('active_users', {'active_users': list(active_users[active_game_id])}, room=active_game_id)
@@ -539,29 +514,23 @@ def handle_connect(json):
 def handle_disconnect():
     active_username = session.get('active_username')
     active_game_id = session.get('active_game_id')
-    
     if active_username and active_game_id in active_users:
         active_users[active_game_id].remove(active_username)
         socketio.emit('active_users', {'active_users': list(active_users[active_game_id])}, room=active_game_id)
         print(f"User {active_username} disconnected from room {active_game_id}.")
-
         leave_room(active_game_id)
         socketio.emit('disconnect_from_room', {'active_game_id': active_game_id, 'username': active_username}, room=active_game_id)
-
 
 @socketio.on('message')
 def handle_message(json):
     user_id = session.get('active_user_id')
     user = player_repository_singleton.get_user_by_id(user_id)
-    
     if user:
         active_game_id = json.get('active_game_id')
         message = json.get('message')
-
         if message.startswith('!roll '):
             sides = int(message.split(' ')[1])
             roll_result = random.randint(1, sides)
-            
             socketio.emit('message', {'username': 'Server', 'message': f'[{user.username}] performed a Dice Roll ({sides} sides) ! Result: {roll_result}', 'active_game_id': active_game_id}, room=active_game_id)
         elif message.startswith('!add '):
             items = message[5:].strip().split(',,')
@@ -571,7 +540,6 @@ def handle_message(json):
                     socketio.emit('message', {'username': 'Server', 'message': f'[{user.username}] has added to Game Log: {item} ', 'active_game_id': active_game_id}, room=active_game_id)
         
                 add_items_to_inventory(user, active_game_id, items)
-        
         elif message.startswith('!remove '):
             try:
                 item_number = int(message.split(' ')[1])
@@ -579,7 +547,6 @@ def handle_message(json):
                     remove_item_from_inventory(active_game_id, item_number)
             except (ValueError, IndexError):
                 pass 
-
         else:
             socketio.emit('message', {'username': user.username, 'message': message, 'active_game_id': active_game_id}, room=active_game_id)
 
@@ -615,10 +582,8 @@ def add_last_inventory(user, active_game_id, items):
     # if game_session and game_session.log:
     #     log_data = jsons.loads(game_session.log)
     #     game_inventories[active_game_id].extend(log_data)
-
     for item_name in items:
         game_inventories[active_game_id].append({'username': user.username, 'item_name': item_name})
-
     socketio.emit('update_inventory', {'inventory': game_inventories[active_game_id], 'active_game_id': active_game_id}, room=active_game_id)
 
 # Handle file upload
@@ -626,31 +591,25 @@ def add_last_inventory(user, active_game_id, items):
 def upload():
     if "photo" in request.files:
         photo = request.files["photo"]
-
         if photo.filename == "":
             return jsonify({"error": "No file selected"}), 400
         imgbb_url = upload_to_imgbb(photo)
         socketio.emit("image_uploaded", {"url": imgbb_url})
-
         return jsonify({"url": imgbb_url})
-
     return jsonify({"error": "No file provided"}), 400
         
 def upload_to_imgbb(photo):
     imgbb_api_key = {os.getenv("IMGBB")}
-
     imgbb_url = "https://api.imgbb.com/1/upload"
     files = {"image": photo}
     params = {"key": imgbb_api_key}
-
     response = requests.post(imgbb_url, files=files, params=params)
     result = response.json()
-
     if result["success"]:
         return result["data"]["url"]
     else:
         return None
-
+    
 @app.route('/create_game', methods=['GET', 'POST'])
 def create_game():
     if request.method == 'POST':
@@ -660,50 +619,43 @@ def create_game():
         description = request.form.get('description')
         file = request.files.get('image')  # Use .get() to avoid KeyError if 'image' is not present
         imgbb_url = None  # Default or placeholder image URL
-
         if file and file.filename != '':
             imgbb_url = upload_to_imgbb(file)
-
         # Create a new game record
         game_exists = Game.query.filter_by(game=game).first()
-
         if game_exists:
             username = session.get('username')
             user = User.query.filter_by(username=username).first()
-
             if user:
                 new_game_session = GameSession(title=title, game_id=game_exists.game_id, open_for_join=True, owner=username, image=imgbb_url)
                 db.session.add(new_game_session)
                 db.session.commit()
-
                 new_active_game = ActiveGame(active_game_id=new_game_session.active_game_id, user_id=user.user_id)
                 db.session.add(new_active_game)
                 db.session.commit()
                 return redirect(url_for('join_game'))
-
         else:
             new_game = Game(game=game, description=description)
             db.session.add(new_game)
             db.session.commit()
             print(f"Game '{game}' added to the database.")
-
             username = session.get('username')
             user = User.query.filter_by(username=username).first()
-
             if user:
                 new_game_session = GameSession(title=title, game_id=new_game.game_id, open_for_join=True, owner=username, image=imgbb_url)
                 db.session.add(new_game_session)
                 db.session.commit()
-
                 new_active_game = ActiveGame(active_game_id=new_game_session.active_game_id, user_id=user.user_id)
                 db.session.add(new_active_game)
                 db.session.commit()
-
             return redirect(url_for('join_game'))
-
     # Fetch all games from the database
     games = Game.query.all()
     return render_template('create_game.html', games=games)
+
+@app.get('/devblog')
+def goto_devblog():
+    return render_template('devblog.html')
 
 def allowed_file(filename):
     return '.' in filename and \
