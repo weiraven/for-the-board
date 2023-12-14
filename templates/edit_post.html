@@ -66,13 +66,11 @@
     .hint-flair {
 		font-size: 10px;
 	}
-
     @keyframes blinker {
 		50% {
 			opacity: 0;
 		}
 	}
-
 	.badge-text {
 		animation: blinker 1s linear infinite;
 	}
@@ -107,11 +105,8 @@
                             <label for="flair-container">Flair</label>
                             <button type="button" id="add-flair" class="btn btn-light btn-sm plus-button"><i class="fas fa-plus"></i></button><br>
 							<p class="hint-flair">Hint: Add a flair to customize your post.</p>
-							<div
-								class="flair-container col-sm-3 d-flex justify-content-between align-content-center gap-2"
-							></div>
+							<div class="flair-container col-sm-3 d-flex justify-content-between align-content-center gap-2"></div>
 						</div>
-                        </div>
                         <div class="form-group">
                             <label for="postContent">Exposition</label>
                             <textarea class="form-control" id="postContent" name="content" rows="10">{{ post.content }}</textarea>
@@ -120,25 +115,26 @@
                     </form>
 				</div>
 			</div>
-            <div class="col-sm-4">
-				<div class="card">
-					<div class="card-body">
-						<h5 class="card-title">Posting to the GuildBoard</h5>
-						<p class="card-text">
-							<ul class="list-group list-group-flush">
-							<li class="list-group-item">This is may be an escapist space</li>
-							<li class="list-group-item">But remember the human</li>
-							<li class="list-group-item">Behave as you would in the real world</li>
-							<li class="list-group-item">Fact check your non-fictional claims</li>
-							<li class="list-group-item">Look for duplicates before posting</li>
-							<li class="list-group-item">May your adventures be great and your rolls be blessed!</li>
-							</ul>
-						</p>
-					</div>
-				</div>
-			</div>
 		</div>
-
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Posting to the GuildBoard</h5>
+                    <p class="card-text">
+                        <ul class="list-group list-group-flush">
+                        <li class="list-group-item">This is may be an escapist space</li>
+                        <li class="list-group-item">But remember the human</li>
+                        <li class="list-group-item">Behave as you would in the real world</li>
+                        <li class="list-group-item">Fact check your non-fictional claims</li>
+                        <li class="list-group-item">Look for duplicates before posting</li>
+                        <li class="list-group-item">May your adventures be great and your rolls be blessed!</li>
+                        </ul>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script defer>
     document.addEventListener('DOMContentLoaded', () => {
