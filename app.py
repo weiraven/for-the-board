@@ -193,7 +193,7 @@ def forum():
 @app.get('/forum/<category>')
 def subforum(category):
     user_id = session.get('user_id')
-    posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%')).order_by(ForumPost.time_posted.desc()).all()
+    posts = ForumPost.query.filter(ForumPost.category.ilike(f'%{category}%'),ForumPost.parent_post_id.is_(None)).order_by(ForumPost.time_posted.desc()).all()
 
     for post in posts:
         post.category = ''.join(word.capitalize() for word in post.category.split('-'))
@@ -367,8 +367,7 @@ def search_posts(category):
     query_title = request.args.get('query-title', '')
     subforum = False
     
-    query = ForumPost.query.filter(ForumPost.parent_post_id.is_(None)).order_by(ForumPost.time_posted.desc()).all()
-    
+    query = ForumPost.query.filter(ForumPost.parent_post_id.is_(None)).order_by(ForumPost.time_posted.desc())
     if category:
         query = query.filter(ForumPost.category == category)
         subforum = True
@@ -379,7 +378,7 @@ def search_posts(category):
     if query_title:
         query = query.filter((ForumPost.title.ilike(f'%{query_title}%')))
 
-    filtered_posts = query.all()
+    filtered_posts = query.order_by(ForumPost.time_posted.desc()).all()
     
     description = get_forum_description(category)
     
