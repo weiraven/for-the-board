@@ -1,7 +1,7 @@
 import os, random, requests
 import re
 from flask import Flask, flash, render_template, abort, request, redirect, url_for, session, jsonify
-from models import db, User, ForumPost, Vote, Game, ActiveGame, GameSession, ForumDescription
+from models import db, User, ForumPost, Vote, Game, ActiveGame, GameSession, GameTag, ForumDescription
 from dotenv import load_dotenv
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_bcrypt import Bcrypt
@@ -10,6 +10,9 @@ from repositories.src.game_repository import game_repository_singleton
 from urllib.parse import urlparse, urljoin
 from werkzeug.utils import secure_filename
 
+UPLOAD_FOLDER = './static/profile_pics'
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+
 load_dotenv()
 app = Flask(__name__)
 
@@ -17,7 +20,7 @@ app = Flask(__name__)
 app.config[
     'SQLALCHEMY_DATABASE_URI'
 ] = f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
-
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
 app.secret_key = os.getenv('APP_SECRET_KEY', 'potato')
 
 db.init_app(app)
@@ -95,6 +98,7 @@ def login_auth():
     user_id = existing_user.user_id # get logged-in user's user_id
     session['username'] = username # store user's username
     session['user_id'] = user_id # store user's id in session dictionary as well
+    session['profile_pic'] = existing_user.profile_pic
     next_url = request.form.get('next')
     if next_url and is_safe_url(next_url): # check if the next parameter is set and is safe
         return redirect(next_url) # redirect to the next URL
@@ -120,10 +124,137 @@ def is_safe_url(target):
     return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
 
 @app.get('/profile/<int:user_id>')
-def profile(user_id):
-    if user_id is None:
-        return "Error: User does not exist" 
-    return render_template('profile.html', user_id=user_id)
+def profile(user_id:int):
+    active_user = User.query.filter_by(user_id = user_id).first()
+    
+    if active_user is None:
+        return "Error: User does not exist"
+
+    return render_template('profile.html', active_user=active_user, sessionUser=session['username'])
+
+@app.get('/profile/edit')
+def display_edit_profile():
+    session_user = User.query.filter_by(username = session['username']).first()
+    game_tags = GameTag.query.all()
+    game_tag_names = [game_tag.game_tag_name for game_tag in game_tags]
+
+    return render_template('profile_edit.html', session_user=session_user, game_tags=game_tag_names)
+
+@app.post('/profile/edit')
+def edit_profile():
+    active_user = User.query.filter_by(username = session['username']).first()
+    game_tags = GameTag.query.all()
+
+    active_user.first_name = request.form.get('first_name')
+    active_user.last_name = request.form.get('last_name', active_user.last_name)
+    active_user.bio_text = request.form.get('bio_text')
+    game_tag_names = request.form.getlist('game_tag_input')
+
+    active_user.game_tags = []
+    db.session.commit()
+
+    match_tag = None
+    for tag_name in game_tag_names:
+
+        if not tag_name:
+            continue
+
+        for game_tag in game_tags:
+            if game_tag.game_tag_name == tag_name:
+                match_tag = game_tag
+                break;
+        
+        if match_tag is not None:
+            active_user.game_tags.append(game_tag)
+            match_tag = None
+        else:
+            print("miss")
+            new_game_tag = GameTag(game_tag_name = tag_name)
+            active_user.game_tags.append(new_game_tag)
+    
+    if 'profile_pic' not in request.files:
+        flash('No file part')
+        return redirect(request.url)
+    
+    file = request.files['profile_pic']
+    if file.filename == '':
+        flash('No selected file')
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, str(active_user.user_id) + filename)
+        file.save(filepath)
+        active_user.profile_pic = filepath
+
+    db.session.commit()
+    return redirect('./' + str(active_user.user_id))
+
+@app.route('/active_game')
+def active_game():
+    if 'username' in session:
+        
+        username = session['username']
+        user = User.query.filter_by(username=username).first()
+        if user:
+            
+            active_games = ActiveGame.query.filter_by(user_id=user.user_id).all()
+
+            game_sessions = []
+            
+            for active_game in active_games:
+                game_session = GameSession.query.filter_by(active_game_id=active_game.active_game_id).first()
+                if game_session:
+                    game_sessions.append(game_session)
+            games = Game.query.all()
+
+            return render_template('active_game.html', active_games=active_games, game_sessions=game_sessions, games=games, user=user)
+        else:
+            return render_template('error.html', error_message="User not found.")
+    else:
+        return redirect('login')
+    
+@app.route('/game_availability/<int:active_game_id>', methods=['POST'])
+def game_availability(active_game_id):
+    game_session = GameSession.query.get_or_404(active_game_id)
+
+    username = session['username']
+    user = User.query.filter_by(username=username).first()
+
+    # Check if the logged-in user is the owner of the game session
+    if game_session.owner == user.username:
+        game_session.open_for_join = not game_session.open_for_join
+        db.session.commit()
+
+    return redirect(url_for('active_game'))
+
+
+
+@app.route('/join_game', methods=['GET', 'POST'])
+def join_game():
+    if 'username' in session:
+        username = session.get('username')
+        user = User.query.filter_by(username=username).first()
+
+        # Retrieve the user's active game IDs
+        user_active_game_ids = [active_game.active_game_id for active_game in user.active_games]
+
+        if request.method == 'POST':
+            game_id_to_join = request.form.get('game_id')
+
+            if game_id_to_join and game_id_to_join not in user_active_game_ids:
+                active_game = ActiveGame(active_game_id=game_id_to_join, user_id=user.user_id)
+                db.session.add(active_game)
+                db.session.commit()
+
+                return redirect(url_for('active_game'))
+
+        games = Game.query.all()
+        game_session = GameSession.query.all()
+
+        return render_template('join_game.html', games=games, game_session=game_session, user_active_game_ids=user_active_game_ids)
+    else:
+        return redirect('login')
+
 
 @app.route('/forum', methods=('GET', 'POST'))
 def forum():
@@ -538,8 +669,13 @@ def create_game():
         game = request.form.get('game')
         title = request.form.get('title')
         description = request.form.get('description')
+        file = request.files.get('image')  # Use .get() to avoid KeyError if 'image' is not present
+        imgbb_url = None  # Default or placeholder image URL
 
-        # Assuming 'game' is the name of the game you want to add
+        if file and file.filename != '':
+            imgbb_url = upload_to_imgbb(file)
+
+        # Create a new game record
         game_exists = Game.query.filter_by(game=game).first()
 
         if game_exists:
@@ -547,7 +683,7 @@ def create_game():
             user = User.query.filter_by(username=username).first()
 
             if user:
-                new_game_session = GameSession(title=title, game_id=game_exists.game_id, open_for_join=True)
+                new_game_session = GameSession(title=title, game_id=game_exists.game_id, open_for_join=True, owner=username, image=imgbb_url)
                 db.session.add(new_game_session)
                 db.session.commit()
 
@@ -555,21 +691,18 @@ def create_game():
                 db.session.add(new_active_game)
                 db.session.commit()
                 return redirect(url_for('join_game'))
-        else:
-            # Create a new Game instance
-            new_game = Game(game=game, description=description)
 
-            # Add the new game to the database
+        else:
+            new_game = Game(game=game, description=description)
             db.session.add(new_game)
             db.session.commit()
             print(f"Game '{game}' added to the database.")
 
-        # Get the user_id (replace 'username' with the actual session key you are using)
             username = session.get('username')
             user = User.query.filter_by(username=username).first()
 
             if user:
-                new_game_session = GameSession(title=title, game_id=new_game.game_id, open_for_join=True)
+                new_game_session = GameSession(title=title, game_id=new_game.game_id, open_for_join=True, owner=username, image=imgbb_url)
                 db.session.add(new_game_session)
                 db.session.commit()
 
@@ -577,18 +710,33 @@ def create_game():
                 db.session.add(new_active_game)
                 db.session.commit()
 
-            # Redirect to a success page or any other route
             return redirect(url_for('join_game'))
 
     # Fetch all games from the database
     games = Game.query.all()
-    
-    # Pass the games to the template
     return render_template('create_game.html', games=games)
 
 @app.get('/devblog')
 def goto_devblog():
     return render_template('devblog.html')
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+        
+def upload_to_imgbb(file):
+    imgbb_api_key = os.getenv("IMGBB")
+    imgbb_url = "https://api.imgbb.com/1/upload"
+    files = {"image": (file.filename, file.read())}
+    params = {"key": imgbb_api_key}
+
+    response = requests.post(imgbb_url, files=files, params=params)
+    result = response.json()
+
+    if response.status_code == 200 and result["success"]:
+        return result["data"]["url"]
+    else:
+        return None
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

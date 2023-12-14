@@ -95,7 +95,11 @@ body {
     background-color: #DD8B59 !important;
     color: #ffffff !important;
 }
-
+.img-fluid.tiny {
+    max-height: 50px;
+     display: block;
+     margin-left: auto;
+  }
 
 /* ===== ===== ===== ===== ===== */
 /* Header */
