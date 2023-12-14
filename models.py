@@ -157,6 +157,8 @@ class ActiveGame(db.Model):
 
     def __repr__(self) -> str:
         return f'ActiveGame({self.active_game_id}, {self.user_id})'
+    
+    user = db.relationship('User', backref='active_games')
 
 class GameSession(db.Model):
     __tablename__ = 'game_session'
@@ -165,6 +167,7 @@ class GameSession(db.Model):
     game_id = db.Column(db.Integer, db.ForeignKey('game.game_id'), nullable=False)
     open_for_join = db.Column(db.Boolean, default=True, nullable=False)
     title = db.Column(db.String(255), nullable=False) 
+    owner = db.Column(db.String(255), db.ForeignKey('player.username'))
 
     def get_active_game_id(self) -> int:
         return self.active_game_id
@@ -185,4 +188,5 @@ class GameSession(db.Model):
         self.open_for_join = open_for_join
 
     def __repr__(self) -> str:
-        return f'GameSession({self.active_game_id}, {self.game_id}, {self.open_for_join},  {self.title})'
+        return f'GameSession({self.active_game_id}, {self.game_id}, {self.open_for_join},  {self.title}, {self.owner})'
+        

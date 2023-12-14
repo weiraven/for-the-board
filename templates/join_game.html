@@ -81,26 +81,29 @@
 <div class="container mt-3">
   <div class="row">
     {% for session in game_session %}
-      <div class="col-md-4 mb-4"> <!-- Adjusted class to include margin-bottom -->
-        <form method="POST" action="{{ url_for('join_game') }}">
-          <input type="hidden" name="game_id" value="{{ session.active_game_id }}">
-          <button type="submit" class="card-link" style="border: none; background-color: transparent;">
-            <div class="card mx-auto">
-              <img src="{{ url_for('static', filename='images/DDM.jpg') }}" class="card-img-top" alt="{{ session.title }}">
-              <div class="card-body">
-                <h5 class="card-title">{{ session.title }}</h5>
-                {% for game in games %}
-                  {% if game.game_id == session.game_id %}
-                    <p class="card-text">Game Name: {{ game.game }}</p>
-                  {% endif %}
-                {% endfor %}
+      {% if session.open_for_join %}
+        <div class="col-md-4 mb-4"> 
+          <form method="POST" action="{{ url_for('join_game') }}">
+            <input type="hidden" name="game_id" value="{{ session.active_game_id }}">
+            <button type="submit" class="card-link" style="border: none; background-color: transparent;">
+              <div class="card mx-auto">
+                <img src="{{ url_for('static', filename='images/DDM.jpg') }}" class="card-img-top" alt="{{ session.title }}">
+                <div class="card-body">
+                  <h5 class="card-title">{{ session.title }}</h5>
+                  {% for game in games %}
+                    {% if game.game_id == session.game_id %}
+                      <p class="card-text">Game Name: {{ game.game }}</p>
+                    {% endif %}
+                  {% endfor %}
+                </div>
               </div>
-            </div>
-          </button>
-        </form>
-      </div>
+            </button>
+          </form>
+        </div>
+      {% endif %}
     {% endfor %}
   </div>
 </div>
+
 
 {% endblock %}

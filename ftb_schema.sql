@@ -34,7 +34,8 @@ CREATE TABLE game_session (
     active_game_id SERIAL PRIMARY KEY,
     game_id INTEGER REFERENCES game(game_id) NOT NULL,
     title VARCHAR(255) NOT NULL,
-    open_for_join BOOLEAN DEFAULT TRUE NOT NULL
+    open_for_join BOOLEAN DEFAULT TRUE NOT NULL,
+    owner VARCHAR(255) REFERENCES player(user_id)
 );
 
 CREATE TABLE active_game (
