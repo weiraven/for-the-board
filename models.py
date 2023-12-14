@@ -1,7 +1,22 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Table, Column, Integer, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import DeclarativeBase, relationship, Mapped
 from datetime import datetime
+from dataclasses import dataclass
 
 db = SQLAlchemy()
+
+UserGames = db.Table('usergames',
+    db.Column('user_id', db.Integer, db.ForeignKey('player.user_id')),
+    db.Column('game_tag_id', db.Integer, db.ForeignKey('gametag.game_tag_id'))
+    )
+
+@dataclass
+class GameTag(db.Model):
+    __tablename__ = 'gametag'
+    game_tag_id = db.Column(db.Integer, primary_key=True)
+    game_tag_name = db.Column(db.String(255), nullable=False, unique=True)
 
 class User(db.Model):
     __tablename__ = 'player'
@@ -12,8 +27,11 @@ class User(db.Model):
     email = db.Column(db.String(255), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    profile_pic = db.Column(db.String(255), nullable=True)
+    bio_text = db.Column(db.Text, nullable=True, default='Sample Text')
     posts = db.relationship('ForumPost', backref='author', lazy='dynamic')
-
+    game_tags = db.relationship('GameTag', secondary=UserGames, backref='users')
+    
     # User constructor
     def __init__(self, first_name:str, last_name:str, email:str, username:str, password:str) -> None:
         self.first_name = first_name
@@ -118,7 +136,7 @@ class ForumPost(db.Model):
             db.session.commit()
 
 class ForumDescription(db.Model):
-    __tablename__ = 'forum_description'
+    __tablename__ = 'forumdescription'
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(255), unique=True)
     description = db.Column(db.Text)
@@ -167,8 +185,7 @@ class Game(db.Model):
         return f'Game({self.game_id}, {self.game})'
     
 class ActiveGame(db.Model):
-    __tablename__ = 'activegame'
-
+    __tablename__ = 'active_game'
     active_game_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('player.user_id'), nullable=False)
 
@@ -180,14 +197,18 @@ class ActiveGame(db.Model):
 
     def __repr__(self) -> str:
         return f'ActiveGame({self.active_game_id}, {self.user_id})'
+    
+    user = db.relationship('User', backref='active_games')
 
 class GameSession(db.Model):
-    __tablename__ = 'gamesession'
-
+    __tablename__ = 'game_session'
     active_game_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     game_id = db.Column(db.Integer, db.ForeignKey('game.game_id'), nullable=False)
     open_for_join = db.Column(db.Boolean, default=True, nullable=False)
     title = db.Column(db.String(255), nullable=False) 
+    owner = db.Column(db.String(255), db.ForeignKey('player.username'))
+    log = db.Column(db.Text)
+    image = db.Column(db.String(255), default='https://i.ibb.co/nrbzM1k/FTB-Logo-full.jpg')
 
     def get_active_game_id(self) -> int:
         return self.active_game_id
@@ -208,4 +229,4 @@ class GameSession(db.Model):
         self.open_for_join = open_for_join
 
     def __repr__(self) -> str:
-        return f'GameSession({self.active_game_id}, {self.game_id}, {self.open_for_join},  {self.title})'
+        return f'GameSession({self.active_game_id}, {self.game_id}, {self.open_for_join},  {self.title}, {self.owner})'

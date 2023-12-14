@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+{% extends '_template.html' %}
+
+{% block head %}
+<title>{% block title %}ForTheBoard - Profile{% endblock %}</title>
+{% endblock %}
+
+{% block body %}
+
+<style>
+    .btn.btn-primary.btn-block {
+		background-color: #944394;
+		border-color: #944394;
+		color: #ffffff;
+        margin-top: 15px;
+	}
+    .form-label {
+        display: block;
+        text-align: left;
+    }
+    .form-control, .btn {
+        margin-bottom: 15px;
+    }
+    .card {
+        background-color: #000419;
+        color: #ffffff;
+        margin-bottom: 15px;
+    }
+
+</style>
+
+<div class="container">
+    <form id = "editform" action="/profile/edit" method="post" enctype="multipart/form-data">
+        <div class="row justify-content-left">
+            <div class="col-md-7 col-lg-4 mb-5 mb-lg-0">
+                <div class="card">
+                    <div class="card-body p-1-9 p-xl-5">
+                        <div class="mb-4">
+                            <h3 class="h3 mb-0">{{session_user.username}}</h3>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label" id="first_name">First Name:</label>
+                            <input class="form-control" name="first_name" value="{{session_user.first_name}}" required>
+                            <label class="form-label" id="last_name">Last Name:</label>
+                            <input class="form-control" name="last_name" value="{{session_user.last_name}}" required>
+                            <label class="form-label" id="profile_pic" >Profile Pic:</label>
+                            <input class="form-control" type="file" name="profile_pic"">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7 col-lg-4 mb-5 mb-lg-0">
+                <div class="card">
+                    <div class="card-body p-1-9 p-xl-5">
+                        <div class="text-start mb-1-6">
+                            <h2 class="h3 mb-3">About Me:</h2>
+                        </div>
+                        <label class="form-label" id="bio_text">Bio Text:</label>
+                        <textarea class="form-control" name="bio_text" rows="8">{{session_user.bio_text}}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-left">
+            <div class="col-md-7 col-lg-4 mb-5 mb-lg-0">
+                <div class="card">
+                    <div class="card-body p-1-9 p-xl-5" id="game-tag-card">
+                        <div class="game-tag-card-content">
+                        <h4 class="h4 mb-4">Game List:</h4>
+                        {% for tag in session_user.game_tags %}
+                        <div class="input-group mb-3">
+                            <input class="form-control" type="text" name="game_tag_input" list="game_tag_list" value="{{tag.game_tag_name}}">
+                            <button class="btn btn-outline-secondary" type="button" onclick="return this.parentNode.remove();">Remove</button>
+                        </div>
+                        {% endfor %}
+                        <datalist id="game_tag_list">
+                            {% for tag in game_tags %}
+                            <option value="{{tag}}"></option>
+                            {% endfor %}
+                        </datalist>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col align-self-end">
+                <input type="submit" form="editform" id="save" class="btn btn-primary btn-block" style="float: left" value="Save Changes">
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        createNext(0);
+        console.log("document made")
+    });
+
+
+    function createNext(index) {
+
+        if ($('#new_game_tag_input_' + index).length == 0) {
+            
+            console.log("pst if")
+            // create the next text box if not exists
+            var next = $('<input>', {
+                id: 'new_game_tag_input_' + index,
+                type: 'text',
+                list: "game_tag_list",
+                placeholder: "Add a Game",
+                name:"game_tag_input",
+                class:"form-control"
+            });
+
+            var button = $('<button>', {
+                class:'btn btn-outline-secondary',
+                type:'button',
+                onclick:'return this.parentNode.remove();',
+                text:'Remove'
+            });
+
+            var wrapper = $('<div>', {
+                class:'input-group mb-3',
+
+            });
+
+            next.on('change', function() {
+                createNext(index + 1)
+            });
+            
+            next.appendTo(wrapper)
+            button.appendTo(wrapper)
+
+            console.log("about to append")
+            wrapper.appendTo($(".game-tag-card-content"));
+            console.log("appended")
+        }
+    }
+
+    function deleteGameTag(tag){
+        document.getElementById("game-tag-" + tag).remove()
+    }
+</script>
+{% endblock %}
