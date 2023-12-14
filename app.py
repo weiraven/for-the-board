@@ -134,8 +134,12 @@ def profile(user_id:int):
     
     if active_user is None:
         return "Error: User does not exist"
+    
+    sessionUser = ''
+    if session.__contains__('username') and session['username']:
+        sessionUser = session['username']
 
-    return render_template('profile.html', active_user=active_user, sessionUser=session['username'])
+    return render_template('profile.html', active_user=active_user, sessionUser=sessionUser)
 
 @app.get('/profile/edit')
 def display_edit_profile():
