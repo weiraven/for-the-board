@@ -186,10 +186,9 @@ def edit_profile():
         flash('No selected file')
     
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(UPLOAD_FOLDER, str(active_user.user_id) + filename)
-        file.save(filepath)
-        active_user.profile_pic = filepath
+        link = upload_to_imgbb(file)
+        active_user.profile_pic = link
+        session['profile_pic'] = active_user.profile_pic
 
     db.session.commit()
     return redirect('./' + str(active_user.user_id))
