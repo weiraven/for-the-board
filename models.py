@@ -118,7 +118,7 @@ class ForumPost(db.Model):
             db.session.commit()
 
 class ForumDescription(db.Model):
-    __tablename__ = 'forumdescription'
+    __tablename__ = 'forum_description'
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(255), unique=True)
     description = db.Column(db.Text)
