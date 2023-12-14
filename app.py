@@ -22,9 +22,7 @@ app = Flask(__name__)
 # ] = f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
-
 app.secret_key = os.getenv('APP_SECRET_KEY', 'potato')
 
 db.init_app(app)
