@@ -31,6 +31,18 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 def index():
     return render_template('index.html')
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return redirect(url_for('error404'))
+
+@app.route('/page_not_found')
+def error404():
+    return render_template('error/404page.html')
+
+@app.errorhandler(500)
+def internal_error(e): # change app.run(debug=True) for development(last; down below)
+    return render_template('error/500page.html')
+
 @app.get('/signup')
 def signup():
     saved_input = {}
@@ -597,4 +609,4 @@ def create_game():
     return render_template('create_game.html', games=games)
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True) 
