@@ -12,6 +12,11 @@ CREATE TABLE Player (
     PRIMARY KEY (user_id)
 );
 
+-- User following Alter Table statement on Player instead to add new columns without having to recreate all sample data
+ALTER TABLE Player
+ADD COLUMN profile_pic VARCHAR(255),
+ADD COLUMN bio_text TEXT;
+
 CREATE TABLE ForumPost (
     post_id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -20,7 +25,7 @@ CREATE TABLE ForumPost (
     time_posted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     upvotes INT,
     parent_post_id INT,
-    flairs VARCHAR(255),  
+    flairs VARCHAR(255),
     category VARCHAR(255),
     FOREIGN KEY (author_id) REFERENCES Player (user_id),
     FOREIGN KEY (parent_post_id) REFERENCES ForumPost (post_id)
@@ -41,11 +46,11 @@ CREATE TABLE Vote (
 
 CREATE TABLE Game (
     game_id SERIAL PRIMARY KEY,
-    game VARCHAR(255) NOT NULL ,
+    game VARCHAR(255) NOT NULL,
     description TEXT
 );
 
-CREATE TABLE game_session (
+CREATE TABLE Game_Session (
     active_game_id SERIAL PRIMARY KEY,
     game_id INTEGER REFERENCES game(game_id) NOT NULL,
     title VARCHAR(255) NOT NULL,
@@ -55,7 +60,7 @@ CREATE TABLE game_session (
     image VARCHAR(255) DEFAULT 'https://i.ibb.co/nrbzM1k/FTB-Logo-full.jpg'
 );
 
-CREATE TABLE active_game (
+CREATE TABLE Active_Game (
     active_game_id SERIAL NOT NULL,
     user_id INTEGER REFERENCES player(user_id) NOT NULL
 );
@@ -92,8 +97,6 @@ VALUES
     ('LF3M for fresh D&D 5e campaign', '<p>Calling All Adventurers!</p><p>Are you ready to embark on an epic journey? Do you have the courage to face the unknown, the wisdom to solve intricate puzzles, and the charisma to lead or negotiate your way out of tricky situations? If so, we want you to join our virtual Dungeons & Dragons 5e campaign!</p><p>Our campaign is set in a richly detailed world, teeming with diverse cultures, ancient mysteries, and untold dangers. Whether you''re a seasoned veteran or a newcomer to the game, you''ll find a place at our table!</p>', 3, 0, 'D&D, LFM', 'community-square'),
     ('How to pick up elves in a dungeon', 'Step 1: Just roll a nat 20 on your rizz check 4head lol', 4, 0, 'Fantasy, Humor', 'community-square')
 ;
-
---Datasets you can use for Player & ForumPost table - brandon
 
 --Player
 INSERT INTO Player (first_name, last_name, username, email, password)

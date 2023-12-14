@@ -4,6 +4,7 @@
 <!--Import Jim Nightshade font-->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jim+Nightshade&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Happy+Monkey&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap">
 
 <style>
 	h1 {
@@ -16,6 +17,25 @@
 		font-size: 28px;
 		text-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
 		margin-bottom: 60px;
+	}
+	.test-bold {
+		margin-top: 15%;
+		font-size: 96px;
+	}
+	.test-caption {
+		text-shadow: 2px 1px 3px rgba(0, 0, 0, 1);
+		margin-bottom: 20px;
+	}
+	.test-quote-mark {
+		font-family: 'Playfair Display', serif;
+		margin-top: 10%;
+		margin-bottom: 0px;
+		font-size: 100px;
+	}
+	.testimony-text {
+		font-family: 'Happy Monkey', cursive;
+		font-size: 24px;
+		text-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
 	}
 	.btn.btn-primary.btn-block {
 		background-color: #944394;
@@ -32,7 +52,15 @@
 	.logo-image {
 		margin-left: 50px;
 	}
-
+	.car-item {
+		margin-top: 50px;
+		height: 700px;
+	}
+	.car-img {
+		height: 100%;
+		object-fit: cover;
+		filter: brightness(0.8);
+	}
 
 </style>
 
@@ -45,23 +73,46 @@
 	<img class="logo-image" src="/static/images/ftb_logo.png" alt="ForTheBoard Logo">
 </div>
 
-<div id="carouselExample" class="carousel slide">
+<div id="testimonial-carousel" class="carousel slide" data-bs-ride="carousel">
+	<div class="carousel-indicators">
+		<button type="button" data-bs-target="#testimonial-carousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+		<button type="button" data-bs-target="#testimonial-carousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+		<button type="button" data-bs-target="#testimonial-carousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+		<button type="button" data-bs-target="#testimonial-carousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+		<button type="button" data-bs-target="#testimonial-carousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
+	  </div>
 	<div class="carousel-inner">
-	  <div class="carousel-item active">
-		<img src="/static/images/fantasy-backdrop-01.jpg" class="d-block w-100" alt="Fantastical Setting">
+	  <div class="carousel-item active car-item">
+		<img src="/static/images/fantasy-backdrop-01.jpg" class="d-block w-100 car-img" alt="Fantastical Setting 1 ">
+		<div class="carousel-caption top-0 mt-4 d-none d-md-block">
+			<h1 class="test-bold">It's dangerous to go alone!</h1>
+			<p class="test-caption mt-3 fs-3">Take us on board.</p>
+			<a href="/signup" class="btn btn-primary btn-block">Sign Up Now</a>
+		  </div>
 	  </div>
-	  <div class="carousel-item">
-		<img src="/static/images/fantasy-backdrop-02.jpg" class="d-block w-100" alt="Fantastical Setting">
+	  <div class="carousel-item car-item">
+		<img src="/static/images/fantasy-backdrop-02.jpg" class="d-block w-100 car-img" alt="Fantastical Setting 2">
+		<div class="carousel-caption top-0 mt-4 d-none d-md-block">
+			<h2 class="test-quote-mark">“</h1>
+			<p class="testimony-text">I’m totally blown away by this online table-top site. It’s like a dream come true for nerds like me. The LFG forum is indispensable for finding people--I met my best friend there and we’ve been inseparable in every campaign since! The convenience of scheduling, gathering, playing, and tracking all in one place is just too good. Kudos to the team for this brilliant creation."</p>
+			<p class="fs-4">-KawaiiKrusader</p>
+		</div>
 	  </div>
-	  <div class="carousel-item">
-		<img src="/static/images/fantasy-backdrop-03.jpg" class="d-block w-100" alt="Fantastical Setting">
+	  <div class="carousel-item car-item">
+		<img src="/static/images/fantasy-backdrop-03.jpg" class="d-block w-100 car-img" alt="Fantastical Setting 3">
+	  </div>
+	  <div class="carousel-item car-item">
+		<img src="/static/images/fantasy-backdrop-04.jpg" class="d-block w-100 car-img" alt="Fantastical Setting 4">
+	  </div>
+	  <div class="carousel-item car-item">
+		<img src="/static/images/fantasy-backdrop-05.jpg" class="d-block w-100 car-img" alt="Fantastical Setting 5">
 	  </div>
 	</div>
-	<button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+	<button class="carousel-control-prev" type="button" data-bs-target="#testimonial-carousel" data-bs-slide="prev">
 	  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
 	  <span class="visually-hidden">Previous</span>
 	</button>
-	<button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+	<button class="carousel-control-next" type="button" data-bs-target="#testimonial-carousel" data-bs-slide="next">
 	  <span class="carousel-control-next-icon" aria-hidden="true"></span>
 	  <span class="visually-hidden">Next</span>
 	</button>

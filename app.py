@@ -551,11 +551,9 @@ def handle_connect(json):
     active_game_id = json.get('active_game_id')
     join_room(active_game_id)
     user = player_repository_singleton.get_user_by_username(username)
-
     if user:
         session['active_user_id'] = user.user_id
         session['active_game_id'] = active_game_id
-
         active_users.setdefault(active_game_id, set()).add(username)
         set_active_user(username)
         emit('active_users', {'active_users': list(active_users[active_game_id])}, room=active_game_id)
@@ -564,12 +562,10 @@ def handle_connect(json):
 def handle_disconnect():
     active_username = session.get('active_username')
     active_game_id = session.get('active_game_id')
-    
     if active_username and active_game_id in active_users:
         active_users[active_game_id].remove(active_username)
         socketio.emit('active_users', {'active_users': list(active_users[active_game_id])}, room=active_game_id)
         print(f"User {active_username} disconnected from room {active_game_id}.")
-
         leave_room(active_game_id)
         socketio.emit('disconnect_from_room', {'active_game_id': active_game_id, 'username': active_username}, room=active_game_id)
 
@@ -577,25 +573,20 @@ def handle_disconnect():
 def handle_message(json):
     user_id = session.get('active_user_id')
     user = player_repository_singleton.get_user_by_id(user_id)
-    
     if user:
         active_game_id = json.get('active_game_id')
         message = json.get('message')
-
         if message.startswith('!roll '):
             sides = int(message.split(' ')[1])
             roll_result = random.randint(1, sides)
-            
             socketio.emit('message', {'username': 'Server', 'message': f'[{user.username}] performed a Dice Roll ({sides} sides) ! Result: {roll_result}', 'active_game_id': active_game_id}, room=active_game_id)
         elif message.startswith('!add '):
             items = message[5:].strip().split(',,')
             items = [item.strip() for item in items if item.strip()]
             if items:
                 for item in items:
-                    socketio.emit('message', {'username': 'Server', 'message': f'[{user.username}] has added to the inventory: {item} ', 'active_game_id': active_game_id}, room=active_game_id)
-        
+                    socketio.emit('message', {'username': 'Server', 'message': f'[{user.username}] has added to the inventory: {item} ', 'active_game_id': active_game_id}, room=active_game_id)        
                 add_items_to_inventory(user, active_game_id, items)
-        
         elif message.startswith('!remove '):
             try:
                 item_number = int(message.split(' ')[1])
@@ -603,7 +594,6 @@ def handle_message(json):
                     remove_item_from_inventory(active_game_id, item_number)
             except (ValueError, IndexError):
                 pass 
-
         else:
             socketio.emit('message', {'username': user.username, 'message': message, 'active_game_id': active_game_id}, room=active_game_id)
 
@@ -619,10 +609,8 @@ def remove_item_from_inventory(active_game_id, item_number):
 def add_items_to_inventory(user, active_game_id, items):
     if active_game_id not in game_inventories:
         game_inventories[active_game_id] = []
-
     for item_name in items:
         game_inventories[active_game_id].append({'username': user.username, 'item_name': item_name})
-
     socketio.emit('update_inventory', {'inventory': game_inventories[active_game_id], 'active_game_id': active_game_id}, room=active_game_id)
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -631,37 +619,29 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 def upload():
     if "photo" in request.files:
         photo = request.files["photo"]
-
         if photo.filename == "":
             return jsonify({"error": "No file selected"}), 400
-
         # Save the file to the "uploads" folder
         filename = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(photo.filename))
         photo.save(filename)
-
         # Use ImgBB API to upload the image and get the URL
         imgbb_url = upload_to_imgbb(filename)
         socketio.emit("image_uploaded", {"url": imgbb_url})
-
         return jsonify({"url": imgbb_url})
-
     return jsonify({"error": "No file provided"}), 400
         
 def upload_to_imgbb(filename):
     imgbb_api_key = {os.getenv("IMGBB")}
-
     imgbb_url = "https://api.imgbb.com/1/upload"
     files = {"image": (filename, open(filename, "rb"))}
     params = {"key": imgbb_api_key}
-
     response = requests.post(imgbb_url, files=files, params=params)
     result = response.json()
-
     if result["success"]:
         return result["data"]["url"]
     else:
         return None
-
+    
 @app.route('/create_game', methods=['GET', 'POST'])
 def create_game():
     if request.method == 'POST':
@@ -677,16 +657,13 @@ def create_game():
 
         # Create a new game record
         game_exists = Game.query.filter_by(game=game).first()
-
         if game_exists:
             username = session.get('username')
             user = User.query.filter_by(username=username).first()
-
             if user:
                 new_game_session = GameSession(title=title, game_id=game_exists.game_id, open_for_join=True, owner=username, image=imgbb_url)
                 db.session.add(new_game_session)
                 db.session.commit()
-
                 new_active_game = ActiveGame(active_game_id=new_game_session.active_game_id, user_id=user.user_id)
                 db.session.add(new_active_game)
                 db.session.commit()
@@ -700,18 +677,15 @@ def create_game():
 
             username = session.get('username')
             user = User.query.filter_by(username=username).first()
-
             if user:
                 new_game_session = GameSession(title=title, game_id=new_game.game_id, open_for_join=True, owner=username, image=imgbb_url)
                 db.session.add(new_game_session)
                 db.session.commit()
-
                 new_active_game = ActiveGame(active_game_id=new_game_session.active_game_id, user_id=user.user_id)
                 db.session.add(new_active_game)
                 db.session.commit()
 
             return redirect(url_for('join_game'))
-
     # Fetch all games from the database
     games = Game.query.all()
     return render_template('create_game.html', games=games)
