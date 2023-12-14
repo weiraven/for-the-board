@@ -1,4 +1,4 @@
-import os, random, requests
+import os, random, requests, json as jsons
 import re
 from flask import Flask, flash, render_template, abort, request, redirect, url_for, session, jsonify
 from models import db, User, ForumPost, Vote, Game, ActiveGame, GameSession, GameTag, ForumDescription
@@ -525,6 +525,15 @@ def handle_connect(json):
         active_users.setdefault(active_game_id, set()).add(username)
         set_active_user(username)
         emit('active_users', {'active_users': list(active_users[active_game_id])}, room=active_game_id)
+        game_session = GameSession.query.filter_by(active_game_id=active_game_id).first()
+        if game_session and game_session.log:
+            # Call add_last_inventory to populate the inventory with existing data
+            print(game_session.log)
+            log_data = jsons.loads(game_session.log)[0]
+            print(log_data)
+            game_inventories[active_game_id]=[]
+            game_inventories[active_game_id].extend(log_data)
+            socketio.emit('update_inventory', {'inventory': game_inventories[active_game_id], 'active_game_id': active_game_id}, room=active_game_id)
 
 @socketio.on('disconnect')
 def handle_disconnect():
@@ -577,23 +586,41 @@ def handle_message(json):
 def remove_item_from_inventory(active_game_id, item_number):
     user_id = session.get('active_user_id')
     user = player_repository_singleton.get_user_by_id(user_id)
+    game_session = GameSession.query.filter_by(active_game_id=active_game_id).first()
     if active_game_id in game_inventories:
         if 1 <= item_number <= len(game_inventories[active_game_id]):
             removed_item = game_inventories[active_game_id].pop(item_number - 1)
             socketio.emit('update_inventory', {'inventory': game_inventories[active_game_id], 'active_game_id': active_game_id}, room=active_game_id)
             socketio.emit('message', {'username': 'Server', 'message': f'[{user.username}] has removed from the inventory: {removed_item["item_name"]}', 'active_game_id': active_game_id}, room=active_game_id)
+            game_session.log = jsons.dumps([game_inventories[active_game_id]])
+            db.session.commit()
 
 def add_items_to_inventory(user, active_game_id, items):
     if active_game_id not in game_inventories:
         game_inventories[active_game_id] = []
+    
+    game_session = GameSession.query.filter_by(active_game_id=active_game_id).first()
+    print(game_inventories)
+
+    for item_name in items:
+        game_inventories[active_game_id].append({'username': user.username, 'item_name': item_name})
+        game_session.log = jsons.dumps([game_inventories[active_game_id]])
+        db.session.commit()
+
+    socketio.emit('update_inventory', {'inventory': game_inventories[active_game_id], 'active_game_id': active_game_id}, room=active_game_id)
+
+def add_last_inventory(user, active_game_id, items):
+    game_inventories[active_game_id] = []
+    # game_session = GameSession.query.filter_by(active_game_id=active_game_id).first()
+    # if game_session and game_session.log:
+    #     log_data = jsons.loads(game_session.log)
+    #     game_inventories[active_game_id].extend(log_data)
 
     for item_name in items:
         game_inventories[active_game_id].append({'username': user.username, 'item_name': item_name})
 
     socketio.emit('update_inventory', {'inventory': game_inventories[active_game_id], 'active_game_id': active_game_id}, room=active_game_id)
 
-
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # Handle file upload
 @app.route("/upload", methods=["POST"])
 def upload():
@@ -602,24 +629,18 @@ def upload():
 
         if photo.filename == "":
             return jsonify({"error": "No file selected"}), 400
-
-        # Save the file to the "uploads" folder
-        filename = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(photo.filename))
-        photo.save(filename)
-
-        # Use ImgBB API to upload the image and get the URL
-        imgbb_url = upload_to_imgbb(filename)
+        imgbb_url = upload_to_imgbb(photo)
         socketio.emit("image_uploaded", {"url": imgbb_url})
 
         return jsonify({"url": imgbb_url})
 
     return jsonify({"error": "No file provided"}), 400
         
-def upload_to_imgbb(filename):
+def upload_to_imgbb(photo):
     imgbb_api_key = {os.getenv("IMGBB")}
 
     imgbb_url = "https://api.imgbb.com/1/upload"
-    files = {"image": (filename, open(filename, "rb"))}
+    files = {"image": photo}
     params = {"key": imgbb_api_key}
 
     response = requests.post(imgbb_url, files=files, params=params)
