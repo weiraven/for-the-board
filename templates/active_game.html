@@ -9,11 +9,11 @@
   }
 
   .othernavbar a:hover {
-    color: #800080 !important;
+    color: #944394 !important;
   }
 
   .othernavbar a.active {
-    color: #800080 !important;
+    color: #944394 !important;
   }
 
   .container-title {
@@ -38,37 +38,25 @@
   .card {
     border: none;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background-color: #343a40;
     color: #ffffff;
     margin-bottom: 20px; 
+    transition: transform 0.2s ease; 
+    background-color: #495057;
   }
 
-  .avatar-container {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-    margin-left: 13px;
-  }
-
-  .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    overflow: hidden;
-    display: flex;
-    align-items: normal;
-    justify-content: center;
-    background-color: #007bff;
-  }
-
-  .avatar span {
-    font-size: 1.2rem;
+  .card:hover {
+    transform: scale(1.05); 
   }
 
   .submit-button {
     position: absolute;
     bottom: 10px;
     right: 10px;
+  }
+
+  .section-divider {
+    margin: 30px 0;
+    border-bottom: 2px solid #ffffff;
   }
 </style>
 
@@ -95,7 +83,9 @@
     </ul>
 
 <div class="container">
-  <h2>Your Active Games</h2>
+  <!-- Section Divider -->
+<div class="section-divider">
+</div>
   {% if active_games %}
     <div class="row">
       {% for active_game in active_games %}
@@ -103,6 +93,7 @@
           <div class="card mx-auto">
             {% for game_session in game_sessions %}
               {% if active_game.active_game_id == game_session.active_game_id %}
+              <a href="{{ url_for('chat', active_game_id=active_game.active_game_id) }}">
                 <img src="{{ url_for('static', filename='images/DDM.jpg') }}" class="card-img-top">
                 <div class="card-body">
                   <h5 class="card-title">
@@ -116,7 +107,6 @@
                   <p class="card-text">Lobby Name: {{ game_session.title }}</p>
                 </div>
                 <div class="card-body">
-                  <!-- Form for the game availability -->
                   <form method="post" action="{{ url_for('game_availability', active_game_id=active_game.active_game_id) }}">
                       {% if session['username'] == game_session.owner %}
                           <button type="submit" class="btn btn-primary submit-button">
@@ -129,6 +119,7 @@
                       {% endif %}
                   </form>
                 </div>
+              </a>
               {% endif %}
             {% endfor %}
           </div>
@@ -138,34 +129,7 @@
   {% else %}
     <p>No active games found.</p>
   {% endif %}
-</div>
-    
-        
-        <!-- Avatars Inside the Card -->
-        <!-- <div class="avatar-container" >
-          <div class="avatar bg-primary text-light d-flex align-items-center justify-content-center">
-            <span>PC</span>
-          </div>
-
-          <div class="avatar bg-secondary text-light d-flex align-items-center justify-content-center">
-            <span>BH</span>
-          </div>
-
-          <div class="avatar bg-info text-light d-flex align-items-center justify-content-center">
-            <span>DN</span>
-          </div>
-
-          <div class="avatar bg-danger text-light d-flex align-items-center justify-content-center">
-            <span>RW</span>
-          </div>
-        </div> -->
-
-    <!-- Submit Button
-        <button type="submit" class="btn btn-primary submit-button">Play Board</button>
-      </div>
-    </div>
-  </div>
-</div> -->
+</div> 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     {% endblock %}
