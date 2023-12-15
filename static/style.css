@@ -131,3 +131,69 @@ main{
     color: white;
     font-size: small;
 }
+
+/* ===== ===== ===== ===== ===== */
+/* Tutorial Page */
+.tutorial-header{
+    text-align: center;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    color: white;
+}
+
+.tutorial-container {
+    display: grid;
+    grid-template-columns: 1fr 37.5% 5% 37.5% 1fr;
+}
+
+.tutorial-signup-info{
+    grid-column: 2/3;
+    background-color: #202428;
+    border: solid;
+    border-radius: 2px;
+    border-color: var(--primary-color);
+    margin-bottom: 2rem;
+}
+
+.tutorial-forum-info{
+    grid-column: 4/5;
+    background-color: #202428;
+    border: solid;
+    border-radius: 2px;
+    border-color: var(--primary-color);
+    margin-bottom: 2rem;
+}
+
+.tutorial-chatroom-info{
+    grid-column: 2/3;
+    background-color: #202428;
+    border: solid;
+    border-radius: 2px;
+    border-color: var(--primary-color);
+    margin-bottom: 2rem;
+}
+
+.tutorial-gameplay-info{
+    grid-column: 4/5;
+    background-color: #202428;
+    border: solid;
+    border-radius: 2px;
+    border-color: var(--primary-color);
+    margin-bottom: 2rem;
+}
+
+.tutorial-signup-info > .card-body,
+.tutorial-forum-info > .card-body,
+.tutorial-chatroom-info > .card-body,
+.tutorial-gameplay-info > .card-body{
+    color: white;
+}
+
+
+.tutorial-card-title{
+    color: white;
+    font-size: x-large;
+    font-weight: bold;
+}
+
+

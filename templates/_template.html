@@ -79,7 +79,7 @@
         </div>
         
         {% if session.get('username') %}
-        <img src="../../{{session['profile_pic']}}" class="img-fluid tiny" style="display: none" onload="this.style.display=''">
+        <img src="{{session['profile_pic']}}" class="img-fluid tiny" style="display: none" onload="this.style.display=''">
         {% endif %}
       </div>
     </nav>
