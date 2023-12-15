@@ -1,30 +1,45 @@
 {% extends '_template.html' %} {% block body %}
 
+<!--Import Jim Nightshade font-->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jim+Nightshade&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Happy+Monkey&display=swap" />
+
 <style>
-	.main-container {
-		height: 100%;
+	h1 {
+		font-family: 'Jim Nightshade', cursive;
+		font-size: 72px;
+		text-shadow: 3px 3px 2px rgba(0, 0, 0, 1);
 	}
-	.container-art {
-		max-width: 50%;
+	.ftb-intro-blurb {
+		font-family: 'Happy Monkey', cursive;
+		font-size: 28px;
+		text-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
+		margin-bottom: 60px;
+	}
+	.btn.btn-primary.btn-block {
+		background-color: #944394;
+		border-color: #944394;
+		color: #ffffff;
+		box-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
+	}
+	.container.container-intro {
+		margin-top: 50px;
 		display: flex;
-		justify-content: center;
 		align-items: center;
+		justify-content: space-between;
 	}
-	.art {
-		max-width: 50%;
-		width: auto;
-		height: auto;
+	.logo-image {
+		margin-left: 50px;
+		width: 50%;
 	}
 </style>
 
-<div class="main-container d-flex justify-content-center align-items-center w-100">
-	<div class="container-art w-50">
-		<img class="art" src="/static/images/404-art.png" alt="500-art" class="img-fluid" />
+<div class="container container-intro">
+	<div>
+		<h1 style="margin: 30px 0">Oops!</h1>
+		<p class="ftb-intro-blurb">The page you are looking for is not found.</p>
 	</div>
-	<div class="container-info w-50">
-		<h4>Something isn't right...</h4>
-		<h4>Code: 500</h4>
-	</div>
+	<img class="logo-image" src="/static/images/404-art.png" alt="404 Image" />
 </div>
 
 {% endblock body %}
