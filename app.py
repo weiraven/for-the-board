@@ -18,8 +18,8 @@ app = Flask(__name__)
 
 #For local DB connection only:
 # app.config[
-#     'SQLALCHEMY_DATABASE_URI'
-# ] = f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
+#      'SQLALCHEMY_DATABASE_URI'
+#  ] = f'postgresql://{os.getenv("DB_USER")}:{os.getenv("DB_PASS")}@{os.getenv("DB_HOST")}:{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000
@@ -30,8 +30,7 @@ bcrypt = Bcrypt()
 bcrypt.init_app(app)
 
 socketio = SocketIO(app, cors_allowed_origins="*")
-app.config['UPLOAD_FOLDER'] = 'uploads'
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+app.config['UPLOAD_FOLDER'] = 'static/images'
 
 @app.route('/', methods=('GET', 'POST'))
 def index():
@@ -651,7 +650,10 @@ def create_game():
         file = request.files.get('image')  # Use .get() to avoid KeyError if 'image' is not present
         imgbb_url = None  # Default or placeholder image URL
         if file and file.filename != '':
-            imgbb_url = upload_to_imgbb(file)
+            filename = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(file.filename))
+            file.save(filename)
+            imgbb_url = upload_to_imgbb(filename)
+            os.remove(filename)
         # Create a new game record
         game_exists = Game.query.filter_by(game=game).first()
         if game_exists:
